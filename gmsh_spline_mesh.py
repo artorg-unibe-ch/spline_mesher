@@ -533,7 +533,7 @@ class UnifyVolumes():
         self.factory = self.model.occ
         self.inner_cortex_surface = str(inner_cortex_volume)
         self.outer_cortex_surface = str(outer_cortex_volume)
-        # self.outer_trabecular_surface = outer_trabecular_volume
+        # self.outer_trabecular_surface = outer_trabecular_volume # TODO: activate if needed in the future
         # self.popup = str(popup)
 
     def cortical_volume(self):
@@ -560,7 +560,7 @@ def main():
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
                                S=100, K=3, INTERP_POINTS=50,
                                debug_orientation=0, show_plots=False, location='cort_external')
-    # ext_cort_surface.plot_mhd_slice()
+    ext_cort_surface.plot_mhd_slice()
     cort_ext_vol = ext_cort_surface.volume_splines()
 
     int_cort_surface = Meshing(img_path_ext, filepath_ext, filename_int,
@@ -568,7 +568,7 @@ def main():
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
                                S=15, K=3, INTERP_POINTS=50,
                                debug_orientation=0, show_plots=True, location='cort_internal')
-    # int_cort_surface.plot_mhd_slice()
+    int_cort_surface.plot_mhd_slice()
     cort_int_vol = int_cort_surface.volume_splines()
 
     cortex = UnifyVolumes(inner_cortex_volume=cort_int_vol,
@@ -579,7 +579,6 @@ def main():
 if __name__ == "__main__":
     print('Executing gmsh_spline_mesh.py')
     main()
-
 
 # TODO LIST
 # TODO 1: understand how to pass sitk imagefromarray (or sth similar)
