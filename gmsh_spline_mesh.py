@@ -454,9 +454,21 @@ class Meshing():
         return lines_connectors, shell_tags
 
 
-    def add_volume(self, surf_b, surf_tags, surf_t):
+    def add_volume(self, surf_b, surf_tags, surf_t, loc):
         loop = self.factory.addSurfaceLoop([surf_b] + surf_tags + [surf_t])
-        self.factory.addVolume([loop])
+        
+        if loc == 'cort_ext':
+            tag_v = int(3000)
+        elif loc == 'cort_int':
+            tag_v = int(2000)
+        elif loc == 'trab':
+            tag_v = int(1000)
+        else:
+            print(f'Error in the definition of the volume tag:\t{tag_v}')
+            sys.exit(80)
+        
+        self.factory.addVolume([loop], tag_v)
+        self.model.addPhysicalGroup(dim=3, tags=[loop], tag=-1)
         self.factory.synchronize()
         return None
 
@@ -507,7 +519,7 @@ class Meshing():
         surfaces_first = self.factory.addPlaneSurface([surfaces_slices[0]])
         surfaces_last = self.factory.addPlaneSurface([surfaces_slices[-1]])
 
-        self.add_volume(surfaces_first, shell_tags, surfaces_last)
+        self.add_volume(surfaces_first, shell_tags, surfaces_last, 'cort_ext')
 
         gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filepath + self.filename))
