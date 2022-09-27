@@ -155,12 +155,12 @@ class Meshing():
         self.contours_arr = []
         for z in range(depth):
             bin_img = sitk.GetArrayViewFromImage(img)[:,:,z]
-            if self.location is 'cort_external':
+            if self.location == 'cort_external':
                 contours, hierarchy = cv2.findContours(bin_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 out = np.zeros_like(bin_img)
                 outer_contour = cv2.drawContours(out, contours, -1, 1, 1)
                 self.contours_arr.append(outer_contour)
-            elif self.location is 'cort_internal':
+            elif self.location == 'cort_internal':
                 contours, hierarchy = cv2.findContours(bin_img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
                 inn = np.zeros_like(bin_img)
                 inner_contour = cv2.drawContours(inn, contours, 2, 1, 1)
@@ -454,8 +454,9 @@ class Meshing():
         return lines_connectors, shell_tags
 
 
-    def add_volume(self, tot_surf_tags):
-        self.factory.addVolume(tot_surf_tags)
+    def add_volume(self, surf_b, surf_tags, surf_t):
+        loop = self.factory.addSurfaceLoop([surf_b] + surf_tags + [surf_t])
+        self.factory.addVolume([loop])
         self.factory.synchronize()
         return None
 
@@ -494,12 +495,6 @@ class Meshing():
             else:
                 pass
 
-        surf_tag = self.factory.addSurfaceFilling(surfaces_slices[0])
-        surfaces_first = self.factory.addSurfaceLoop([surf_tag])
-        surf_tag = self.factory.addSurfaceFilling(surfaces_slices[-1])
-        surfaces_last = self.factory.addSurfaceLoop([surf_tag])
-        self.factory.synchronize()
-
         if self.show_plots is not False:
             fig = self.plotly_makefig(fig)
         else:
@@ -508,15 +503,19 @@ class Meshing():
         # Create gmsh connectors
         connectors_r = np.ndarray.astype(connector_arr.reshape([len(slice_index), self.INTERP_POINTS_S - 1]), dtype='int')
         lines, shell_tags = self.connector_gmsh(connectors_r, lines_slices, slice_index=slice_index)
-        tot_surf_tags = np.append([surfaces_first, surfaces_last], shell_tags)
-        self.add_volume(tot_surf_tags)
 
-        # gmsh.option.setNumber("Mesh.SaveAll", 1)
+        surfaces_first = self.factory.addPlaneSurface([surfaces_slices[0]])
+        surfaces_last = self.factory.addPlaneSurface([surfaces_slices[-1]])
+
+        self.add_volume(surfaces_first, shell_tags, surfaces_last)
+
+        gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filepath + self.filename))
+        print(f'gmsh write path:\t{str(self.filepath + self.filename)}')
 
         if '-nopopup' not in sys.argv: # TODO: change as class variable
             gmsh.fltk.run()
-
+        gmsh.clear()
         gmsh.finalize()
         print('Exiting GMSH...')
         return str(self.filepath + self.filename)
@@ -552,28 +551,28 @@ class UnifyVolumes():
 def main():
     img_path_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_CORT_MASK_cap01.mhd'
     filepath_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/99_testing_prototyping/'
-    filename_ext = Path(img_path_ext).stem + '_ext' + '.geo_unrolled'
+    filename_ext = Path(img_path_ext).stem + '_ext2' + '.geo_unrolled'
     filename_int = Path(img_path_ext).stem + '_int' + '.geo_unrolled'
 
     ext_cort_surface = Meshing(img_path_ext, filepath_ext, filename_ext,
                                ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=20,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                               S=100, K=3, INTERP_POINTS=50,
+                               S=10, K=3, INTERP_POINTS=50,
                                debug_orientation=0, show_plots=False, location='cort_external')
-    ext_cort_surface.plot_mhd_slice()
+    # ext_cort_surface.plot_mhd_slice()
     cort_ext_vol = ext_cort_surface.volume_splines()
 
-    int_cort_surface = Meshing(img_path_ext, filepath_ext, filename_int,
-                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=20,
-                               INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                               S=15, K=3, INTERP_POINTS=50,
-                               debug_orientation=0, show_plots=True, location='cort_internal')
-    int_cort_surface.plot_mhd_slice()
-    cort_int_vol = int_cort_surface.volume_splines()
-
-    cortex = UnifyVolumes(inner_cortex_volume=cort_int_vol,
-                          outer_cortex_volume=cort_ext_vol)
-    cortex.cortical_volume()
+    # int_cort_surface = Meshing(img_path_ext, filepath_ext, filename_int,
+                            #    ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=20,
+                            #    INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
+                            #    S=5, K=3, INTERP_POINTS=50,
+                            #    debug_orientation=0, show_plots=False, location='cort_internal')
+    # int_cort_surface.plot_mhd_slice()
+    # cort_int_vol = int_cort_surface.volume_splines()
+# 
+    # cortex = UnifyVolumes(inner_cortex_volume=cort_int_vol,
+                        #   outer_cortex_volume=cort_ext_vol)
+    # cortex.cortical_volume()
 
 
 if __name__ == "__main__":
