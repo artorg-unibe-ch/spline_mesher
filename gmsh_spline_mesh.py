@@ -427,7 +427,7 @@ class Meshing():
             line_tag = self.factory.addLine(startTag=loop[i], endTag=loop[i+1])
             lines.append(line_tag)
 
-        curve_loop_tag = self.factory.addCurveLoop(lines)
+        curve_loop_tag = self.factory.addCurveLoop(lines, tag=-1)
         self.factory.synchronize()
 
         return lines, points, curve_loop_tag
@@ -479,9 +479,10 @@ class Meshing():
         
         # self.factory.addVolume([loop], tag_v)
         # self.model.addPhysicalGroup(dim=3, tags=[loop], tag=-1)
-        tag_vol = self.factory.addVolume([loop], tag=9999)
+        tag_vol = self.factory.addVolume([loop], tag=tag_v)
         # self.model.addPhysicalGroup(dim=3, tags=[tag_vol], tag=-1, name='cort_ext')
         self.factory.synchronize()
+
         return tag_vol
 
 
@@ -542,16 +543,15 @@ class Meshing():
         surfaces_first = self.factory.addPlaneSurface([surfaces_slices[0]])
         surfaces_last = self.factory.addPlaneSurface([surfaces_slices[-1]])
 
-        if self.location is 'cort_ext':
+        if self.location == 'cort_ext':
             self.cortex_outer_tags = self.add_volume(surfaces_first, shell_tags, surfaces_last, self.location)
-        elif self.location is 'cort_int':
+        elif self.location == 'cort_int':
             self.cortex_inner_tags = self.add_volume(surfaces_first, shell_tags, surfaces_last, self.location)
 
         self.offset_tags(self.model.getEntities())
 
         gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filepath + self.filename))
-        print(f'gmsh write path:\t{str(self.filepath + self.filename)}')
 
         if '-nopopup' not in sys.argv: # TODO: change as class variable
             gmsh.fltk.run()
@@ -587,9 +587,9 @@ def main():
     filename_int = Path(img_path_ext).stem + '_int2' + '.geo_unrolled'
 
     ext_cort_surface = Meshing(img_path_ext, filepath_ext, filename_ext,
-                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=40,
+                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                               S=10, K=3, INTERP_POINTS=60,
+                               S=10, K=3, INTERP_POINTS=20,
                                debug_orientation=0, show_plots=False, location='cort_ext',
                                offset = 0)
     # ext_cort_surface.plot_mhd_slice()
@@ -597,15 +597,13 @@ def main():
 
 
     int_cort_surface = Meshing(img_path_ext, filepath_ext, filename_int,
-                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=40,
+                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                               S=10, K=3, INTERP_POINTS=60,
+                               S=10, K=3, INTERP_POINTS=20,
                                debug_orientation=0, show_plots=False, location='cort_int',
                                offset = 10000)
     # int_cort_surface.plot_mhd_slice()
     cort_int_vol = int_cort_surface.volume_splines()
-
-    # cortex = cortical_volume()
 
 
 if __name__ == "__main__":
