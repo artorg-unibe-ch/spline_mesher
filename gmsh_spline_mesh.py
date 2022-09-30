@@ -40,7 +40,8 @@ class Meshing():
                  S, K, INTERP_POINTS,
                  debug_orientation,
                  show_plots,
-                 location):
+                 location,
+                 offset):
         '''
         Class that imports a voxel-based model and converts it to a geometrical simplified representation through the use of splines for each slice in the transverse plane.
         Following spline reconstruction, the model is meshed with GMSH.
@@ -54,6 +55,7 @@ class Meshing():
         self.debug_orientation = debug_orientation
         self.show_plots = bool(show_plots)
         self.location = str(location)
+        self.offset = int(offset)
         
         self.ASPECT = ASPECT
         self.SLICE = SLICE
@@ -73,6 +75,9 @@ class Meshing():
         self.y_mahalanobis = []
         self.xnew = []
         self.ynew = []
+
+        self.cortex_outer_tags = list()
+        self.cortex_inner_tags = list()
 
         # Figure layout
         self.layout = go.Layout(
@@ -155,12 +160,12 @@ class Meshing():
         self.contours_arr = []
         for z in range(depth):
             bin_img = sitk.GetArrayViewFromImage(img)[:,:,z]
-            if self.location == 'cort_external':
+            if self.location == 'cort_ext':
                 contours, hierarchy = cv2.findContours(bin_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 out = np.zeros_like(bin_img)
                 outer_contour = cv2.drawContours(out, contours, -1, 1, 1)
                 self.contours_arr.append(outer_contour)
-            elif self.location == 'cort_internal':
+            elif self.location == 'cort_int':
                 contours, hierarchy = cv2.findContours(bin_img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
                 inn = np.zeros_like(bin_img)
                 inner_contour = cv2.drawContours(inn, contours, 2, 1, 1)
@@ -404,9 +409,14 @@ class Meshing():
         gmsh.option.setNumber("Mesh.MinimumCirclePoints", 20)
 
         points = []
-        for i in range(1, len(x)-1):
-            point = self.factory.addPoint(x[i], y[i], z, i)
-            points = np.append(points, point)
+        if self.location == 'cort_ext':
+            for i in range(1, len(x)-1):
+                point = self.factory.addPoint(x[i], y[i], z, i)
+                points = np.append(points, point)
+        elif self.location == 'cort_int':
+            for i in range(1, len(x)-1):
+                point = self.factory.addPoint(x[i], y[i], z, i)
+                points = np.append(points, point)
 
         loop = []
         loop = np.linspace(points[0], points[-1], num=self.INTERP_POINTS_S, dtype='int')
@@ -434,7 +444,7 @@ class Meshing():
                 lines_connectors.append(line)
 
         lines_slices = np.ndarray.astype(lines_slices, dtype='int')
-        lines_tag_connectors = np.ndarray.astype(np.array(lines_connectors).reshape([len(slice_index) - 1, self.INTERP_POINTS_S - 1]), dtype='int') # TODO: +3, -1?
+        lines_tag_connectors = np.ndarray.astype(np.array(lines_connectors).reshape([len(slice_index) - 1, self.INTERP_POINTS_S - 1]), dtype='int')
 
         points = np.c_[points, points[:, 0]] # append first element of each array
         lines_tag_connectors = np.c_[lines_tag_connectors, lines_tag_connectors[:, 0]] # append first element of each array
@@ -458,20 +468,33 @@ class Meshing():
         loop = self.factory.addSurfaceLoop([surf_b] + surf_tags + [surf_t])
         
         if loc == 'cort_ext':
-            tag_v = int(3000)
+            tag_v = int(3)
         elif loc == 'cort_int':
-            tag_v = int(2000)
+            tag_v = int(2)
         elif loc == 'trab':
-            tag_v = int(1000)
+            tag_v = int(1)
         else:
             print(f'Error in the definition of the volume tag:\t{tag_v}')
             sys.exit(80)
         
-        self.factory.addVolume([loop], tag_v)
-        self.model.addPhysicalGroup(dim=3, tags=[loop], tag=-1)
+        # self.factory.addVolume([loop], tag_v)
+        # self.model.addPhysicalGroup(dim=3, tags=[loop], tag=-1)
+        tag_vol = self.factory.addVolume([loop], tag=9999)
+        # self.model.addPhysicalGroup(dim=3, tags=[tag_vol], tag=-1, name='cort_ext')
         self.factory.synchronize()
-        return None
+        return tag_vol
 
+
+    def offset_tags(self, entities):
+        '''
+        get all entities of the model and add offset to make unique tags
+        '''
+        offset_tags = []
+        for tag in entities:
+            newTag_s = (tag[0], tag[1] + self.offset)
+            offset_tag = gmsh.model.setTag(dim=tag[0], tag=tag[1], newTag=newTag_s[1])
+            offset_tags.append(offset_tag)
+        return None
 
     def volume_splines(self):
         self.binary_threshold()
@@ -519,7 +542,12 @@ class Meshing():
         surfaces_first = self.factory.addPlaneSurface([surfaces_slices[0]])
         surfaces_last = self.factory.addPlaneSurface([surfaces_slices[-1]])
 
-        self.add_volume(surfaces_first, shell_tags, surfaces_last, 'cort_ext')
+        if self.location is 'cort_ext':
+            self.cortex_outer_tags = self.add_volume(surfaces_first, shell_tags, surfaces_last, self.location)
+        elif self.location is 'cort_int':
+            self.cortex_inner_tags = self.add_volume(surfaces_first, shell_tags, surfaces_last, self.location)
+
+        self.offset_tags(self.model.getEntities())
 
         gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filepath + self.filename))
@@ -527,64 +555,57 @@ class Meshing():
 
         if '-nopopup' not in sys.argv: # TODO: change as class variable
             gmsh.fltk.run()
-        gmsh.clear()
+        # gmsh.clear()
         gmsh.finalize()
         print('Exiting GMSH...')
         return str(self.filepath + self.filename)
 
 
-class UnifyVolumes():
-    def __init__(self,
-                 inner_cortex_volume,
-                 outer_cortex_volume):
-                #  outer_trabecular_volume,
-                #  popup):
-
-        self.model = gmsh.model
-        self.factory = self.model.occ
-        self.inner_cortex_surface = str(inner_cortex_volume)
-        self.outer_cortex_surface = str(outer_cortex_volume)
-        # self.outer_trabecular_surface = outer_trabecular_volume # TODO: activate if needed in the future
-        # self.popup = str(popup)
-
     def cortical_volume(self):
         '''
         Import external cortical volume and substract internal cortical volume with GMSH boolean operations
         '''
-        gmsh.initialize()
-        self.model.add('cortex')
-        gmsh.merge(self.outer_cortex_surface)
-        gmsh.merge(self.inner_cortex_surface)
 
-        self.factory.cut(self.outer_cortex_surface, self.inner_cortex_surface)
+        self.factory.cut(objectDimTags=self.cortex_outer_tags,
+                         toolDimTags=self.cortex_outer_tags,
+                         removeObject=False,
+                         removeTool=False)
+        
+        #self.outer_cortex_surface, self.inner_cortex_surface)
         self.factory.synchronize()
+
+        if '-nopopup' not in sys.argv: # TODO: change as class variable
+            gmsh.fltk.run()
+        # gmsh.clear()
+        gmsh.finalize()
 
 
 def main():
     img_path_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_CORT_MASK_cap01.mhd'
     filepath_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/99_testing_prototyping/'
     filename_ext = Path(img_path_ext).stem + '_ext2' + '.geo_unrolled'
-    filename_int = Path(img_path_ext).stem + '_int' + '.geo_unrolled'
+    filename_int = Path(img_path_ext).stem + '_int2' + '.geo_unrolled'
 
     ext_cort_surface = Meshing(img_path_ext, filepath_ext, filename_ext,
-                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=20,
+                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=40,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                               S=10, K=3, INTERP_POINTS=50,
-                               debug_orientation=0, show_plots=False, location='cort_external')
+                               S=10, K=3, INTERP_POINTS=60,
+                               debug_orientation=0, show_plots=False, location='cort_ext',
+                               offset = 0)
     # ext_cort_surface.plot_mhd_slice()
     cort_ext_vol = ext_cort_surface.volume_splines()
 
-    # int_cort_surface = Meshing(img_path_ext, filepath_ext, filename_int,
-                            #    ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=20,
-                            #    INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                            #    S=5, K=3, INTERP_POINTS=50,
-                            #    debug_orientation=0, show_plots=False, location='cort_internal')
+
+    int_cort_surface = Meshing(img_path_ext, filepath_ext, filename_int,
+                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=40,
+                               INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
+                               S=10, K=3, INTERP_POINTS=60,
+                               debug_orientation=0, show_plots=False, location='cort_int',
+                               offset = 10000)
     # int_cort_surface.plot_mhd_slice()
-    # cort_int_vol = int_cort_surface.volume_splines()
-# 
-    # cortex = UnifyVolumes(inner_cortex_volume=cort_int_vol,
-                        #   outer_cortex_volume=cort_ext_vol)
-    # cortex.cortical_volume()
+    cort_int_vol = int_cort_surface.volume_splines()
+
+    # cortex = cortical_volume()
 
 
 if __name__ == "__main__":
