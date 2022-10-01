@@ -401,21 +401,17 @@ class Meshing():
         '''
         https://gitlab.onelab.info/gmsh/gmsh/-/issues/456
         https://bbanerjee.github.io/ParSim/fem/meshing/gmsh/quadrlateral-meshing-with-gmsh/
-        '''    
+        '''
         gmsh.option.setNumber("General.Terminal", 1)
-        gmsh.option.setNumber("Mesh.CharacteristicLengthMin", 0.5)
-        gmsh.option.setNumber("Mesh.CharacteristicLengthMax", 2)
-        gmsh.option.setNumber("Mesh.CharacteristicLengthFromCurvature", 1)
-        gmsh.option.setNumber("Mesh.MinimumCirclePoints", 20)
 
         points = []
         if self.location == 'cort_ext':
             for i in range(1, len(x)-1):
-                point = self.factory.addPoint(x[i], y[i], z, i)
+                point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
         elif self.location == 'cort_int':
             for i in range(1, len(x)-1):
-                point = self.factory.addPoint(x[i], y[i], z, i)
+                point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
 
         loop = []
@@ -424,12 +420,10 @@ class Meshing():
 
         lines = []
         for i in range(1, len(loop)-1):
-            line_tag = self.factory.addLine(startTag=loop[i], endTag=loop[i+1])
+            line_tag = self.factory.addLine(startTag=loop[i], endTag=loop[i+1], tag=-1)
             lines.append(line_tag)
 
         curve_loop_tag = self.factory.addCurveLoop(lines, tag=-1)
-        self.factory.synchronize()
-
         return lines, points, curve_loop_tag
 
 
@@ -440,7 +434,7 @@ class Meshing():
         lines_connectors = []
         for i in range(0, len(loop_v)-1):
             for j in range(0, len(loop_h)):
-                line = self.factory.addLine(startTag=points[i][j], endTag=points[i+1][j])
+                line = self.factory.addLine(startTag=points[i][j], endTag=points[i+1][j], tag=-1)
                 lines_connectors.append(line)
 
         lines_slices = np.ndarray.astype(lines_slices, dtype='int')
@@ -449,23 +443,25 @@ class Meshing():
         points = np.c_[points, points[:, 0]] # append first element of each array
         lines_tag_connectors = np.c_[lines_tag_connectors, lines_tag_connectors[:, 0]] # append first element of each array
 
-        shell_tags = []
         surf_ext_tag_l = []
         for i in range(0, len(loop_v)-1):
             for j in range(0, len(loop_h)):
-                # print(f'Connecting lines: {points[i][j]} {lines_tag_connectors[i][j]} {points[i+1][j]} {lines_tag_connectors[i][j+1]}')
-                ll = self.factory.addCurveLoop([points[i][j],  lines_tag_connectors[i][j],  points[i+1][j],  lines_tag_connectors[i][j+1]])
-                surf_ext_tag = self.factory.addSurfaceFilling(ll)
-                surfaces_ext = self.factory.addSurfaceLoop([surf_ext_tag])
-                surf_ext_tag_l.append(surf_ext_tag)
-                shell_tags.append(surfaces_ext)
+                print(f'Connecting lines: {points[i][j]} {lines_tag_connectors[i][j]} {points[i+1][j]} {lines_tag_connectors[i][j+1]}')
+                ll = self.factory.addCurveLoop([points[i][j],  lines_tag_connectors[i][j],  points[i+1][j],  lines_tag_connectors[i][j+1]], tag=-1)
+                surf_ext_tag_l.append(ll)
 
-        self.factory.synchronize()
-        return lines_connectors, shell_tags
+        return lines_connectors, surf_ext_tag_l
 
+    def add_surface_connectors(self, surf_ext_tags):
+        shell_tags = []
+        for ll in surf_ext_tags:
+            surf_ext_tag = self.factory.addSurfaceFilling(ll, tag=-1)
+            shell_tags.append(surf_ext_tag)
+
+        return shell_tags
 
     def add_volume(self, surf_b, surf_tags, surf_t, loc):
-        loop = self.factory.addSurfaceLoop([surf_b] + surf_tags + [surf_t])
+        loop = self.factory.addSurfaceLoop([surf_b] + surf_tags + [surf_t], tag=-1)
         
         if loc == 'cort_ext':
             tag_v = int(3)
@@ -477,11 +473,8 @@ class Meshing():
             print(f'Error in the definition of the volume tag:\t{tag_v}')
             sys.exit(80)
         
-        # self.factory.addVolume([loop], tag_v)
-        # self.model.addPhysicalGroup(dim=3, tags=[loop], tag=-1)
-        tag_vol = self.factory.addVolume([loop], tag=tag_v)
-        # self.model.addPhysicalGroup(dim=3, tags=[tag_vol], tag=-1, name='cort_ext')
-        self.factory.synchronize()
+        tag_vol = self.factory.addVolume([loop], tag=-1)
+        # self.model.addPhysicalGroup(dim=3, tags=[tag_vol], tag=-1, name='cort_ext')  # TODO: solve physical names issue
 
         return tag_vol
 
@@ -490,11 +483,9 @@ class Meshing():
         '''
         get all entities of the model and add offset to make unique tags
         '''
-        offset_tags = []
         for tag in entities:
             newTag_s = (tag[0], tag[1] + self.offset)
-            offset_tag = gmsh.model.setTag(dim=tag[0], tag=tag[1], newTag=newTag_s[1])
-            offset_tags.append(offset_tag)
+            gmsh.model.setTag(dim=tag[0], tag=tag[1], newTag=newTag_s[1])
         return None
 
     def volume_splines(self):
@@ -513,6 +504,7 @@ class Meshing():
 
         # gmsh initialization
         gmsh.initialize()
+        gmsh.model.add(str(self.location))
 
         m = 0
         connector_arr = []
@@ -538,24 +530,26 @@ class Meshing():
 
         # Create gmsh connectors
         connectors_r = np.ndarray.astype(connector_arr.reshape([len(slice_index), self.INTERP_POINTS_S - 1]), dtype='int')
-        lines, shell_tags = self.connector_gmsh(connectors_r, lines_slices, slice_index=slice_index)
-
-        surfaces_first = self.factory.addPlaneSurface([surfaces_slices[0]])
-        surfaces_last = self.factory.addPlaneSurface([surfaces_slices[-1]])
+        lines, surf_ext_tags_s = self.connector_gmsh(connectors_r, lines_slices, slice_index=slice_index)
+        
+        shell_tags = self.add_surface_connectors(surf_ext_tags=surf_ext_tags_s)
+        surfaces_first = self.factory.addPlaneSurface([surfaces_slices[0]], tag=-1)
+        surfaces_last = self.factory.addPlaneSurface([surfaces_slices[-1]], tag=-1)
 
         if self.location == 'cort_ext':
             self.cortex_outer_tags = self.add_volume(surfaces_first, shell_tags, surfaces_last, self.location)
         elif self.location == 'cort_int':
             self.cortex_inner_tags = self.add_volume(surfaces_first, shell_tags, surfaces_last, self.location)
 
-        self.offset_tags(self.model.getEntities())
+        self.factory.synchronize()
+        self.offset_tags(self.factory.getEntities())
 
         gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filepath + self.filename))
 
         if '-nopopup' not in sys.argv: # TODO: change as class variable
             gmsh.fltk.run()
-        # gmsh.clear()
+        # gmsh.clear()  # TODO: what does it do?
         gmsh.finalize()
         print('Exiting GMSH...')
         return str(self.filepath + self.filename)
@@ -572,11 +566,10 @@ class Meshing():
                          removeTool=False)
         
         #self.outer_cortex_surface, self.inner_cortex_surface)
-        self.factory.synchronize()
 
         if '-nopopup' not in sys.argv: # TODO: change as class variable
             gmsh.fltk.run()
-        # gmsh.clear()
+        gmsh.clear()
         gmsh.finalize()
 
 
@@ -585,13 +578,15 @@ def main():
     filepath_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/99_testing_prototyping/'
     filename_ext = Path(img_path_ext).stem + '_ext2' + '.geo_unrolled'
     filename_int = Path(img_path_ext).stem + '_int2' + '.geo_unrolled'
+    filename_trab_ext = Path(img_path_ext).stem + '_trab2' + '.geo_unrolled'
+
 
     ext_cort_surface = Meshing(img_path_ext, filepath_ext, filename_ext,
                                ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                               S=10, K=3, INTERP_POINTS=20,
+                               S=10, K=3, INTERP_POINTS=50,
                                debug_orientation=0, show_plots=False, location='cort_ext',
-                               offset = 0)
+                               offset = 10000)
     # ext_cort_surface.plot_mhd_slice()
     cort_ext_vol = ext_cort_surface.volume_splines()
 
@@ -599,16 +594,28 @@ def main():
     int_cort_surface = Meshing(img_path_ext, filepath_ext, filename_int,
                                ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                               S=10, K=3, INTERP_POINTS=20,
+                               S=10, K=3, INTERP_POINTS=50,
                                debug_orientation=0, show_plots=False, location='cort_int',
-                               offset = 10000)
+                               offset = 20000)
     # int_cort_surface.plot_mhd_slice()
     cort_int_vol = int_cort_surface.volume_splines()
+
+    '''
+    ext_trab_surface = Meshing(img_path_ext, filepath_ext, filename_trab_ext,
+                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
+                               INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
+                               S=10, K=3, INTERP_POINTS=50,
+                               debug_orientation=0, show_plots=False, location='cort_int',
+                               offset = 30000)
+    # int_cort_surface.plot_mhd_slice()
+    trab_ext_vol = ext_trab_surface.volume_splines()
+    '''
 
 
 if __name__ == "__main__":
     print('Executing gmsh_spline_mesh.py')
     main()
+
 
 # TODO LIST
 # TODO 1: understand how to pass sitk imagefromarray (or sth similar)
