@@ -1,5 +1,5 @@
-import trimesh
-import pymeshfix
+# import trimesh
+# import pymeshfix
 import numpy as np
 import SimpleITK as sitk
 from pathlib import Path
@@ -366,7 +366,7 @@ def main(base_path, filename_sample):
     bone['Spacing'] = np.array([0.0607, 0.0607, 0.0607])
     spacing = bone["Spacing"]
     # name = '/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/00_ORIGAIM/C0002231/C0002231_CORT_MASK.AIM;1'
-    # name = '/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/00_ORIGAIM/C0002231/C0002231_TRAB_MASK.AIM;1'
+    name = '/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/00_ORIGAIM/C0002231/C0002231_TRAB_MASK.AIM;1'
 
     #########
     origaim_path = Path(base_path, '00_ORIGAIM')
@@ -395,34 +395,19 @@ def main(base_path, filename_sample):
     stl_name = filename_sample + '.stl'
 
     for mask in masks_name:
-        t0 = time.time()
         print(f'Mask being currently processed:\t{mask}')
-        mask_cap = ext(mask, '') + '_cappedsurf.mhd'
+        mask_cap = ext(mask, '') + '_cap02.mhd'
         gmsh_name = str(Path(stldir, ext(mask, '.msh')).resolve())
         # Convert original AIMs to numpy array
-        t1 = time.time()
         bone, imvtk = read_aim(str(Path(filename_s, mask).resolve()), bone) #TODO: name
-        t2 = time.time()
         print(" ... Converting AIM to MHD + ZRAW")
         vtk2mhd(imvtk, bone['Spacing'], str(Path(mhddir, ext(masks_name[0], '.mhd')).resolve()), header=None)
-        t3 = time.time()
         closed_mask, spacing = mhd2itk(str(Path(mhddir, ext(masks_name[0], '.mhd')).resolve()))
-        t4 = time.time()
         numpy2mhd(closed_mask, spacing, str(Path(mhddir, mask_cap).resolve()), header=None)
-        t5 = time.time()
-        stl_name = mhd2stl(mhddir, stldir, mask_cap)
-        t6 = time.time()
+        
+        # stl_name = mhd2stl(mhddir, stldir, mask_cap)
         # gmsh_repair_mesh(str(Path(stldir, stl_name).resolve()), gmsh_name, decimation_factor = 10e5, max_elm_size = 2.0, mesher_id_alg=1)
-        t7 = time.time()
 
-    print(f'Initial execution time:\t{t1 - t0}')
-    print(f'Read_aim() execution time:\t{t2 - t1}')
-    print(f'vtk2mhd() execution time:\t{t3 - t2}')
-    print(f'mhd2itk() execution time:\t{t4 - t3}')
-    print(f'numpy2mhd() execution time:\t{t5 - t4}')
-    print(f'mhd2stl() execution time:\t{t6 - t5}')
-    print(f'gmsh_repair_mesh() execution time:\t{t7 - t6}')
-    print(f'Total execution time:\t{t7 - t0}')
 
 if __name__ == "__main__":
 
