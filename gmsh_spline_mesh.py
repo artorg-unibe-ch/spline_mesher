@@ -609,7 +609,7 @@ class OCC_bool():
     
     def volume_difference(self, objectDimTags_s, toolDimTags_s, bool_name):
         gmsh.initialize()
-        gmsh.model.add(bool_name)
+        gmsh.model.occ.add(bool_name)
         gmsh.merge(objectDimTags_s)
         gmsh.merge(toolDimTags_s)
         
