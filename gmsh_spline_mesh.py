@@ -32,7 +32,7 @@ matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 
 
-class Meshing():
+class OCC_volume():
     def __init__(self,
                  img_path, filepath, filename,
                  ASPECT, SLICE, UNDERSAMPLING, SLICING_COEFFICIENT,
@@ -170,6 +170,11 @@ class Meshing():
                 inn = np.zeros_like(bin_img)
                 inner_contour = cv2.drawContours(inn, contours, 2, 1, 1)
                 self.contours_arr.append(inner_contour)
+            elif self.location == 'trab_ext':
+                contours, hierarchy = cv2.findContours(bin_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                out = np.zeros_like(bin_img)
+                outer_contour = cv2.drawContours(out, contours, -1, 1, 1)
+                self.contours_arr.append(outer_contour)
             else:
                 raise ValueError('location argument is set neither to cort_external nor cort_internal')
 
@@ -413,6 +418,12 @@ class Meshing():
             for i in range(1, len(x)-1):
                 point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
+        elif self.location == 'trab_ext':
+            for i in range(1, len(x)-1):
+                point = self.factory.addPoint(x[i], y[i], z, tag=-1)
+                points = np.append(points, point)
+        else:
+            sys.exit(91, 'self.location not defined correctly')
 
         loop = []
         loop = np.linspace(points[0], points[-1], num=self.INTERP_POINTS_S, dtype='int')
@@ -471,7 +482,7 @@ class Meshing():
             tag_v = int(1)
         else:
             print(f'Error in the definition of the volume tag:\t{tag_v}')
-            sys.exit(80)
+            sys.exit(90)
         
         tag_vol = self.factory.addVolume([loop], tag=-1)
         # self.model.addPhysicalGroup(dim=3, tags=[tag_vol], tag=-1, name='cort_ext')  # TODO: solve physical names issue
@@ -573,43 +584,92 @@ class Meshing():
         gmsh.finalize()
 
 
+class OCC_bool():
+    def __init__(self,
+                 cort_ext, cort_int, trab_ext,
+                 bool_op,
+                 filepath, 
+                 filename,
+                 bool_name):
+
+        self.model = gmsh.model
+        self.factory = self.model.occ
+        
+        self.cortical_ext = str(cort_ext)
+        self.cortical_int = str(cort_int)
+        self.trabecular = str(trab_ext)
+        self.bool_operation = str(bool_op)
+
+        self.filepath = str(filepath)
+        self.filename = str(filename)
+        self.bool_name = str(bool_name)
+
+        return None
+    
+    
+    def volume_difference(self, objectDimTags_s, toolDimTags_s, bool_name):
+        gmsh.initialize()
+        gmsh.model.add(bool_name)
+        gmsh.merge(objectDimTags_s)
+        gmsh.merge(toolDimTags_s)
+        
+        self.factory.cut(objectDimTags=objectDimTags_s,
+                         toolDimTags=toolDimTags_s,
+                         tag=-1,
+                         removeObject=True, removeTool=True)
+
+        gmsh.option.setNumber("Mesh.SaveAll", 1)
+        gmsh.write(str(self.filepath + self.filename))
+
+        if '-nopopup' not in sys.argv: # TODO: change as class variable
+            gmsh.fltk.run()
+        gmsh.finalize()
+        print('Exiting GMSH...')
+
 def main():
     img_path_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_CORT_MASK_cap01.mhd'
     filepath_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/99_testing_prototyping/'
+    img_path_trab = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_TRAB_MASK_cap02.mhd'
     filename_ext = Path(img_path_ext).stem + '_ext2' + '.geo_unrolled'
     filename_int = Path(img_path_ext).stem + '_int2' + '.geo_unrolled'
     filename_trab_ext = Path(img_path_ext).stem + '_trab2' + '.geo_unrolled'
 
 
-    ext_cort_surface = Meshing(img_path_ext, filepath_ext, filename_ext,
+    ext_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_ext,
                                ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
                                S=10, K=3, INTERP_POINTS=50,
-                               debug_orientation=0, show_plots=False, location='cort_ext',
+                               debug_orientation=0,
+                               show_plots=False,
+                               location='cort_ext',
                                offset = 10000)
     # ext_cort_surface.plot_mhd_slice()
     cort_ext_vol = ext_cort_surface.volume_splines()
 
 
-    int_cort_surface = Meshing(img_path_ext, filepath_ext, filename_int,
+    int_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_int,
                                ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
                                S=10, K=3, INTERP_POINTS=50,
-                               debug_orientation=0, show_plots=False, location='cort_int',
+                               debug_orientation=0,
+                               show_plots=False,
+                               location='cort_int',
                                offset = 20000)
     # int_cort_surface.plot_mhd_slice()
     cort_int_vol = int_cort_surface.volume_splines()
 
-    '''
-    ext_trab_surface = Meshing(img_path_ext, filepath_ext, filename_trab_ext,
+
+    ext_trab_surface = OCC_volume(img_path_trab, filepath_ext, filename_trab_ext,
                                ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
                                S=10, K=3, INTERP_POINTS=50,
-                               debug_orientation=0, show_plots=False, location='cort_int',
+                               debug_orientation=0,
+                               show_plots=False,
+                               location='trab_ext',
                                offset = 30000)
     # int_cort_surface.plot_mhd_slice()
     trab_ext_vol = ext_trab_surface.volume_splines()
-    '''
+
 
 
 if __name__ == "__main__":
