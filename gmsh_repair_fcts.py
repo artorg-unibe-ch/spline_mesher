@@ -412,6 +412,6 @@ def main(base_path, filename_sample):
 if __name__ == "__main__":
 
     base_path_m = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/'
-    filename_sample_m = 'C0002231'
+    filename_sample_m = 'C0001406'
     
     main(base_path=base_path_m, filename_sample=filename_sample_m)

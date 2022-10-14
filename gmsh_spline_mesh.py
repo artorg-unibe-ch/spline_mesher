@@ -278,8 +278,8 @@ class OCC_volume():
         fig.update_layout(
             sliders=sliders,
             autosize=False,
-            width=600,
-            height=600)
+            width=1000,
+            height=1000)
 
         fig.add_annotation(text="Slice representation through splines",
                            xref="paper", yref="paper",
@@ -603,7 +603,6 @@ class OCC_bool():
         self.filepath = str(filepath)
         self.filename = str(filename)
         self.bool_name = str(bool_name)
-
         return None
     
     
@@ -640,7 +639,7 @@ def main():
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
                                S=10, K=3, INTERP_POINTS=50,
                                debug_orientation=0,
-                               show_plots=False,
+                               show_plots=True,
                                location='cort_ext',
                                offset = 10000)
     # ext_cort_surface.plot_mhd_slice()
