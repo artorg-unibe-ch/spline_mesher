@@ -5,7 +5,9 @@
 
 # ignore exported documents
 *.jpg
+*.png
 *.svg
+*.npy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

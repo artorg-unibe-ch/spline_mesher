@@ -538,6 +538,11 @@ class OCC_volume():
             fig = self.plotly_makefig(fig)
         else:
             pass
+        
+        # TODO: remove after testing
+        saving_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/02_CODE/tmp'
+        np.save(f'{saving_path}/ext_surf.npy', arr=np.c_[x_mahalanobis, y_mahalanobis])
+
 
         # Create gmsh connectors
         connectors_r = np.ndarray.astype(connector_arr.reshape([len(slice_index), self.INTERP_POINTS_S - 1]), dtype='int')
@@ -639,7 +644,7 @@ def main():
                                INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
                                S=10, K=3, INTERP_POINTS=50,
                                debug_orientation=0,
-                               show_plots=True,
+                               show_plots=False,
                                location='cort_ext',
                                offset = 10000)
     # ext_cort_surface.plot_mhd_slice()
