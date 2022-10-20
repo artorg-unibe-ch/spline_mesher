@@ -4,7 +4,6 @@
 *test*
 
 # ignore exported documents
-*.jpg
 *.png
 *.svg
 *.npy
