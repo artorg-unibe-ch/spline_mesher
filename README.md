@@ -17,12 +17,9 @@ Import a voxel-based model and convert it to a geometrical simplified representa
 - Second sorting: sorting according to Mahalanobis distance (because it's more independent of the starting points than Euclidean distance)
 - Representation of a B-spline of 3rd order over the transverse surface on the points (i, j)
 
-## WIP - improvements
+## Notable TODOs:
 
-Still some performance issues (code rather slow for what it does)
-
-**Notable TODOs:**
-
-- Faster implementation
-- Test robustness over different models
+- Faster implementation of sorting algorithm
+- Faster implementation of cortical sanity check
+- Implement test robustness over different models
 - Understand how undersampling of raw data affects spline definition
