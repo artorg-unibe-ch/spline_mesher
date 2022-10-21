@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 from scipy import spatial
 
 
-class CorticalSanity:
-    def __init__(self, c, N_POINTS, MIN_THICKNESS) -> None:
+class CorticalSanityCheck:
+    def __init__(self, c, MIN_THICKNESS, ext_s, int_s) -> None:
         self.c = c
-        self.n_points = N_POINTS
         self.min_thickness = MIN_THICKNESS
+        self.ext_spline = ext_s
+        self.int_spline = int_s
 
     def unit_vector(self, vector):
         """
@@ -99,16 +100,6 @@ class CorticalSanity:
         # Compute angles between vectors
         # alpha_e = angle_between(v1_e_u, v2_e_u)
         # alpha_i = angle_between(v1_e_u, v2_i_u)
-
-
-        # TESTS
-        n_points = 50
-        angles = np.linspace(0 * np.pi, 2 * np.pi, n_points)
-        v1 = np.full((n_points, 2), [1, 0])
-        x = np.cos(angles)
-        y = np.sin(angles)
-        v2 = np.c_[x, y]
-        angles = ccw_angle(v1, v2)
         '''
         p_e_0 = ext_c
         p_i_0 = int_c
@@ -217,12 +208,13 @@ class CorticalSanity:
         for idx in range(len(xs)-1):
             x0, y0, xa, ya = xs[idx], ys[idx], xs[idx+1], ys[idx+1]
             dx, dy = xa-x0, ya-y0
-            norm = math.hypot(dx, dy) * 1/thickness
+            norm = math.hypot(dx, dy) * 1 / thickness
             dx /= norm
             dy /= norm
 
             dx_arr = np.append(dx_arr, dx)
             dy_arr = np.append(dy_arr, dy)
+
             ax1.plot(((x0+xa)/2, (x0+xa)/2-dy), ((y0+ya)/2, (y0+ya) /
                      2+dx), color='tab:grey')    # plot the normals
             self.draw_arrow(ax2, (x0, y0), (x0-dy, y0+dx),
@@ -230,6 +222,8 @@ class CorticalSanity:
             self.draw_arrow(ax2, (xa, ya), (xa-dy, ya+dx),
                             text=' ', color='tab:grey')
 
+        dx_arr = np.insert(dx_arr, 0, dx_arr[-1]) #! added this
+        dy_arr = np.insert(dy_arr, 0, dy_arr[-1]) #! added this
         dx_arr = np.append(dx_arr, dx_arr[0])
         dy_arr = np.append(dy_arr, dy_arr[0])
 
@@ -243,74 +237,12 @@ class CorticalSanity:
             dy_med_s = (dy_arr[dy] + dy_arr[dy+1]) * 0.5
             dy_med = np.append(dy_med, dy_med_s)
 
-        dx_med = np.insert(dx_med, 0, dx_med[0])
-        dy_med = np.insert(dy_med, 0, dy_med[0])
-
         for idx in range(len(xs)-1):
             x0, y0, xa, ya = xs[idx], ys[idx], xs[idx+1], ys[idx+1]
             self.draw_arrow(
                 ax2, (x0, y0), (x0-dy_med[idx], y0+dx_med[idx]), text='$\\vec{n}_{res}$', color='tab:green')
 
         return dx_arr, dy_arr, dx_med, dy_med
-
-    def get_circle(self, radius, center, n_points=15):
-        """
-        Get a circle to create synthetic test data
-
-        Args:
-            radius (float): radius of the circle
-            center (list): center of the circle
-            n_points (int): number of points that compose the circle. Defaults to 15.
-
-        Returns:
-            x_s (ndarray): array containing x position of circle
-            y_s (ndarray): array containing y position of circle
-        """
-        angles = np.linspace(0 * np.pi, 2 * np.pi, n_points)
-        xs = radius * np.cos(angles) + center[0]
-        ys = radius * np.sin(angles) + center[1]
-        return xs, ys
-
-    def show_circles(self, center, n_points=15, min_thickness=1):
-        """
-        Create circles, get normals, plot
-
-        Args:
-            center (list): center of the circle
-            n_points (int): number of points that compose the circle. Defaults to 15.
-            min_thickness (int, optional): Minimum thickness of int-ext interface. Defaults to 1.
-
-        Returns:
-            ext_a (ndarray): 2D array of [x, y] points
-            int_a (ndarray): 2D array of [x, y] points
-            dx_arr (ndarray): array of dx component of the normals
-            dy_arr (ndarray): array of dy component of the normals
-            dx_med (ndarray): array of resultant normal between (x_n and x_n+1)
-            dy_med (ndarray): array of resultant normal between (y_n and y_n+1)
-            fig (matplotlib.figure.Figure): figure
-            ax1 (AxesSubplot): ax subplot
-            ax2 (AxesSubplot): ax subplot
-        """
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
-        ax1.plot(center[0], center[1], color='red', marker='o', label='center')
-        ax1.annotate(f'O {center}', xy=(
-            center[0] + 1, center[1] - 1), xycoords='data')
-        x_ext, y_ext = self.get_circle(
-            radius=15, center=center, n_points=n_points)
-        x_int, y_int = self.get_circle(
-            radius=15.1, center=center, n_points=n_points)
-
-        dx, dy, dx_med, dy_med = self.get_normals(
-            x_ext, y_ext, ax1, ax2, thickness=min_thickness)
-
-        ext_a = np.c_[x_ext, y_ext]
-        int_a = np.c_[x_int, y_int]
-
-        ax1.plot(x_ext, y_ext, label='external contour')
-        ax2.plot(x_ext, y_ext)
-        ax1.plot(x_int, y_int, label='initial internal contour')
-        ax2.plot(x_int, y_int)
-        return ext_a, int_a, dx, dy, dx_med, dy_med, fig, ax1, ax2
 
     def nearest_point(arr, pt):
         """
@@ -329,32 +261,169 @@ class CorticalSanity:
         loc = arr[spatial.KDTree(arr).query(pt)[1]]
         return loc, dist, idx
 
-    def correct_contour(self, ext_s, int_s, dx, dy, dx_med, dy_med, min_thickness=1):
-        ext_s, int_s, dx, dy, dx_med, dy_med, fig, ax1, ax2 = self.show_circles(
-            center=self.c, n_points=self.n_points, min_thickness=self.min_thickness)
+
+    def show_centres(self, min_thickness, x_ext, y_ext, x_int, y_int):
+        """
+        Create contours, get normals, plot
+
+        Args:
+            min_thickness (int): Minimum thickness of int-ext interface.
+            x_ext (ndarray): array of [x] component of external array
+            y_ext (ndarray): array of [y] component of external array
+            x_int (ndarray): array of [x] component of internal array
+            y_int (ndarray): array of [y] component of internal array
+
+        Returns:
+            ext_a (ndarray): 2D array of [x, y] points
+            int_a (ndarray): 2D array of [x, y] points
+            dx_arr (ndarray): array of dx component of the normals
+            dy_arr (ndarray): array of dy component of the normals
+            dx_med (ndarray): array of resultant normal between (x_n and x_n+1)
+            dy_med (ndarray): array of resultant normal between (y_n and y_n+1)
+            fig (matplotlib.figure.Figure): figure
+            ax1 (AxesSubplot): ax subplot
+            ax2 (AxesSubplot): ax subplot
+        """
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
+
+        dx, dy, dx_med, dy_med = self.get_normals(x_ext, y_ext, ax1, ax2, thickness=min_thickness)
+
+        ext_a = np.c_[x_ext, y_ext]
+        int_a = np.c_[x_int, y_int]
+
+        ax1.plot(x_ext, y_ext, label='external contour')
+        ax2.plot(x_ext, y_ext)
+        ax1.plot(x_int, y_int, label='initial internal contour')
+        ax2.plot(x_int, y_int)
+
+        for i, txt in enumerate(range(len(x_ext))):
+            ax2.annotate(txt, (x_ext[i], y_ext[i]))
+            ax2.annotate(txt, (x_int[i], y_int[i]))
+
+        return ext_a, int_a, dx, dy, dx_med, dy_med, fig, ax1, ax2
+
+    def check_contours(self):
+        '''
+        main function to check the contours
+        ##### TODO write the docs
+        '''
+        ext_s, int_s, dx, dy, dx_med, dy_med, fig, ax1, ax2 = self.show_centres(min_thickness=self.min_thickness,
+                                                                           x_ext=ext_spline[:, 0],
+                                                                           y_ext=ext_spline[:, 1],
+                                                                           x_int=int_spline[:, 0],
+                                                                           y_int=int_spline[:, 1])
+    
         boolean_angle = self.is_internal_inside_external(ext_s, int_s)
-        print(f'Is internal contour inside external contour? {boolean_angle}')
-        if np.any(boolean_angle) is False:
-            print('Internal contour is outside external contour')
-            new_int = self.correct_intersection(
-                ext_arr=ext_s,
-                int_arr=int_s,
-                dx=dx_med,
-                dy=dy_med,
-                # take the opposite of the boolean
-                bool_arr=~np.array(boolean_angle)
-            )
-        elif np.any(boolean_angle) is True:
-            print('Internal contour is inside external contour')
-            bool_min_thickness_s = self.check_intersection(
-                ext=ext_s, int=int_s, min_thickness=self.min_thickness)
-            new_int = self.correct_intersection(
-                ext_arr=ext_s,
-                int_arr=int_s,
-                dx=dx_med,
-                dy=dy_med,
-                bool_arr=bool_min_thickness_s
-            )
-        else:
-            print('Could not check position between contours')
+        print(f'Is internal contour outside external contour?\n{boolean_angle}')
+
+        new_int = self.correct_intersection(ext_arr=ext_s,
+                                           int_arr=int_s,
+                                           dx=dx_med,
+                                           dy=dy_med,
+                                           bool_arr=boolean_angle
+                                           )
+
+        bool_min_thickness_s = self.check_intersection(ext=ext_s, int=new_int, min_thickness=self.min_thickness)
+        new_int = self.correct_intersection(ext_arr=ext_s,
+                                       int_arr=new_int,
+                                       dx=dx_med,
+                                       dy=dy_med,
+                                       bool_arr=bool_min_thickness_s
+                                       )
+
+        ax1.scatter(ext_spline[0,0], ext_spline[0, 1], marker='x', s=300)
+        ax1.scatter(int_spline[0,0], int_spline[0, 1], marker='x', s=300)
+        # ax1.scatter(loc_int[0], loc_int[1], marker='x', s=300)
+
+        ax1.plot(new_int[:, 0], new_int[:, 1], linestyle=':', label='corrected internal contour')
+        ax2.plot(new_int[:, 0], new_int[:, 1], linestyle=':')
+        ax1.set_aspect('equal')
+        ax2.set_aspect('equal')
+        ax2.set_xlim(16.5, 16.8)
+        ax2.set_ylim(14.5, 15.5)
+        fig.suptitle('Correction of internal position ($\\vec{n}$-based)', weight='bold', fontsize=20)
+        fig.legend(loc=1)
+        fig.tight_layout()
+
+        ax1.plot((ext_s[:, 0], ext_s[:, 0]-dy_med), (ext_s[:, 1], ext_s[:,1]+dx_med), color='tab:blue')
+        # fig.savefig('Correction_external_position_mwe.svg')
+        # fig.savefig('Correction_external_position_mwe.png', dpi=300)
         return new_int
+
+    def main(self):
+        # TODO: invert order in function rather than in real data (ONLY for testing)
+        ext_spline = self.ext_spline
+        int_spline = self.int_spline
+
+        print(ext_spline)
+        
+        ext_spline[:, 0] = np.flip(ext_spline[:, 0])
+        ext_spline[:, 1] = np.flip(ext_spline[:, 1])
+        int_spline[:, 0] = np.flip(int_spline[:, 0])
+        int_spline[:, 1] = np.flip(int_spline[:, 1])
+
+        loc_int, dist_int, idx_int = self.nearest_point(int_spline, [ext_spline[0, 0], ext_spline[0, 1]])
+
+        # int_in = int_spline[idx_int:, :]
+        # int_f = int_spline[:idx_int, :]
+        # int_spline = np.r_[int_in, int_f]
+        int_spline = self.reset_numpy_index(self.int_spline, idx=idx_int)
+
+        # MAIN
+        # PARAMS
+        MIN_THICKNESS = 100e-3
+
+        ext_s, int_s, dx, dy, dx_med, dy_med, fig, ax1, ax2 = self.show_centres(min_thickness=MIN_THICKNESS,
+                                                                           x_ext=ext_spline[:, 0],
+                                                                           y_ext=ext_spline[:, 1],
+                                                                           x_int=int_spline[:, 0],
+                                                                           y_int=int_spline[:, 1])
+
+        boolean_angle = self.is_internal_inside_external(ext_s, int_s)
+        print(f'Is internal contour outside external contour?\n{boolean_angle}')
+
+        new_int = self.correct_intersection(ext_arr=ext_s,
+                                           int_arr=int_s,
+                                           dx=dx_med,
+                                           dy=dy_med,
+                                           bool_arr=boolean_angle
+                                           )
+
+        bool_min_thickness_s = self.check_intersection(ext=ext_s, int=new_int, min_thickness=MIN_THICKNESS)
+        new_int = self.correct_intersection(ext_arr=ext_s,
+                                       int_arr=new_int,
+                                       dx=dx_med,
+                                       dy=dy_med,
+                                       bool_arr=bool_min_thickness_s
+                                       )
+
+        ax1.scatter(ext_spline[0,0], ext_spline[0, 1], marker='x', s=300)
+        ax1.scatter(int_spline[0,0], int_spline[0, 1], marker='x', s=300)
+        ax1.scatter(loc_int[0], loc_int[1], marker='x', s=300)
+
+        ax1.plot(new_int[:, 0], new_int[:, 1], linestyle=':', label='corrected internal contour')
+        ax2.plot(new_int[:, 0], new_int[:, 1], linestyle=':')
+        ax1.set_aspect('equal')
+        ax2.set_aspect('equal')
+        ax2.set_xlim(16.5, 16.8)
+        ax2.set_ylim(14.5, 15.5)
+        fig.suptitle('Correction of internal position ($\\vec{n}$-based)', weight='bold', fontsize=20)
+        fig.legend(loc=1)
+        fig.tight_layout()
+
+
+        ax1.plot((ext_s[:, 0], ext_s[:, 0]-dy_med), (ext_s[:, 1], ext_s[:,1]+dx_med), color='tab:blue')
+        # fig.savefig('Correction_external_position_mwe.svg')
+        # fig.savefig('Correction_external_position_mwe.png', dpi=300)
+
+
+
+##### ONLY FOR TESTING #####
+if __name__ == '__main__':
+    ext_path = r'02_CODE/tmp/ext_surf_slice_minus1.npy'
+    int_path = r'02_CODE/tmp/int_spline_minus1.npy'
+    ext_spline = np.load(ext_path)
+    int_spline = np.load(int_path)
+    print('Testing class')
+    testing = CorticalSanityCheck(c=[0,0], MIN_THICKNESS=100e-3, ext_s=ext_spline, int_s=int_spline)
+    testing.main()
