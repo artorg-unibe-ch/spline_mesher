@@ -198,10 +198,7 @@ class CorticalSanity:
     def get_normals(self, xs, ys, ax1, ax2, thickness=1):
         """
         Get normal arrays point-wise for array [xs, ys]
-
         # TODO: needs some optimization (array operations)
-
-
         Args:
             xs (ndarray): x-component of contour array
             ys (ndarray): y-component of contour array
