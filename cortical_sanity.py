@@ -1,15 +1,17 @@
 import numpy as np
 import math
+import matplotlib
 import matplotlib.pyplot as plt
+import seaborn as sns
 from scipy import spatial
+import params
+plt.style.use('simone')
 
 
 class CorticalSanityCheck:
-    def __init__(self, c, MIN_THICKNESS, ext_s, int_s) -> None:
+    def __init__(self, c, MIN_THICKNESS) -> None:
         self.c = c
         self.min_thickness = MIN_THICKNESS
-        self.ext_spline = ext_s
-        self.int_spline = int_s
 
     def unit_vector(self, vector):
         """
@@ -105,10 +107,10 @@ class CorticalSanityCheck:
         p_i_0 = int_c
         p_e_1 = self.reset_numpy_index(p_e_0, idx=1)
         p_e_2 = self.reset_numpy_index(p_e_0, idx=2)
-        p_i_1 = self.reset_numpy_index(p_i_0, idx=1)
+        p_i_1 = self.reset_numpy_index(p_i_0, idx=2) #! changed from idx=1
 
         alpha_ext = self.ccw_angle(p_e_2 - p_e_1, p_e_0 - p_e_1)
-        alpha_int = self.self.ccw_angle(p_e_2 - p_e_1, p_i_1 - p_e_1)
+        alpha_int = self.ccw_angle(p_e_2 - p_e_1, p_i_1 - p_e_1)
         boolean_angle = [self.is_angle_bigger_bool(
             alpha_int, alpha_ext) for alpha_int, alpha_ext in zip(alpha_int, alpha_ext)]
         return boolean_angle
@@ -244,7 +246,7 @@ class CorticalSanityCheck:
 
         return dx_arr, dy_arr, dx_med, dy_med
 
-    def nearest_point(arr, pt):
+    def nearest_point(self, arr, pt):
         """
         Find nearest point between an array and a point (e.g. the first point of ext contour)
 
@@ -302,19 +304,59 @@ class CorticalSanityCheck:
 
         return ext_a, int_a, dx, dy, dx_med, dy_med, fig, ax1, ax2
 
-    def check_contours(self):
-        '''
-        main function to check the contours
-        ##### TODO write the docs
-        '''
+
+    def resample_polygon(self, xy: np.ndarray, n_points: int = 100) -> np.ndarray:
+        """
+        Cumulative Euclidean distance between successive polygon points.
+
+        Args:
+            xy (np.ndarray): 2D-array of [x, y] contour
+            n_points (int, optional): Number of points to resample contour. Usually len(ext contour). Defaults to 100.
+
+        Returns:
+            np.ndarray: Resampled contour [x, y]
+        """
+        d = np.cumsum(np.r_[0, np.sqrt((np.diff(xy, axis=0) ** 2).sum(axis=1))])
+
+        # get linearly spaced points along the cumulative Euclidean distance
+        d_sampled = np.linspace(0, d.max(), n_points)
+
+        # interpolate x and y coordinates
+        xy_interp = np.c_[
+            np.interp(d_sampled, d, xy[:, 0]),
+            np.interp(d_sampled, d, xy[:, 1]),
+        ]
+        return xy_interp
+
+    def tester(self):
+        ext_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/02_CODE/tmp/ext_surf_slice_minus1.npy'
+        int_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/02_CODE/tmp/int_spline_minus1.npy'
+        ext_spline = np.load(ext_path)
+        int_spline = np.load(int_path)
+        n = 50
+        int_spline = self.resample_polygon(int_spline, n_points=n)
+        ext_spline = self.resample_polygon(ext_spline, n_points=n)
+
+        # TODO: invert order in function rather than in real data (ONLY for testing)
+        ext_spline[:, 0] = np.flip(ext_spline[:, 0])
+        ext_spline[:, 1] = np.flip(ext_spline[:, 1])
+        int_spline[:, 0] = np.flip(int_spline[:, 0])
+        int_spline[:, 1] = np.flip(int_spline[:, 1])
+
+        loc_int, dist_int, idx_int = self.nearest_point(int_spline, [ext_spline[0, 0], ext_spline[0, 1]])
+        int_spline = np.roll(int_spline, -idx_int, axis=0)
+
         ext_s, int_s, dx, dy, dx_med, dy_med, fig, ax1, ax2 = self.show_centres(min_thickness=self.min_thickness,
-                                                                           x_ext=ext_spline[:, 0],
-                                                                           y_ext=ext_spline[:, 1],
-                                                                           x_int=int_spline[:, 0],
-                                                                           y_int=int_spline[:, 1])
-    
+                                                                                x_ext=ext_spline[:, 0],
+                                                                                y_ext=ext_spline[:, 1],
+                                                                                x_int=int_spline[:, 0],
+                                                                                y_int=int_spline[:, 1])
+
         boolean_angle = self.is_internal_inside_external(ext_s, int_s)
         print(f'Is internal contour outside external contour?\n{boolean_angle}')
+
+        dx_med[-1] = dx_med[0]  # guarantees continuity / closes the loop
+        dy_med[-1] = dy_med[0]  # guarantees continuity / closes the loop
 
         new_int = self.correct_intersection(ext_arr=ext_s,
                                            int_arr=int_s,
@@ -333,97 +375,27 @@ class CorticalSanityCheck:
 
         ax1.scatter(ext_spline[0,0], ext_spline[0, 1], marker='x', s=300)
         ax1.scatter(int_spline[0,0], int_spline[0, 1], marker='x', s=300)
-        # ax1.scatter(loc_int[0], loc_int[1], marker='x', s=300)
-
-        ax1.plot(new_int[:, 0], new_int[:, 1], linestyle=':', label='corrected internal contour')
-        ax2.plot(new_int[:, 0], new_int[:, 1], linestyle=':')
-        ax1.set_aspect('equal')
-        ax2.set_aspect('equal')
-        ax2.set_xlim(16.5, 16.8)
-        ax2.set_ylim(14.5, 15.5)
-        fig.suptitle('Correction of internal position ($\\vec{n}$-based)', weight='bold', fontsize=20)
-        fig.legend(loc=1)
-        fig.tight_layout()
-
-        ax1.plot((ext_s[:, 0], ext_s[:, 0]-dy_med), (ext_s[:, 1], ext_s[:,1]+dx_med), color='tab:blue')
-        # fig.savefig('Correction_external_position_mwe.svg')
-        # fig.savefig('Correction_external_position_mwe.png', dpi=300)
-        return new_int
-
-    def main(self):
-        # TODO: invert order in function rather than in real data (ONLY for testing)
-        ext_spline = self.ext_spline
-        int_spline = self.int_spline
-
-        print(ext_spline)
-        
-        ext_spline[:, 0] = np.flip(ext_spline[:, 0])
-        ext_spline[:, 1] = np.flip(ext_spline[:, 1])
-        int_spline[:, 0] = np.flip(int_spline[:, 0])
-        int_spline[:, 1] = np.flip(int_spline[:, 1])
-
-        loc_int, dist_int, idx_int = self.nearest_point(int_spline, [ext_spline[0, 0], ext_spline[0, 1]])
-
-        # int_in = int_spline[idx_int:, :]
-        # int_f = int_spline[:idx_int, :]
-        # int_spline = np.r_[int_in, int_f]
-        int_spline = self.reset_numpy_index(self.int_spline, idx=idx_int)
-
-        # MAIN
-        # PARAMS
-        MIN_THICKNESS = 100e-3
-
-        ext_s, int_s, dx, dy, dx_med, dy_med, fig, ax1, ax2 = self.show_centres(min_thickness=MIN_THICKNESS,
-                                                                           x_ext=ext_spline[:, 0],
-                                                                           y_ext=ext_spline[:, 1],
-                                                                           x_int=int_spline[:, 0],
-                                                                           y_int=int_spline[:, 1])
-
-        boolean_angle = self.is_internal_inside_external(ext_s, int_s)
-        print(f'Is internal contour outside external contour?\n{boolean_angle}')
-
-        new_int = self.correct_intersection(ext_arr=ext_s,
-                                           int_arr=int_s,
-                                           dx=dx_med,
-                                           dy=dy_med,
-                                           bool_arr=boolean_angle
-                                           )
-
-        bool_min_thickness_s = self.check_intersection(ext=ext_s, int=new_int, min_thickness=MIN_THICKNESS)
-        new_int = self.correct_intersection(ext_arr=ext_s,
-                                       int_arr=new_int,
-                                       dx=dx_med,
-                                       dy=dy_med,
-                                       bool_arr=bool_min_thickness_s
-                                       )
-
-        ax1.scatter(ext_spline[0,0], ext_spline[0, 1], marker='x', s=300)
-        ax1.scatter(int_spline[0,0], int_spline[0, 1], marker='x', s=300)
         ax1.scatter(loc_int[0], loc_int[1], marker='x', s=300)
 
         ax1.plot(new_int[:, 0], new_int[:, 1], linestyle=':', label='corrected internal contour')
         ax2.plot(new_int[:, 0], new_int[:, 1], linestyle=':')
         ax1.set_aspect('equal')
         ax2.set_aspect('equal')
-        ax2.set_xlim(16.5, 16.8)
-        ax2.set_ylim(14.5, 15.5)
-        fig.suptitle('Correction of internal position ($\\vec{n}$-based)', weight='bold', fontsize=20)
+        ax2.set_xlim(8, 17)
+        ax2.set_ylim(21, 23.7)
+        fig.suptitle('Correction of minimal thickness and external position ($\\vec{n}$-based)', weight='bold', fontsize=20)
         fig.legend(loc=1)
         fig.tight_layout()
 
 
         ax1.plot((ext_s[:, 0], ext_s[:, 0]-dy_med), (ext_s[:, 1], ext_s[:,1]+dx_med), color='tab:blue')
-        # fig.savefig('Correction_external_position_mwe.svg')
-        # fig.savefig('Correction_external_position_mwe.png', dpi=300)
-
+        fig.savefig('02_CODE/tmp/Correction_int_ext_pos_mwe.svg')
+        fig.savefig('02_CODE/tmp/Correction_int_ext_pos_mwe.png', dpi=300)
+        plt.show()
+        return
 
 
 ##### ONLY FOR TESTING #####
 if __name__ == '__main__':
-    ext_path = r'02_CODE/tmp/ext_surf_slice_minus1.npy'
-    int_path = r'02_CODE/tmp/int_spline_minus1.npy'
-    ext_spline = np.load(ext_path)
-    int_spline = np.load(int_path)
-    print('Testing class')
-    testing = CorticalSanityCheck(c=[0,0], MIN_THICKNESS=100e-3, ext_s=ext_spline, int_s=int_spline)
-    testing.main()
+    testing = CorticalSanityCheck(c=[0,0], MIN_THICKNESS=100e-3)
+    testing.tester()
