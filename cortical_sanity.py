@@ -113,7 +113,7 @@ class CorticalSanityCheck:
             alpha_int, alpha_ext) for alpha_int, alpha_ext in zip(alpha_int, alpha_ext)]
         return boolean_angle
 
-    def check_intersection(self, ext, int, min_thickness=1):
+    def check_min_thickness(self, ext, int, min_thickness=1):
         """
         Checks thickness of ext, int arrays and returns a list of booleans
         of form [True, ..., False] where True means the thickness if below tolerance.
@@ -363,7 +363,7 @@ class CorticalSanityCheck:
                                            bool_arr=boolean_angle
                                            )
 
-        bool_min_thickness_s = self.check_intersection(ext=ext_s, int=new_int, min_thickness=self.min_thickness)
+        bool_min_thickness_s = self.check_min_thickness(ext=ext_s, int=new_int, min_thickness=self.min_thickness)
         new_int = self.correct_intersection(ext_arr=ext_s,
                                        int_arr=new_int,
                                        dx=dx_med,
