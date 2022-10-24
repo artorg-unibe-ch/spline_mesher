@@ -4,13 +4,11 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import spatial
-import params
 plt.style.use('simone')
 
 
 class CorticalSanityCheck:
-    def __init__(self, c, MIN_THICKNESS) -> None:
-        self.c = c
+    def __init__(self, MIN_THICKNESS) -> None:
         self.min_thickness = MIN_THICKNESS
 
     def unit_vector(self, vector):

@@ -1,12 +1,13 @@
 /.vscode
 
-# ignore test folder
-*test*
+# ignore temp files
+*temp*
 
 # ignore exported documents
 *.png
 *.svg
 *.npy
+*.eps
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
