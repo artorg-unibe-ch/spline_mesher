@@ -24,6 +24,14 @@ def test_reset_numpy_index(arr=np.random.rand(100,2)):
     b = b.reset_numpy_index(b, arr, (len(arr[:,0])-1))
     nt.assert_equal(b[0, 0], arr[-1, 0])
 
+def test_roll_numpy_index(arr=np.random.rand(100, 2)):
+    c = cs.CorticalSanityCheck
+    c = c.reset_numpy_index(c, arr, (len(arr[:, 0]) - 1))
+
+    d = cs.CorticalSanityCheck
+    d = d.numpy_roll_index(d, arr, (len(arr[:, 0])-1))
+    nt.assert_equal(c[0, 0], d[0, 0])
+
 def test_is_angle_bigger_bool():
     alpha_int = np.array([15, 15, 15, 15])
     alpha_ext = np.array([1.5, 1.5, 1.5, 1.5])
@@ -43,3 +51,4 @@ def test_check_bigger_thickness():
     b = cs.CorticalSanityCheck
     b = b.check_min_thickness(b, np.full((5, 10), 1.00), np.full((5, 10), 10.00))
     nt.assert_false(np.asarray(b).all())
+

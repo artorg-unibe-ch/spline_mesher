@@ -47,14 +47,28 @@ class CorticalSanityCheck:
     def reset_numpy_index(self, arr, idx=1):
         """
         Reset the index of a numpy array to a given index
+        # TODO: this is slow, use numpy_roll_index() instead
         Args:
-            arr (numpy.ndarray): _description_
+            arr (numpy.ndarray): entry array
             idx (int): index to reset to. Defaults to 1.
 
         Returns:
             numpy.ndarray: numpy array with index reset to idx
         """
         return np.r_[arr[idx:, :], arr[:idx, :]]
+
+    def numpy_roll_index(self, arr, idx=1):
+        """
+        Roll the index of a numpy array to a given index.
+        A little faster than reset_numpy_index()
+        Args:
+            arr (numpy.ndarray): entry array
+            idx (int): index to roll to. Defaults to 1.
+
+        Returns:
+            numpy.ndarray: numpy array with index rolled to idx
+        """
+        return np.roll(arr, -idx, axis=0)
 
     def is_angle_bigger_bool(self, alpha_int, alpha_ext):
         """
@@ -395,5 +409,5 @@ class CorticalSanityCheck:
 
 ##### ONLY FOR TESTING #####
 if __name__ == '__main__':
-    testing = CorticalSanityCheck(c=[0,0], MIN_THICKNESS=100e-3)
+    testing = CorticalSanityCheck(MIN_THICKNESS=100e-3)
     testing.tester()
