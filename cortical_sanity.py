@@ -8,8 +8,10 @@ plt.style.use('simone')
 
 
 class CorticalSanityCheck:
-    def __init__(self, MIN_THICKNESS) -> None:
-        self.min_thickness = MIN_THICKNESS
+    def __init__(self, MIN_THICKNESS, ext_contour, int_contour) -> None:
+        self.min_thickness = MIN_THICKNESS  # minimum thickness between internal and external contour
+        self.ext_contour = ext_contour  # external contour
+        self.int_contour = int_contour # internal contour
 
     def unit_vector(self, vector):
         """
@@ -26,6 +28,7 @@ class CorticalSanityCheck:
     def ccw_angle(self, array1, array2):
         """
         Returns the angle between two 2D arrays in the range [0, 2*pi)
+
         Args:
             array1 (numpy.ndarray): array of shape (2,) containing [x, y] coords
             array2 (numpy.ndarray): array of shape (2,) containing [x, y] coords
@@ -47,7 +50,7 @@ class CorticalSanityCheck:
     def reset_numpy_index(self, arr, idx=1):
         """
         Reset the index of a numpy array to a given index
-        # TODO: this is slow, use numpy_roll_index() instead
+        Legacy function, use numpy_roll_index() instead
         Args:
             arr (numpy.ndarray): entry array
             idx (int): index to reset to. Defaults to 1.
@@ -57,10 +60,11 @@ class CorticalSanityCheck:
         """
         return np.r_[arr[idx:, :], arr[:idx, :]]
 
-    def numpy_roll_index(self, arr, idx=1):
+    def roll_index(self, arr, idx=1):
         """
         Roll the index of a numpy array to a given index.
         A little faster than reset_numpy_index()
+
         Args:
             arr (numpy.ndarray): entry array
             idx (int): index to roll to. Defaults to 1.
@@ -97,29 +101,41 @@ class CorticalSanityCheck:
             raise ValueError('value is nan, 0-angle vector is undefined')
         else:
             bool_angle = False
-            raise RuntimeWarning()
+            raise RuntimeWarning('angle comparison is not possible and/or edge case')
         return bool_angle
 
     def is_internal_inside_external(self, ext_c, int_c):
-        '''
-        # pseudo-code:
-        # Compute unit vectors between Pe0-Pe1 and Pe1-Pe2
-        # v1_e_u = unit_vector(ext[i+1]-ext[i])
-        # v2_e_u = unit_vector(ext[i+2]-ext[i+1])
+        """
+        Rationale for deciding if internal contour is inside external contour based on
+        the angle between the first and second point of the external contour, and the first
+        point and the first point of the internal contour.
 
-        # Compute unit vector between Pe1-Pe2 and Pe1-Pi_1  #TODO: careful, always CCW angle!
-        # v1_e_u = unit_vector(ext[i+1] - ext[i])  #TODO: already computed, just for reference
-        # v2_i_u = unit_vector(int[i] - ext[i+1])
+        Args:
+            ext_c (numpy.ndarray): external contour
+            int_c (numpy.ndarray): internal contour
+
+        Returns:
+            list: Booleans where True if internal contour is OUTSIDE external contour, False otherwise
+
+        pseudo-code:
+        Pe: Point of external perimeter
+        Pi: Point of internal perimeter
+        P0: First point
+        P1: Pivot point
+        P2: Second point
+        # Compute vectors between Pe0-Pe1 and Pe1-Pe2
+        # v1_e_u = ext[i+1] - ext[i]
+        # v2_e_u = ext[i+2] - ext[i+1]
 
         # Compute angles between vectors
         # alpha_e = angle_between(v1_e_u, v2_e_u)
         # alpha_i = angle_between(v1_e_u, v2_i_u)
-        '''
+        """
         p_e_0 = ext_c
         p_i_0 = int_c
-        p_e_1 = self.reset_numpy_index(p_e_0, idx=1)
-        p_e_2 = self.reset_numpy_index(p_e_0, idx=2)
-        p_i_1 = self.reset_numpy_index(p_i_0, idx=2) #! changed from idx=1
+        p_e_1 = self.roll_index(p_e_0, idx=1)
+        p_e_2 = self.roll_index(p_e_0, idx=2)
+        p_i_1 = self.roll_index(p_i_0, idx=2)
 
         alpha_ext = self.ccw_angle(p_e_2 - p_e_1, p_e_0 - p_e_1)
         alpha_int = self.ccw_angle(p_e_2 - p_e_1, p_i_1 - p_e_1)
@@ -133,12 +149,12 @@ class CorticalSanityCheck:
         of form [True, ..., False] where True means the thickness if below tolerance.
 
         Arguments:
-            ext {ndarray} -- array of [x, y] points of external polygon
-            int {ndarray} -- array of [x, y] points of internal polygon
-            min_thickness {float} -- minimum thickness tolerance between ext/int
+            ext (numpy.ndarray): array of [x, y] points of external polygon
+            int (numpy.ndarray): array of [x, y] points of internal polygon
+            min_thickness (float): minimum thickness tolerance between ext/int
 
         Returns:
-            bool_min_thickness {list}  -- list indicating where the thickness is below tolerance
+            bool_min_thickness (list): list indicating where the thickness is below tolerance
         """
         dist_x = ext[:, 0] - int[:, 0]
         dist_y = ext[:, 1] - int[:, 1]
@@ -203,7 +219,7 @@ class CorticalSanityCheck:
     def get_normals(self, xs, ys, ax1, ax2, thickness=1):
         """
         Get normal arrays point-wise for array [xs, ys]
-        # TODO: needs some optimization (array operations)
+
         Args:
             xs (ndarray): x-component of contour array
             ys (ndarray): y-component of contour array
@@ -217,8 +233,8 @@ class CorticalSanityCheck:
             dx_med (ndarray): array of resultant normal between (x_n and x_n+1)
             dy_med (ndarray): array of resultant normal between (y_n and y_n+1)
         """
-        dx_arr = []
-        dy_arr = []
+        dx_arr = np.zeros((len(xs)) - 1) # appending dx_arr[0] to the end
+        dy_arr = np.zeros((len(ys)) - 1) # appending dy_arr[0] to the end
         for idx in range(len(xs)-1):
             x0, y0, xa, ya = xs[idx], ys[idx], xs[idx+1], ys[idx+1]
             dx, dy = xa-x0, ya-y0
@@ -226,8 +242,8 @@ class CorticalSanityCheck:
             dx /= norm
             dy /= norm
 
-            dx_arr = np.append(dx_arr, dx)
-            dy_arr = np.append(dy_arr, dy)
+            dx_arr[idx] = dx
+            dy_arr[idx] = dy
 
             ax1.plot(((x0+xa)/2, (x0+xa)/2-dy), ((y0+ya)/2, (y0+ya) /
                      2+dx), color='tab:grey')    # plot the normals
@@ -236,20 +252,20 @@ class CorticalSanityCheck:
             self.draw_arrow(ax2, (xa, ya), (xa-dy, ya+dx),
                             text=' ', color='tab:grey')
 
-        dx_arr = np.insert(dx_arr, 0, dx_arr[-1]) #! added this
-        dy_arr = np.insert(dy_arr, 0, dy_arr[-1]) #! added this
+        dx_arr = np.insert(dx_arr, 0, dx_arr[-1])
+        dy_arr = np.insert(dy_arr, 0, dy_arr[-1])
         dx_arr = np.append(dx_arr, dx_arr[0])
         dy_arr = np.append(dy_arr, dy_arr[0])
 
-        dx_med = []
+        dx_med = np.zeros(len(dx_arr)-1)
         for dx in range(len(dx_arr)-1):
             dx_med_s = (dx_arr[dx] + dx_arr[dx+1]) * 0.5
-            dx_med = np.append(dx_med, dx_med_s)
+            dx_med[dx] = dx_med_s
 
-        dy_med = []
+        dy_med = np.zeros(len(dy_arr)-1)
         for dy in range(len(dy_arr)-1):
             dy_med_s = (dy_arr[dy] + dy_arr[dy+1]) * 0.5
-            dy_med = np.append(dy_med, dy_med_s)
+            dy_med[dy] = dy_med_s
 
         for idx in range(len(xs)-1):
             x0, y0, xa, ya = xs[idx], ys[idx], xs[idx+1], ys[idx+1]
@@ -271,12 +287,11 @@ class CorticalSanityCheck:
             dist (float): distance between point and nearest point in array
             idx (numpy.int64): index of point in array
         """
-        dist, idx = spatial.KDTree(arr).query(pt)
+        _, idx = spatial.KDTree(arr).query(pt)
         loc = arr[spatial.KDTree(arr).query(pt)[1]]
-        return loc, dist, idx
+        return loc, idx
 
-
-    def show_centres(self, min_thickness, x_ext, y_ext, x_int, y_int):
+    def plot_contours(self, min_thickness, x_ext, y_ext, x_int, y_int):
         """
         Create contours, get normals, plot
 
@@ -314,10 +329,9 @@ class CorticalSanityCheck:
             ax2.annotate(txt, (x_ext[i], y_ext[i]))
             ax2.annotate(txt, (x_int[i], y_int[i]))
 
-        return ext_a, int_a, dx, dy, dx_med, dy_med, fig, ax1, ax2
+        return ext_a, int_a, dx_med, dy_med, fig, ax1, ax2
 
-
-    def resample_polygon(self, xy: np.ndarray, n_points: int = 100) -> np.ndarray:
+    def resample_contour(self, xy: np.ndarray, n_points: int = 100) -> np.ndarray:
         """
         Cumulative Euclidean distance between successive polygon points.
 
@@ -340,29 +354,51 @@ class CorticalSanityCheck:
         ]
         return xy_interp
 
-    def tester(self):
-        ext_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/02_CODE/tmp/ext_surf_slice_minus1.npy'
-        int_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/02_CODE/tmp/int_spline_minus1.npy'
-        ext_spline = np.load(ext_path)
-        int_spline = np.load(int_path)
-        n = 50
-        int_spline = self.resample_polygon(int_spline, n_points=n)
-        ext_spline = self.resample_polygon(ext_spline, n_points=n)
+    def plot_corrected_contours(self, fig, ax1, ax2, ext_spline, int_spline, ext_s, dx_med, dy_med, loc_int, new_int, save=False):
+        ax1.scatter(ext_spline[0,0], ext_spline[0, 1], marker='x', s=300)
+        ax1.scatter(int_spline[0,0], int_spline[0, 1], marker='x', s=300)
+        ax1.scatter(loc_int[0], loc_int[1], marker='x', s=300)
 
-        # TODO: invert order in function rather than in real data (ONLY for testing)
-        ext_spline[:, 0] = np.flip(ext_spline[:, 0])
-        ext_spline[:, 1] = np.flip(ext_spline[:, 1])
-        int_spline[:, 0] = np.flip(int_spline[:, 0])
-        int_spline[:, 1] = np.flip(int_spline[:, 1])
+        ax1.plot(new_int[:, 0], new_int[:, 1], linestyle=':', label='corrected internal contour')
+        ax2.plot(new_int[:, 0], new_int[:, 1], linestyle=':')
+        ax1.set_aspect('equal')
+        ax2.set_aspect('equal')
+        ax2.set_xlim(8, 17)
+        ax2.set_ylim(21, 23.7)
+        fig.suptitle('Correction of minimal thickness and external position ($\\vec{n}$-based)', weight='bold', fontsize=20)
+        fig.legend(loc=1)
+        fig.tight_layout()
 
-        loc_int, dist_int, idx_int = self.nearest_point(int_spline, [ext_spline[0, 0], ext_spline[0, 1]])
-        int_spline = np.roll(int_spline, -idx_int, axis=0)
+        ax1.plot((ext_s[:, 0], ext_s[:, 0]-dy_med), (ext_s[:, 1], ext_s[:,1]+dx_med), color='tab:blue')
+        
+        if save is not False:
+            fig.savefig('02_CODE/tmp/Correction_int_ext_pos_mwe.svg')
+            fig.savefig('02_CODE/tmp/Correction_int_ext_pos_mwe.png', dpi=300)
+        else:
+            pass
 
-        ext_s, int_s, dx, dy, dx_med, dy_med, fig, ax1, ax2 = self.show_centres(min_thickness=self.min_thickness,
-                                                                                x_ext=ext_spline[:, 0],
-                                                                                y_ext=ext_spline[:, 1],
-                                                                                x_int=int_spline[:, 0],
-                                                                                y_int=int_spline[:, 1])
+        plt.show()
+        return None
+    
+    def cortical_sanity_check(self, ext_contour, int_contour):
+        """
+        Check if the internal contour is within the external contour.
+
+        Args:
+            ext_contour (ndarray): 2D array of [x, y] points
+            int_contour (ndarray): 2D array of [x, y] points
+
+        Returns:
+
+        """
+        loc_int, idx_int = self.nearest_point(int_contour, [ext_contour[0, 0], ext_contour[0, 1]])
+        int_contour = np.roll(int_contour, -idx_int, axis=0)
+
+        ext_s, int_s, dx_med, dy_med, fig, ax1, ax2 = self.plot_contours(min_thickness=self.min_thickness,
+                                                                                x_ext=ext_contour[:, 0],
+                                                                                y_ext=ext_contour[:, 1],
+                                                                                x_int=int_contour[:, 0],
+                                                                                y_int=int_contour[:, 1])
 
         boolean_angle = self.is_internal_inside_external(ext_s, int_s)
         print(f'Is internal contour outside external contour?\n{boolean_angle}')
@@ -385,29 +421,21 @@ class CorticalSanityCheck:
                                        bool_arr=bool_min_thickness_s
                                        )
 
-        ax1.scatter(ext_spline[0,0], ext_spline[0, 1], marker='x', s=300)
-        ax1.scatter(int_spline[0,0], int_spline[0, 1], marker='x', s=300)
-        ax1.scatter(loc_int[0], loc_int[1], marker='x', s=300)
+        self.plot_corrected_contours(fig, ax1, ax2, ext_s, dx_med, dy_med, loc_int, new_int, save=False)
+        return new_int
+    
+    def tester(self):
+        # ONLY FOR TESTING
+        ext_spline = self.ext_contour
+        int_spline = self.int_contour
 
-        ax1.plot(new_int[:, 0], new_int[:, 1], linestyle=':', label='corrected internal contour')
-        ax2.plot(new_int[:, 0], new_int[:, 1], linestyle=':')
-        ax1.set_aspect('equal')
-        ax2.set_aspect('equal')
-        ax2.set_xlim(8, 17)
-        ax2.set_ylim(21, 23.7)
-        fig.suptitle('Correction of minimal thickness and external position ($\\vec{n}$-based)', weight='bold', fontsize=20)
-        fig.legend(loc=1)
-        fig.tight_layout()
+        n = 50
+        int_spline = self.resample_contour(int_spline, n_points=n)
+        ext_spline = self.resample_contour(ext_spline, n_points=n)
 
-
-        ax1.plot((ext_s[:, 0], ext_s[:, 0]-dy_med), (ext_s[:, 1], ext_s[:,1]+dx_med), color='tab:blue')
-        fig.savefig('02_CODE/tmp/Correction_int_ext_pos_mwe.svg')
-        fig.savefig('02_CODE/tmp/Correction_int_ext_pos_mwe.png', dpi=300)
-        plt.show()
-        return
-
-
-##### ONLY FOR TESTING #####
-if __name__ == '__main__':
-    testing = CorticalSanityCheck(MIN_THICKNESS=100e-3)
-    testing.tester()
+        # TODO: invert order in function rather than in real data (ONLY for testing)
+        ext_spline[:, 0] = np.flip(ext_spline[:, 0])
+        ext_spline[:, 1] = np.flip(ext_spline[:, 1])
+        int_spline[:, 0] = np.flip(int_spline[:, 0])
+        int_spline[:, 1] = np.flip(int_spline[:, 1])
+        return ext_spline, int_spline

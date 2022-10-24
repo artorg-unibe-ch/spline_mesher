@@ -52,3 +52,17 @@ def test_check_bigger_thickness():
     b = b.check_min_thickness(b, np.full((5, 10), 1.00), np.full((5, 10), 10.00))
     nt.assert_false(np.asarray(b).all())
 
+'''
+How to test cortical_sanity.py as a main file
+def test_main():
+    ext_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/code_pack/tmp/ext_surf_slice_minus1.npy'
+    int_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/code_pack/tmp/int_spline_minus1.npy'
+    ext_spline = np.load(ext_path)
+    int_spline = np.load(int_path)
+    
+    cortex = cs.CorticalSanityCheck(MIN_THICKNESS=100e-3,
+                                  ext_contour=ext_spline,
+                                  int_contour=int_spline)
+    ext_spline, int_spline = cortex.tester()
+    int_spline_corr = cortex.cortical_sanity_check(ext_spline, int_spline)
+'''
