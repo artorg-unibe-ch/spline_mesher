@@ -42,7 +42,8 @@ class OCC_volume():
                  show_plots,
                  location,
                  offset,
-                 ext_contour):
+                 ext_contour,
+                 thickness_tol):
         '''
         Class that imports a voxel-based model and converts it to a geometrical simplified representation
         through the use of splines for each slice in the transverse plane.
@@ -82,7 +83,7 @@ class OCC_volume():
         self.cortex_outer_tags = list()
         self.cortex_inner_tags = list()
 
-        self.MIN_THICKNESS = float(100e-3)
+        self.MIN_THICKNESS = float(thickness_tol)
         self.ext_contour = ext_contour
 
         # Figure layout
@@ -774,6 +775,7 @@ def main():
     interp_point_s = 100
     slicing_coeff_s = 50
     show_plots_s = False
+    thickness_tol_s = 100e-3
 
     ext_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_ext,
                                   ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
@@ -783,7 +785,8 @@ def main():
                                   show_plots=show_plots_s,
                                   location='cort_ext',
                                   offset=10000,
-                                  ext_contour=None)
+                                  ext_contour=None,
+                                  thickness_tol=thickness_tol_s)
     # ext_cort_surface.plot_mhd_slice()
     cort_ext_arr, cort_ext_vol = ext_cort_surface.volume_splines()
 
@@ -796,7 +799,8 @@ def main():
                                   show_plots=show_plots_s,
                                   location='cort_int',
                                   offset=20000,
-                                  ext_contour=cort_ext_arr)
+                                  ext_contour=cort_ext_arr,
+                                  thickness_tol=thickness_tol_s)
     # int_cort_surface.plot_mhd_slice()
     cort_int_arr, cort_int_vol = int_cort_surface.volume_splines()
 
