@@ -4,6 +4,8 @@
 
 **Date:** 29.07.2022
 
+![Issue creation](https://github.com/simoneponcioni/spline-mesher/actions/workflows/todo_to_issue.yml/badge.svg)
+
 ## Purpose
 
 Import a voxel-based model and convert it to a geometrical simplified representation through the use of splines for each slice in the transverse plane.

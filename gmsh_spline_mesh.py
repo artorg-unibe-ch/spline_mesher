@@ -825,4 +825,3 @@ if __name__ == "__main__":
 
 
 # TODO 1: understand how to pass sitk imagefromarray (or sth similar)
-# TODO 2: understand how todo to issue action really works?
