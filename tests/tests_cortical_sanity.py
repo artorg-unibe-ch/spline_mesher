@@ -29,7 +29,7 @@ def test_roll_numpy_index(arr=np.random.rand(100, 2)):
     c = c.reset_numpy_index(c, arr, (len(arr[:, 0]) - 1))
 
     d = cs.CorticalSanityCheck
-    d = d.numpy_roll_index(d, arr, (len(arr[:, 0])-1))
+    d = d.roll_index(d, arr, (len(arr[:, 0])-1))
     nt.assert_equal(c[0, 0], d[0, 0])
 
 def test_is_angle_bigger_bool():
