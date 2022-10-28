@@ -5,6 +5,7 @@
 **Date:** 29.07.2022
 
 ![Issue creation](https://github.com/simoneponcioni/spline-mesher/actions/workflows/todo_to_issue.yml/badge.svg)
+![Python application](https://github.com/simoneponcioni/spline-mesher/actions/workflows/python-app.yml/badge.svg)
 
 ## Purpose
 
