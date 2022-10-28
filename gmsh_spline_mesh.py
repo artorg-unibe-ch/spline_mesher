@@ -815,8 +815,6 @@ def main():
     #                               ext_contour=None)
     # # int_cort_surface.plot_mhd_slice()
     # trab_ext_arr, trab_ext_vol = ext_trab_surface.volume_splines()
-    #tests
-
 
 
 if __name__ == "__main__":
