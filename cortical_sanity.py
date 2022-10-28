@@ -4,6 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import spatial
+import sys
 plt.style.use('simone')
 
 
@@ -131,7 +132,7 @@ class CorticalSanityCheck:
         # alpha_e = angle_between(v1_e_u, v2_e_u)
         # alpha_i = angle_between(v1_e_u, v2_i_u)
         """
-        p_e_0 = ext_c
+        p_e_0 = ext_c  # TODO: remove this equality and substitute with p_e_*
         p_i_0 = int_c
         p_e_1 = self.roll_index(p_e_0, idx=1)
         p_e_2 = self.roll_index(p_e_0, idx=2)
@@ -238,7 +239,9 @@ class CorticalSanityCheck:
         for idx in range(len(xs)-1):
             x0, y0, xa, ya = xs[idx], ys[idx], xs[idx+1], ys[idx+1]
             dx, dy = xa-x0, ya-y0
+            print(f"dx: {dx}, dy: {dy}")
             norm = math.hypot(dx, dy) * 1 / thickness
+            print(f"norm: {norm}")
             dx /= norm
             dy /= norm
 
@@ -252,8 +255,8 @@ class CorticalSanityCheck:
             self.draw_arrow(ax2, (xa, ya), (xa-dy, ya+dx),
                             text=' ', color='tab:grey')
 
-        dx_arr = np.insert(dx_arr, 0, dx_arr[-1])
-        dy_arr = np.insert(dy_arr, 0, dy_arr[-1])
+        dx_arr = np.insert(dx_arr, 0, dx_arr[-1])  #TODO: modified this!! (POS, 26.10.2022)
+        dy_arr = np.insert(dy_arr, 0, dy_arr[-1])  #TODO: modified this!! (POS, 26.10.2022)
         dx_arr = np.append(dx_arr, dx_arr[0])
         dy_arr = np.append(dy_arr, dy_arr[0])
 
@@ -319,6 +322,8 @@ class CorticalSanityCheck:
 
         ext_a = np.c_[x_ext, y_ext]
         int_a = np.c_[x_int, y_int]
+        print(f'Plotting ext_a: {ext_a}')
+        print(f'Plotting int_a: {int_a}')
 
         ax1.plot(x_ext, y_ext, label='external contour')
         ax2.plot(x_ext, y_ext)
@@ -326,6 +331,8 @@ class CorticalSanityCheck:
         ax2.plot(x_int, y_int)
 
         for i, txt in enumerate(range(len(x_ext))):
+            ax1.annotate(txt, (x_ext[i], y_ext[i]))
+            ax1.annotate(txt, (x_int[i], y_int[i]))
             ax2.annotate(txt, (x_ext[i], y_ext[i]))
             ax2.annotate(txt, (x_int[i], y_int[i]))
 
@@ -354,30 +361,28 @@ class CorticalSanityCheck:
         ]
         return xy_interp
 
-    def plot_corrected_contours(self, fig, ax1, ax2, ext_spline, int_spline, ext_s, dx_med, dy_med, loc_int, new_int, save=False):
+    def plot_corrected_contours(self, fig, ax1, ax2, ext_s, dx_med, dy_med, ext_spline, int_spline, loc_int, new_int, save=False):
         ax1.scatter(ext_spline[0,0], ext_spline[0, 1], marker='x', s=300)
         ax1.scatter(int_spline[0,0], int_spline[0, 1], marker='x', s=300)
         ax1.scatter(loc_int[0], loc_int[1], marker='x', s=300)
-
         ax1.plot(new_int[:, 0], new_int[:, 1], linestyle=':', label='corrected internal contour')
         ax2.plot(new_int[:, 0], new_int[:, 1], linestyle=':')
         ax1.set_aspect('equal')
         ax2.set_aspect('equal')
         ax2.set_xlim(8, 17)
-        ax2.set_ylim(21, 23.7)
+        ax2.set_ylim(10, 20)
         fig.suptitle('Correction of minimal thickness and external position ($\\vec{n}$-based)', weight='bold', fontsize=20)
         fig.legend(loc=1)
         fig.tight_layout()
-
         ax1.plot((ext_s[:, 0], ext_s[:, 0]-dy_med), (ext_s[:, 1], ext_s[:,1]+dx_med), color='tab:blue')
         
         if save is not False:
-            fig.savefig('02_CODE/tmp/Correction_int_ext_pos_mwe.svg')
-            fig.savefig('02_CODE/tmp/Correction_int_ext_pos_mwe.png', dpi=300)
+            fig.savefig('04_OUTPUT/tmp/C0002231_CORT_Correction_int_ext_pos.svg')
+            fig.savefig('04_OUTPUT/tmp/C0002231_CORT_Correction_int_ext_pos.png', dpi=150)
         else:
             pass
 
-        plt.show()
+        # plt.show()
         return None
     
     def cortical_sanity_check(self, ext_contour, int_contour):
@@ -391,8 +396,33 @@ class CorticalSanityCheck:
         Returns:
 
         """
+        # TODO: Check whether Euclidean distance resampling is necessary
+        #       And make sure that the resampling is done in the same way for both contours
+        #       (i.e. same number of points, same interpolation method, etc.)
+        #       labels: enhancement
+        #       assignees: @simoneponcioni
+        #       milestone: v0.1.0
+
+        int_contour = self.resample_contour(int_contour, n_points=len(ext_contour))
+        ext_contour = self.resample_contour(ext_contour, n_points=len(ext_contour))
+
         loc_int, idx_int = self.nearest_point(int_contour, [ext_contour[0, 0], ext_contour[0, 1]])
         int_contour = np.roll(int_contour, -idx_int, axis=0)
+        print(f'Internal contour was shifted by {idx_int} point(s)')
+        # if 0 not in [idx_int] and int(len(ext_contour)-1) not in [idx_int]:
+        #     # check that 1st and last elements are the same
+        if not np.allclose(int_contour[0], int_contour[-1], atol=1e-6):
+            print('External contour is not closed')
+            _, idx_int_contour = np.unique(int_contour.round(decimals=6), return_index=True, axis=0)  # TODO: consistency between atol and decimals
+            int_contour = int_contour[np.sort(idx_int_contour)]
+            int_contour = np.append(int_contour, [int_contour[0]], axis=0)
+            print(f'External contour was closed')
+        else:
+            print('External contour is closed')
+        
+        # else:
+        #     # check if two lines of data do not appear after each other inside any position of int_contour:
+        #     print(f'Internal contour was not shifted')
 
         ext_s, int_s, dx_med, dy_med, fig, ax1, ax2 = self.plot_contours(min_thickness=self.min_thickness,
                                                                                 x_ext=ext_contour[:, 0],
@@ -407,21 +437,21 @@ class CorticalSanityCheck:
         dy_med[-1] = dy_med[0]  # guarantees continuity / closes the loop
 
         new_int = self.correct_intersection(ext_arr=ext_s,
-                                           int_arr=int_s,
-                                           dx=dx_med,
-                                           dy=dy_med,
-                                           bool_arr=boolean_angle
-                                           )
+                                            int_arr=int_s,
+                                            dx=dx_med,
+                                            dy=dy_med,
+                                            bool_arr=boolean_angle
+                                            )
 
         bool_min_thickness_s = self.check_min_thickness(ext=ext_s, int=new_int, min_thickness=self.min_thickness)
         new_int = self.correct_intersection(ext_arr=ext_s,
-                                       int_arr=new_int,
-                                       dx=dx_med,
-                                       dy=dy_med,
-                                       bool_arr=bool_min_thickness_s
-                                       )
+                                            int_arr=new_int,
+                                            dx=dx_med,
+                                            dy=dy_med,
+                                            bool_arr=bool_min_thickness_s
+                                            )
 
-        self.plot_corrected_contours(fig, ax1, ax2, ext_s, dx_med, dy_med, loc_int, new_int, save=False)
+        self.plot_corrected_contours(fig, ax1, ax2, ext_s, dx_med, dy_med, self.ext_contour, int_contour, loc_int, new_int, save=True)  #self.int_contour?
         return new_int
     
     def tester(self):
@@ -429,7 +459,7 @@ class CorticalSanityCheck:
         ext_spline = self.ext_contour
         int_spline = self.int_contour
 
-        n = 50
+        n = 100
         int_spline = self.resample_contour(int_spline, n_points=n)
         ext_spline = self.resample_contour(ext_spline, n_points=n)
 

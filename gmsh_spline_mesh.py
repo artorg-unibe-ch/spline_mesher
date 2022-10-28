@@ -18,8 +18,11 @@ import scipy.spatial as ss
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import gmsh
 import sys
+import logging
+import cortical_sanity as csc
 
 pio.renderers.default = 'browser'
+logging.basicConfig(filename='app.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # rcParams
 f = 1
@@ -38,7 +41,8 @@ class OCC_volume():
                  debug_orientation,
                  show_plots,
                  location,
-                 offset):
+                 offset,
+                 ext_contour):
         '''
         Class that imports a voxel-based model and converts it to a geometrical simplified representation
         through the use of splines for each slice in the transverse plane.
@@ -77,6 +81,9 @@ class OCC_volume():
 
         self.cortex_outer_tags = list()
         self.cortex_inner_tags = list()
+
+        self.MIN_THICKNESS = float(100e-3)
+        self.ext_contour = ext_contour
 
         # Figure layout
         self.layout = go.Layout(
@@ -409,7 +416,7 @@ class OCC_volume():
         # evaluate spline, including interpolated points
         self.xnew, self.ynew = splev(
             np.linspace(0, 1, self.INTERP_POINTS_S), tckp)
-        self.xnew = np.append(self.xnew, self.xnew[0])
+        self.xnew = np.append(self.xnew, self.xnew[0])  # TODO: modified this!!! (POS, 26.10.2022)
         self.ynew = np.append(self.ynew, self.ynew[0])
 
         # Sanity check to ensure directionality of sorting in cw- or ccw-direction
@@ -515,6 +522,65 @@ class OCC_volume():
 
         return tag_vol
 
+    def input_sanity_check(self, ext_contour_s:np.ndarray, int_contour_s:np.ndarray):
+        """
+        Sanity check for the input data before cortical sanity check
+
+        Args:
+            ext_contour_s (np.ndarray): array of external contour points
+            int_contour_s (np.ndarray): array of internal contour points
+
+        Returns:
+            ext_contour_s (np.ndarray): array of external contour points with defined shape and structure (no duplicates, closed contour)
+            int_contour_s (np.ndarray): array of internal contour points with defined shape and structure (no duplicates, closed contour)
+        """
+        # sanity check of input data ext_contour_s and int_contour_s
+        # make sure that arr[0] is the same as arr[-1]
+        if not np.allclose(int_contour_s[0], int_contour_s[-1], rtol=1e-05, atol=1e-08):
+            # append first element to the end of the array
+            int_contour_s = np.append(int_contour_s, [int_contour_s[0]], axis=0)
+        # if arr[0] is equal to arr[1] then remove the first element
+        if np.allclose(ext_contour_s[0], ext_contour_s[1], rtol=1e-05, atol=1e-08):
+            ext_contour_s = ext_contour_s[1:]
+        if np.allclose(int_contour_s[0], int_contour_s[1], rtol=1e-05, atol=1e-08):
+            int_contour_s = int_contour_s[1:]
+        # if arr[-1] is equal to arr[-2] then remove the last element
+        if np.allclose(ext_contour_s[-1], ext_contour_s[-2], rtol=1e-05, atol=1e-08):
+            ext_contour_s = ext_contour_s[:-1]
+        if np.allclose(int_contour_s[-1], int_contour_s[-2], rtol=1e-05, atol=1e-08):
+            int_contour_s = int_contour_s[:-1]
+        if not np.allclose(ext_contour_s[0], ext_contour_s[-1], rtol=1e-05, atol=1e-08):
+            # append first element to the end of the array
+            ext_contour_s = np.append(ext_contour_s, [ext_contour_s[0]], axis=0)
+        # check that shape of ext_contour_s and int_contour_s are the same
+        if ext_contour_s.shape != int_contour_s.shape:
+            print(
+                f'Error in the shape of the external and internal contours of the slice:\t{slice}')
+            sys.exit(90)
+        return ext_contour_s, int_contour_s
+
+    def output_sanity_check(self, initial_contour:np.ndarray, contour_s:np.ndarray):
+        # check that after csc.CorticalSanityCheck elements of arrays external and internal contours have the same structure and shape as before csc.CorticalSanityCheck
+        # sanity check of input data ext_contour_s and int_contour_s
+        if np.allclose(initial_contour[0], initial_contour[1], rtol=1e-05, atol=1e-08):
+            logging.warning(f'External contour has a duplicate first point')
+            if not np.allclose(contour_s[0], contour_s[1], rtol=1e-05, atol=1e-08):
+                logging.warning(f'New external contour does not have a duplicate first point')
+                contour_s = np.insert(contour_s, 0, contour_s[0], axis=0)
+                logging.info(f'New external contour now has a duplicate first point')
+        if np.allclose(initial_contour[-1], initial_contour[-2]):
+            logging.warning(f'External contour has a duplicate last point')
+            if not np.allclose(contour_s[-1], contour_s[-2], rtol=1e-05, atol=1e-08):
+                logging.warning(f'New external contour does not have a duplicate last point')
+                contour_s = np.append(contour_s, [contour_s[-1]], axis=0)
+                logging.info(f'New external contour now has a duplicate last point')
+        if np.shape(initial_contour) != np.shape(contour_s):
+            logging.warning(f'External contour has a different shape than the initial contour')
+        else:
+            logging.log(logging.INFO, 'External contour has the same shape as before csc.CorticalSanityCheck')
+        print(f'contour_s after output_sanity_check:\n{contour_s}')
+        return contour_s
+
     def offset_tags(self, entities):
         '''
         get all entities of the model and add offset to make unique tags
@@ -547,13 +613,41 @@ class OCC_volume():
         connector_arr = []
         lines_slices = []
         surfaces_slices = []
-        for slice in slice_index:
+        ext_contour_dstack = []
+        for i, slice in enumerate(slice_index):
             # TODO: check this '-1'
+            # TODO: git issue #2 invalid index m may be returned
             z_pos = height * m / (len(slice_index) - 1)
             xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew = self.sort_surface(
                 slices=slice)
-            lines_s, points, curve_loop_tag = self.surfaces_gmsh(
-                x=xnew, y=ynew, z=z_pos)
+            
+            if self.location == 'cort_ext':
+                dstack = np.dstack((xnew, ynew))
+                ext_contour_dstack.append(dstack)
+
+            # check here if internal then call cortical sanity check #TODO: tbf
+            if self.location == 'cort_int':
+                ext_contour_t = self.ext_contour[i]
+                int_contour_t = np.c_[xnew, ynew]
+
+                ext_contour_s, int_contour_s = self.input_sanity_check(ext_contour_t, int_contour_t)
+                    
+                print(f'ext_contour_s:\t\t\tint_contour_s:\n{np.c_[ext_contour_s, int_contour_s]}')
+                cortex = csc.CorticalSanityCheck(MIN_THICKNESS=self.MIN_THICKNESS,
+                                                     ext_contour=ext_contour_s,
+                                                     int_contour=int_contour_s)
+                
+                
+                int_spline_corr = cortex.cortical_sanity_check(ext_contour=ext_contour_s,
+                                                               int_contour=int_contour_s)
+
+                # check that after csc.CorticalSanityCheck elements of arrays external and internal contours have the same structure and shape as before csc.CorticalSanityCheck
+                int_contour_s = self.output_sanity_check(int_contour_t, int_spline_corr)
+                xnew = int_contour_s[:, 0]
+                ynew = int_contour_s[:, 1]
+
+            # lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
+            lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
             surfaces_slices.append(curve_loop_tag)
             lines_slices = np.append(lines_slices, lines_s)
             connector_arr = np.append(connector_arr, points)
@@ -570,9 +664,10 @@ class OCC_volume():
             pass
 
         # TODO: remove after testing
-        saving_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/02_CODE/tmp'
+        saving_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/code_pack/tmp'
         np.save(f'{saving_path}/ext_surf.npy',
                 arr=np.c_[x_mahalanobis, y_mahalanobis])
+        # TODO: remove after testing
 
         # Create gmsh connectors
         connectors_r = np.ndarray.astype(connector_arr.reshape(
@@ -598,13 +693,17 @@ class OCC_volume():
 
         gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filepath + self.filename))
+        logging.info('GMSH file saved')
 
-        if '-nopopup' not in sys.argv:  # TODO: change as class variable
+        if self.show_plots is not False:
             gmsh.fltk.run()
-        # gmsh.clear()  # TODO: what does it do?
+        gmsh.clear()  # TODO: what does it do?
         gmsh.finalize()
         print('Exiting GMSH...')
-        return str(self.filepath + self.filename)
+
+        # reduce nesting level of ext_contour_dstack
+        ext_contour_dstack = np.squeeze(ext_contour_dstack)
+        return ext_contour_dstack, str(self.filepath + self.filename)
 
     def cortical_volume(self):
         '''
@@ -672,44 +771,53 @@ def main():
     filename_ext = Path(img_path_ext).stem + '_ext2' + '.geo_unrolled'
     filename_int = Path(img_path_ext).stem + '_int2' + '.geo_unrolled'
     filename_trab_ext = Path(img_path_ext).stem + '_trab2' + '.geo_unrolled'
+    interp_point_s = 100
+    slicing_coeff_s = 50
+    show_plots_s = False
 
     ext_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_ext,
-                                  ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
+                                  ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
                                   INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                                  S=10, K=3, INTERP_POINTS=50,
+                                  S=10, K=3, INTERP_POINTS=interp_point_s,
                                   debug_orientation=0,
-                                  show_plots=False,
+                                  show_plots=show_plots_s,
                                   location='cort_ext',
-                                  offset=10000)
+                                  offset=10000,
+                                  ext_contour=None)
     # ext_cort_surface.plot_mhd_slice()
-    cort_ext_vol = ext_cort_surface.volume_splines()
+    cort_ext_arr, cort_ext_vol = ext_cort_surface.volume_splines()
 
+    # TODO: problem with this function: only last slice is passed to the next function
     int_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_int,
-                                  ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
+                                  ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
                                   INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                                  S=10, K=3, INTERP_POINTS=50,
+                                  S=10, K=3, INTERP_POINTS=interp_point_s,
                                   debug_orientation=0,
-                                  show_plots=False,
+                                  show_plots=show_plots_s,
                                   location='cort_int',
-                                  offset=20000)
+                                  offset=20000,
+                                  ext_contour=cort_ext_arr)
     # int_cort_surface.plot_mhd_slice()
-    cort_int_vol = int_cort_surface.volume_splines()
+    cort_int_arr, cort_int_vol = int_cort_surface.volume_splines()
 
-    ext_trab_surface = OCC_volume(img_path_trab, filepath_ext, filename_trab_ext,
-                                  ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=80,
-                                  INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                                  S=10, K=3, INTERP_POINTS=50,
-                                  debug_orientation=0,
-                                  show_plots=False,
-                                  location='trab_ext',
-                                  offset=30000)
-    # int_cort_surface.plot_mhd_slice()
-    trab_ext_vol = ext_trab_surface.volume_splines()
+    # ext_trab_surface = OCC_volume(img_path_trab, filepath_ext, filename_trab_ext,
+    #                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
+    #                               INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
+    #                               S=10, K=3, INTERP_POINTS=interp_point_s,
+    #                               debug_orientation=0,
+    #                               show_plots=show_plots_s,
+    #                               location='trab_ext',
+    #                               offset=30000,
+    #                               ext_contour=None)
+    # # int_cort_surface.plot_mhd_slice()
+    # trab_ext_arr, trab_ext_vol = ext_trab_surface.volume_splines()
 
 
 if __name__ == "__main__":
+    logging.info('Starting meshing script...')
     print('Executing gmsh_spline_mesh.py')
     main()
+    logging.info('Meshing script finished.')
 
 
 # TODO LIST

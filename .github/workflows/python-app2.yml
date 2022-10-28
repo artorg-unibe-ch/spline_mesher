@@ -31,3 +31,5 @@ jobs:
     - name: Test with pytest
       run: |
         pytest tests/*
+    - name: TODO to Issue
+      uses: alstr/todo-to-issue-action@v4.9
