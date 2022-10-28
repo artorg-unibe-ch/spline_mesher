@@ -102,11 +102,12 @@ class OCC_volume():
         )
 
     def plot_mhd_slice(self):
-        """#TODO: add docstring
+        """
+        Helper function to plot a slice of the MHD file
 
         Returns:
-            _type_: _description_
-        """        ''''''
+            None
+        """        
         if self.show_plots is not False:
             img = sitk.PermuteAxes(sitk.ReadImage(self.img_path), [1, 2, 0])
             img_view = sitk.GetArrayViewFromImage(img)
@@ -389,9 +390,20 @@ class OCC_volume():
         return x_mahalanobis, y_mahalanobis
 
     def sort_surface(self, slices):
-        '''
-        # TODO: add docs
-        '''
+        """
+        Sort surface points in a clockwise direction and with mahalanobis distance to add robustness
+
+
+        Args:
+            slices (_type_): _description_
+
+        Returns:
+            self.xy_sorted_closed (numpy.ndarray): xy array of sorted points
+            self.x_mahanalobis (numpy.ndarray): x array of sorted points with mahalanobis distance
+            self.y_mahanalobis (numpy.ndarray): y array of sorted points with mahalanobis distance
+            self.xnew (numpy.ndarray): x array of sorted points interpolated with bspline and in the same direction
+            self.ynew (numpy.ndarray): y array of sorted points interpolated with bspline and in the same direction
+        """
         img_contours = sitk.GetImageFromArray(
             self.contours_arr, isVector=True)  # TODO: how to pass this one?
         image_data = sitk.GetArrayViewFromImage(img_contours)
@@ -417,7 +429,7 @@ class OCC_volume():
         # evaluate spline, including interpolated points
         self.xnew, self.ynew = splev(
             np.linspace(0, 1, self.INTERP_POINTS_S), tckp)
-        self.xnew = np.append(self.xnew, self.xnew[0])  # TODO: modified this!!! (POS, 26.10.2022)
+        self.xnew = np.append(self.xnew, self.xnew[0])
         self.ynew = np.append(self.ynew, self.ynew[0])
 
         # Sanity check to ensure directionality of sorting in cw- or ccw-direction
@@ -596,7 +608,10 @@ class OCC_volume():
         img_contours = sitk.GetImageFromArray(self.contours_arr, isVector=True)
         image_data = sitk.GetArrayViewFromImage(img_contours)
         slice_index = np.arange(1, len(image_data), self.SLICING_COEFFICIENT)
-        # TODO: probably redundant (calculated above already)
+        # TODO: Redundancy in slice_index and get_image in OCC_volume.volume_splines()
+        # labels: question
+        # assignees: @simoneponcioni
+        # milestone: 0.1.0     
         get_image = sitk.GetImageFromArray(image_data)
         height = get_image.GetDepth() * self.spacing[0]
 
@@ -610,15 +625,12 @@ class OCC_volume():
         gmsh.initialize()
         gmsh.model.add(str(self.location))
 
-        m = 0
         connector_arr = []
         lines_slices = []
         surfaces_slices = []
         ext_contour_dstack = []
         for i, slice in enumerate(slice_index):
-            # TODO: check this '-1'
-            # TODO: git issue #2 invalid index m may be returned
-            z_pos = height * m / (len(slice_index) - 1)
+            z_pos = height * i / (len(slice_index) - 1)
             xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew = self.sort_surface(
                 slices=slice)
             
@@ -626,14 +638,12 @@ class OCC_volume():
                 dstack = np.dstack((xnew, ynew))
                 ext_contour_dstack.append(dstack)
 
-            # check here if internal then call cortical sanity check #TODO: tbf
             if self.location == 'cort_int':
                 ext_contour_t = self.ext_contour[i]
                 int_contour_t = np.c_[xnew, ynew]
 
                 ext_contour_s, int_contour_s = self.input_sanity_check(ext_contour_t, int_contour_t)
-                    
-                print(f'ext_contour_s:\t\t\tint_contour_s:\n{np.c_[ext_contour_s, int_contour_s]}')
+
                 cortex = csc.CorticalSanityCheck(MIN_THICKNESS=self.MIN_THICKNESS,
                                                      ext_contour=ext_contour_s,
                                                      int_contour=int_contour_s)
@@ -652,7 +662,6 @@ class OCC_volume():
             surfaces_slices.append(curve_loop_tag)
             lines_slices = np.append(lines_slices, lines_s)
             connector_arr = np.append(connector_arr, points)
-            m = m + 1
             if self.show_plots is not False:
                 fig = self.plotly_add_traces(
                     fig, xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew)
@@ -663,12 +672,6 @@ class OCC_volume():
             fig = self.plotly_makefig(fig)
         else:
             pass
-
-        # TODO: remove after testing
-        saving_path = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/code_pack/tmp'
-        np.save(f'{saving_path}/ext_surf.npy',
-                arr=np.c_[x_mahalanobis, y_mahalanobis])
-        # TODO: remove after testing
 
         # Create gmsh connectors
         connectors_r = np.ndarray.astype(connector_arr.reshape(
@@ -698,7 +701,7 @@ class OCC_volume():
 
         if self.show_plots is not False:
             gmsh.fltk.run()
-        gmsh.clear()  # TODO: what does it do?
+        gmsh.clear()
         gmsh.finalize()
         print('Exiting GMSH...')
 
@@ -718,10 +721,11 @@ class OCC_volume():
 
         # self.outer_cortex_surface, self.inner_cortex_surface)
 
-        if '-nopopup' not in sys.argv:  # TODO: change as class variable
+        if self.show_plots is not False:
             gmsh.fltk.run()
         gmsh.clear()
         gmsh.finalize()
+        print('Exiting GMSH...')
 
 
 class OCC_bool():
@@ -759,8 +763,9 @@ class OCC_bool():
         gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filepath + self.filename))
 
-        if '-nopopup' not in sys.argv:  # TODO: change as class variable
+        if self.show_plots is not False:
             gmsh.fltk.run()
+        gmsh.clear()
         gmsh.finalize()
         print('Exiting GMSH...')
 
@@ -790,7 +795,6 @@ def main():
     # ext_cort_surface.plot_mhd_slice()
     cort_ext_arr, cort_ext_vol = ext_cort_surface.volume_splines()
 
-    # TODO: problem with this function: only last slice is passed to the next function
     int_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_int,
                                   ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
                                   INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
@@ -822,6 +826,3 @@ if __name__ == "__main__":
     print('Executing gmsh_spline_mesh.py')
     main()
     logging.info('Meshing script finished.')
-
-
-# TODO 1: understand how to pass sitk imagefromarray (or sth similar)

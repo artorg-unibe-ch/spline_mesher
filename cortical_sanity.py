@@ -105,15 +105,15 @@ class CorticalSanityCheck:
             raise RuntimeWarning('angle comparison is not possible and/or edge case')
         return bool_angle
 
-    def is_internal_inside_external(self, ext_c, int_c):
+    def is_internal_inside_external(self, p_e_0, p_i_0):
         """
         Rationale for deciding if internal contour is inside external contour based on
         the angle between the first and second point of the external contour, and the first
         point and the first point of the internal contour.
 
         Args:
-            ext_c (numpy.ndarray): external contour
-            int_c (numpy.ndarray): internal contour
+            p_e_0 (numpy.ndarray): external contour
+            p_i_0 (numpy.ndarray): internal contour
 
         Returns:
             list: Booleans where True if internal contour is OUTSIDE external contour, False otherwise
@@ -132,8 +132,6 @@ class CorticalSanityCheck:
         # alpha_e = angle_between(v1_e_u, v2_e_u)
         # alpha_i = angle_between(v1_e_u, v2_i_u)
         """
-        p_e_0 = ext_c  # TODO: remove this equality and substitute with p_e_*
-        p_i_0 = int_c
         p_e_1 = self.roll_index(p_e_0, idx=1)
         p_e_2 = self.roll_index(p_e_0, idx=2)
         p_i_1 = self.roll_index(p_i_0, idx=2)
@@ -255,8 +253,8 @@ class CorticalSanityCheck:
             self.draw_arrow(ax2, (xa, ya), (xa-dy, ya+dx),
                             text=' ', color='tab:grey')
 
-        dx_arr = np.insert(dx_arr, 0, dx_arr[-1])  #TODO: modified this!! (POS, 26.10.2022)
-        dy_arr = np.insert(dy_arr, 0, dy_arr[-1])  #TODO: modified this!! (POS, 26.10.2022)
+        dx_arr = np.insert(dx_arr, 0, dx_arr[-1])
+        dy_arr = np.insert(dy_arr, 0, dy_arr[-1])
         dx_arr = np.append(dx_arr, dx_arr[0])
         dy_arr = np.append(dy_arr, dy_arr[0])
 
@@ -396,7 +394,7 @@ class CorticalSanityCheck:
         Returns:
 
         """
-        # TODO: Check whether Euclidean distance resampling is necessary
+        # TODO: Find better solution than resampling (or make sure it works)
         #       And make sure that the resampling is done in the same way for both contours
         #       (i.e. same number of points, same interpolation method, etc.)
         #       labels: enhancement
@@ -413,7 +411,7 @@ class CorticalSanityCheck:
         #     # check that 1st and last elements are the same
         if not np.allclose(int_contour[0], int_contour[-1], atol=1e-6):
             print('External contour is not closed')
-            _, idx_int_contour = np.unique(int_contour.round(decimals=6), return_index=True, axis=0)  # TODO: consistency between atol and decimals
+            _, idx_int_contour = np.unique(int_contour.round(decimals=6), return_index=True, axis=0)
             int_contour = int_contour[np.sort(idx_int_contour)]
             int_contour = np.append(int_contour, [int_contour[0]], axis=0)
             print(f'External contour was closed')
@@ -453,19 +451,3 @@ class CorticalSanityCheck:
 
         self.plot_corrected_contours(fig, ax1, ax2, ext_s, dx_med, dy_med, self.ext_contour, int_contour, loc_int, new_int, save=True)  #self.int_contour?
         return new_int
-    
-    def tester(self):
-        # ONLY FOR TESTING
-        ext_spline = self.ext_contour
-        int_spline = self.int_contour
-
-        n = 100
-        int_spline = self.resample_contour(int_spline, n_points=n)
-        ext_spline = self.resample_contour(ext_spline, n_points=n)
-
-        # TODO: invert order in function rather than in real data (ONLY for testing)
-        ext_spline[:, 0] = np.flip(ext_spline[:, 0])
-        ext_spline[:, 1] = np.flip(ext_spline[:, 1])
-        int_spline[:, 0] = np.flip(int_spline[:, 0])
-        int_spline[:, 1] = np.flip(int_spline[:, 1])
-        return ext_spline, int_spline
