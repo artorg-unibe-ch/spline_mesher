@@ -26,3 +26,14 @@ Import a voxel-based model and convert it to a geometrical simplified representa
 - Faster implementation of cortical sanity check
 - Implement test robustness over different models
 - Understand how undersampling of raw data affects spline definition
+
+### MESHING IN GMSH - NOTES AND COMMENTS
+
+#### Mesh:
+-- 2D algorithm: Quasi-Structured Quads (experimental)
+-- 3D algorithm: Delaunay
+-- 2D recombination algorithm: Simple
+
+-- Recombine all triangular meshes: FALSE
+-- Subdivision algorithm: None
+https://gitlab.onelab.info/gmsh/gmsh/-/issues/1804

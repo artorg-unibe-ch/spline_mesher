@@ -3,6 +3,9 @@
 # ignore temp files
 *temp*
 
+# ignore numpy arrays stored for debugging
+*.npy
+
 # ignore exported documents
 *.png
 *.svg
