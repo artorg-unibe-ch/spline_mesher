@@ -1,1 +1,8 @@
-requests==2.26.0
+gmsh==4.10.5
+matplotlib==3.6.1
+numpy==1.21.6
+plotly==5.11.0
+scipy==1.9.3
+seaborn==0.12.1
+SimpleITK==2.2.0
+vtk==9.2.2
