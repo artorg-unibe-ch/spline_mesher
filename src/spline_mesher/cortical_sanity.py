@@ -5,7 +5,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import spatial
 import sys
-plt.style.use('simone')
+#plt.style.use('simone')
+
+# TODO: find a way to include plt.style.use inside package
+#       labels: enhancement
+#       assignees: @simoneponcioni
+#       milestone: v0.1.0
 
 
 class CorticalSanityCheck:
