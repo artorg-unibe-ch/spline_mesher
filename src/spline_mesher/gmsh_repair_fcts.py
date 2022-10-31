@@ -6,7 +6,8 @@ from pathlib import Path
 import struct
 import vtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
-import time
+import trimesh
+import pymeshfix
 
 # TODO: write into class
 # TODO: generalisation
@@ -20,26 +21,26 @@ def vtk2mhd(imvtk, spacing, filename, header=None):
     # different name depending on your vtk version
     try:
         writer.SetInputData(imvtk)
-    except:
+    except Exception:
         writer.SetInput(imvtk)
     writer.SetFileName(filename)
     writer.Write()
     # corrects the wrong spacing written by vtkMetaImageWriter
-    print("     "+filename)
+    print("     " + filename)
     f = open(filename, 'r')
     content = f.read()
     f.close()
     f = open(filename, 'w')
-    f.write(content.replace("ElementSpacing = 1 1 1", "ElementSpacing = "+str(spacing[2])+" "+str(spacing[1])+" "+str(spacing[0])))
+    f.write(content.replace("ElementSpacing = 1 1 1", "ElementSpacing = " + str(spacing[2]) + " " + str(spacing[1]) + " " + str(spacing[0])))
     f.close()
     # writes AIM header if provided
-    if header != None:
+    if header is not None:
         f = open(filename, 'a')
         f.write("\n!-------------------------------------------------------------------------------\n")
         f.write("                                   AIM Log                                       ")
         f.write("\n!-------------------------------------------------------------------------------\n")
         for line in header:
-            f.write(line+"\n")
+            f.write(line + "\n")
         f.close()
 
 
@@ -141,7 +142,7 @@ def AIMreader(fileINname, Spacing):
         Spacing = IPLPostScanScaling * (
             np.around(np.asarray(origdimum) / np.asarray(origdimp) / 1000, 5)
         )
-    except:
+    except Exception:
         pass
     # read AIM
     reader = vtk.vtkImageReader2()
@@ -218,7 +219,7 @@ def numpy2mhd(imnp, spacing, filename, header=None):
     writer = vtk.vtkMetaImageWriter()
     try:
         writer.SetInputData(numpy2vtk(imnp, spacing))
-    except:
+    except Exception:
         writer.SetInput(numpy2vtk(imnp, spacing))
     # writes it as a mhd+raw format
     writer.SetFileName(filename)
@@ -255,7 +256,7 @@ def mhd2stl(mhddir, stldir, cort_mask):
     reader = vtk.vtkMetaImageReader()
     reader.SetFileName(path_mhd)
     reader.Update()
-    
+
     # Use vtkImageThreshold to remove the empty layer around the bone
     threshold = vtk.vtkImageThreshold()
     threshold.SetInputConnection(reader.GetOutputPort())
@@ -276,7 +277,7 @@ def mhd2stl(mhddir, stldir, cort_mask):
     # Read-in meta-data:
     # Load dimensions using `GetDataExtent`
     _extent = reader.GetDataExtent()
-    ConstPixelDims = [_extent[1]-_extent[0]+1, _extent[3]-_extent[2]+1, _extent[5]-_extent[4]+1]
+    ConstPixelDims = [_extent[1] - _extent[0] + 1, _extent[3] - _extent[2] + 1, _extent[5] - _extent[4] + 1]
 
     # Save the extracted surface as an .stl file
     print(' ... Converting MHD to STL')
@@ -292,9 +293,9 @@ def mhd2stl(mhddir, stldir, cort_mask):
 # not apply the fix by considering vertical axis
 def fill_contours_fixed(arr):
     return np.maximum.accumulate(arr, 1) &\
-           np.maximum.accumulate(arr[:, ::-1], 1)[:, ::-1] &\
-           np.maximum.accumulate(arr[::-1, :], 0)[::-1, :] &\
-           np.maximum.accumulate(arr, 0)
+        np.maximum.accumulate(arr[:, ::-1], 1)[:, ::-1] &\
+        np.maximum.accumulate(arr[::-1, :], 0)[::-1, :] &\
+        np.maximum.accumulate(arr, 0)
 
 
 def mhd2itk(filename):
@@ -309,7 +310,7 @@ def mhd2itk(filename):
 
     # superior nodes
     superior_voxel_np = np.copy(ct_scan)
-    superior_voxel_np[0:superior_voxel_np.shape[0]-1, 0:superior_voxel_np.shape[1], 0:superior_voxel_np.shape[2]] = 0
+    superior_voxel_np[0:superior_voxel_np.shape[0] - 1, 0:superior_voxel_np.shape[1], 0:superior_voxel_np.shape[2]] = 0
 
     # inferior nodes
     inferior_voxel_np = np.copy(ct_scan)
@@ -354,7 +355,7 @@ def gmsh_repair_mesh(stl_name, gmsh_name, decimation_factor=10e4, max_elm_size=2
     else:
         print('No need to repair')
         mesh_repair = mesh_decimation
-    mesh_repair.export(ext(gmsh_name, '.stl')) # export .stl for cubit
+    mesh_repair.export(ext(gmsh_name, '.stl'))  # export .stl for cubit
     trimesh.interfaces.gmsh.to_volume(mesh_repair, file_name=gmsh_name, max_element=max_elm_size, mesher_id=mesher_id_alg)
     return None
 
@@ -371,22 +372,21 @@ def main(base_path, filename_sample):
     #########
     origaim_path = Path(base_path, '00_ORIGAIM')
     filename_s = Path(origaim_path, filename_sample)
-    
-    
+
     masks = []
     masks_name = []
     for file in Path(filename_s).glob('*[CORT]*[TRAB]_MASK*'):
         masks.append(file)
         masks_name.append(file.name)
     print(masks_name)
-    
+
     '''
     matching = [s for s in masks_name if any(xs in s for xs in masks_name)]
     print(matching)
     name_to_check = ['CORT', 'TRAB']
 
     print([url_string for extension in name_to_check if(extension in url_string)])
-    
+
     if '*CORT_MASK*' not in masks and '*TRAB_MASK*' not in masks:
         raise ValueError('Could not find cort mask and/or trab mask, exiting')
     '''
@@ -398,13 +398,13 @@ def main(base_path, filename_sample):
         print(f'Mask being currently processed:\t{mask}')
         mask_cap = ext(mask, '') + '_cap02.mhd'
         gmsh_name = str(Path(stldir, ext(mask, '.msh')).resolve())
-        # Convert original AIMs to numpy array
-        bone, imvtk = read_aim(str(Path(filename_s, mask).resolve()), bone) #TODO: name
+        # Convert original AIMs to numpy array
+        bone, imvtk = read_aim(str(Path(filename_s, mask).resolve()), bone)  # TODO: name
         print(" ... Converting AIM to MHD + ZRAW")
         vtk2mhd(imvtk, bone['Spacing'], str(Path(mhddir, ext(masks_name[0], '.mhd')).resolve()), header=None)
         closed_mask, spacing = mhd2itk(str(Path(mhddir, ext(masks_name[0], '.mhd')).resolve()))
         numpy2mhd(closed_mask, spacing, str(Path(mhddir, mask_cap).resolve()), header=None)
-        
+
         # stl_name = mhd2stl(mhddir, stldir, mask_cap)
         # gmsh_repair_mesh(str(Path(stldir, stl_name).resolve()), gmsh_name, decimation_factor = 10e5, max_elm_size = 2.0, mesher_id_alg=1)
 
@@ -413,5 +413,5 @@ if __name__ == "__main__":
 
     base_path_m = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/'
     filename_sample_m = 'C0001406'
-    
+
     main(base_path=base_path_m, filename_sample=filename_sample_m)

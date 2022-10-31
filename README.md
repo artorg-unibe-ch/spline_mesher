@@ -5,6 +5,7 @@
 **Date:** 29.07.2022
 
 ![Issue creation](https://github.com/simoneponcioni/spline-mesher/actions/workflows/todo_to_issue.yml/badge.svg)
+
 ![Python application](https://github.com/simoneponcioni/spline-mesher/actions/workflows/python-app.yml/badge.svg)
 
 ## Purpose
@@ -27,9 +28,7 @@ Import a voxel-based model and convert it to a geometrical simplified representa
 - Implement test robustness over different models
 - Understand how undersampling of raw data affects spline definition
 
-### MESHING IN GMSH - NOTES AND COMMENTS
-
-#### Mesh:
+## MESHING IN GMSH - NOTES AND COMMENTS
 
 - 2D algorithm: Quasi-Structured Quads (experimental)
 
@@ -41,4 +40,4 @@ Import a voxel-based model and convert it to a geometrical simplified representa
 
 - Subdivision algorithm: None
 
-https://gitlab.onelab.info/gmsh/gmsh/-/issues/1804
+![gitlab issue 1804](https://gitlab.onelab.info/gmsh/gmsh/-/issues/1804)

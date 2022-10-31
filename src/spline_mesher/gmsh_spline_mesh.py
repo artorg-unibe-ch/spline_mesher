@@ -20,6 +20,7 @@ import gmsh
 import sys
 import logging
 import cortical_sanity as csc
+import futils.geo_utils as gu
 
 pio.renderers.default = 'browser'
 logging.basicConfig(filename='app.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -107,13 +108,13 @@ class OCC_volume():
 
         Returns:
             None
-        """        
+        """
         if self.show_plots is not False:
             img = sitk.PermuteAxes(sitk.ReadImage(self.img_path), [1, 2, 0])
             img_view = sitk.GetArrayViewFromImage(img)
 
             plt.figure(f'Plot MHD slice n.{self.SLICE}',
-                       figsize=(np.shape(img_view)[0]/self.ASPECT, np.shape(img_view)[1]/self.ASPECT))
+                       figsize=(np.shape(img_view)[0] / self.ASPECT, np.shape(img_view)[1] / self.ASPECT))
             plt.imshow(img_view[self.SLICE, :, :], cmap='cividis',
                        interpolation='nearest', aspect='equal')
             plt.title(f'Slice n. {self.SLICE} of masked object', weight='bold')
@@ -151,7 +152,7 @@ class OCC_volume():
 
         if self.show_plots is not False:
             plt.figure('Binary contour', figsize=(np.shape(sitk.GetArrayFromImage(image_thr))[
-                       1]/self.ASPECT, np.shape(sitk.GetArrayFromImage(image_thr))[2]/self.ASPECT))
+                       1] / self.ASPECT, np.shape(sitk.GetArrayFromImage(image_thr))[2] / self.ASPECT))
             plt.imshow(sitk.GetArrayViewFromImage(img)[
                        :, :, self.SLICE], cmap='gray', interpolation='None', aspect='equal')
             plt.title(
@@ -199,8 +200,8 @@ class OCC_volume():
 
         if self.show_plots is not False:
             plt.figure('Binary contour - only external',
-                       figsize=(np.shape(sitk.GetArrayFromImage(image_thr))[1]/self.ASPECT,
-                                np.shape(sitk.GetArrayFromImage(image_thr))[2]/self.ASPECT))
+                       figsize=(np.shape(sitk.GetArrayFromImage(image_thr))[1] / self.ASPECT,
+                                np.shape(sitk.GetArrayFromImage(image_thr))[2] / self.ASPECT))
             plt.imshow(image_data[self.SLICE, :, :], cmap='gray',
                        interpolation='None', aspect='equal')
             plt.title(
@@ -213,10 +214,8 @@ class OCC_volume():
         else:
             print(f'Binary threshold, show_plots:\t{self.show_plots}')
 
-        coordsX = np.arange(0, size[0] * self.spacing[0], size[0]
-                            * self.spacing[0] / float(image_data.shape[2]))
-        coordsY = np.arange(0, size[1] * self.spacing[1], size[1]
-                            * self.spacing[1] / float(image_data.shape[1]))
+        coordsX = np.arange(0, size[0] * self.spacing[0], size[0] * self.spacing[0] / float(image_data.shape[2]))
+        coordsY = np.arange(0, size[1] * self.spacing[1], size[1] * self.spacing[1] / float(image_data.shape[1]))
         self.coordsX, self.coordsY = np.meshgrid(coordsX, coordsY)
 
         return None
@@ -226,10 +225,10 @@ class OCC_volume():
 
         x0 = np.mean(x)
         y0 = np.mean(y)
-        r = np.sqrt((x-x0)**2 + (y-y0)**2)
+        r = np.sqrt((x - x0)**2 + (y - y0)**2)
 
-        angles = np.where((y-y0) > 0, np.arccos((x-x0)/r),
-                          2*np.pi-np.arccos((x-x0)/r))
+        angles = np.where((y - y0) > 0, np.arccos((x - x0) / r),
+                          2 * np.pi - np.arccos((x - x0) / r))
         mask = np.argsort(angles)
 
         x_sorted = x[mask]
@@ -270,7 +269,7 @@ class OCC_volume():
         img_contours = sitk.GetImageFromArray(
             self.contours_arr, isVector=True)  # TODO: how to pass this one?
         image_data = sitk.GetArrayViewFromImage(img_contours)
-        fig.data[len(image_data)//(2 * self.SLICING_COEFFICIENT)
+        fig.data[len(image_data) // (2 * self.SLICING_COEFFICIENT)
                  ].visible = True
 
         # Create and add slider
@@ -285,8 +284,8 @@ class OCC_volume():
                 )
                 # Toggle i'th trace to "visible"
                 step["args"][0]["visible"][i] = True
-                step["args"][0]["visible"][i+1] = True
-                step["args"][0]["visible"][i+2] = True
+                step["args"][0]["visible"][i + 1] = True
+                step["args"][0]["visible"][i + 2] = True
                 steps.append(step)
 
         sliders = [dict(
@@ -446,15 +445,15 @@ class OCC_volume():
 
         points = []
         if self.location == 'cort_ext':
-            for i in range(1, len(x)-1):
+            for i in range(1, len(x) - 1):
                 point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
         elif self.location == 'cort_int':
-            for i in range(1, len(x)-1):
+            for i in range(1, len(x) - 1):
                 point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
         elif self.location == 'trab_ext':
-            for i in range(1, len(x)-1):
+            for i in range(1, len(x) - 1):
                 point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
         else:
@@ -466,9 +465,9 @@ class OCC_volume():
         loop = np.append(loop, loop[0])
 
         lines = []
-        for i in range(1, len(loop)-1):
+        for i in range(1, len(loop) - 1):
             line_tag = self.factory.addLine(
-                startTag=loop[i], endTag=loop[i+1], tag=-1)
+                startTag=loop[i], endTag=loop[i + 1], tag=-1)
             lines.append(line_tag)
 
         curve_loop_tag = self.factory.addCurveLoop(lines, tag=-1)
@@ -481,10 +480,10 @@ class OCC_volume():
                              [-1], num=np.ma.size(points, 1), dtype='int')
 
         lines_connectors = []
-        for i in range(0, len(loop_v)-1):
+        for i in range(0, len(loop_v) - 1):
             for j in range(0, len(loop_h)):
                 line = self.factory.addLine(
-                    startTag=points[i][j], endTag=points[i+1][j], tag=-1)
+                    startTag=points[i][j], endTag=points[i + 1][j], tag=-1)
                 lines_connectors.append(line)
 
         lines_slices = np.ndarray.astype(lines_slices, dtype='int')
@@ -498,12 +497,12 @@ class OCC_volume():
             lines_tag_connectors, lines_tag_connectors[:, 0]]
 
         surf_ext_tag_l = []
-        for i in range(0, len(loop_v)-1):
+        for i in range(0, len(loop_v) - 1):
             for j in range(0, len(loop_h)):
                 print(
                     f'Connecting lines: {points[i][j]} {lines_tag_connectors[i][j]}{points[i+1][j]} {lines_tag_connectors[i][j+1]}')
                 ll = self.factory.addCurveLoop(
-                    [points[i][j],  lines_tag_connectors[i][j],  points[i+1][j],  lines_tag_connectors[i][j+1]], tag=-1)
+                    [points[i][j], lines_tag_connectors[i][j], points[i + 1][j], lines_tag_connectors[i][j + 1]], tag=-1)
                 surf_ext_tag_l.append(ll)
 
         return lines_connectors, surf_ext_tag_l
@@ -535,7 +534,7 @@ class OCC_volume():
 
         return tag_vol
 
-    def input_sanity_check(self, ext_contour_s:np.ndarray, int_contour_s:np.ndarray):
+    def input_sanity_check(self, ext_contour_s: np.ndarray, int_contour_s: np.ndarray):
         """
         Sanity check for the input data before cortical sanity check
 
@@ -572,23 +571,23 @@ class OCC_volume():
             sys.exit(90)
         return ext_contour_s, int_contour_s
 
-    def output_sanity_check(self, initial_contour:np.ndarray, contour_s:np.ndarray):
+    def output_sanity_check(self, initial_contour: np.ndarray, contour_s: np.ndarray):
         # check that after csc.CorticalSanityCheck elements of arrays external and internal contours have the same structure and shape as before csc.CorticalSanityCheck
         # sanity check of input data ext_contour_s and int_contour_s
         if np.allclose(initial_contour[0], initial_contour[1], rtol=1e-05, atol=1e-08):
-            logging.warning(f'External contour has a duplicate first point')
+            logging.warning('External contour has a duplicate first point')
             if not np.allclose(contour_s[0], contour_s[1], rtol=1e-05, atol=1e-08):
-                logging.warning(f'New external contour does not have a duplicate first point')
+                logging.warning('New external contour does not have a duplicate first point')
                 contour_s = np.insert(contour_s, 0, contour_s[0], axis=0)
-                logging.info(f'New external contour now has a duplicate first point')
+                logging.info('New external contour now has a duplicate first point')
         if np.allclose(initial_contour[-1], initial_contour[-2]):
-            logging.warning(f'External contour has a duplicate last point')
+            logging.warning('External contour has a duplicate last point')
             if not np.allclose(contour_s[-1], contour_s[-2], rtol=1e-05, atol=1e-08):
-                logging.warning(f'New external contour does not have a duplicate last point')
+                logging.warning('New external contour does not have a duplicate last point')
                 contour_s = np.append(contour_s, [contour_s[-1]], axis=0)
-                logging.info(f'New external contour now has a duplicate last point')
+                logging.info('New external contour now has a duplicate last point')
         if np.shape(initial_contour) != np.shape(contour_s):
-            logging.warning(f'External contour has a different shape than the initial contour')
+            logging.warning('External contour has a different shape than the initial contour')
         else:
             logging.log(logging.INFO, 'External contour has the same shape as before csc.CorticalSanityCheck')
         print(f'contour_s after output_sanity_check:\n{contour_s}')
@@ -611,7 +610,7 @@ class OCC_volume():
         # TODO: Redundancy in slice_index and get_image in OCC_volume.volume_splines()
         # labels: question
         # assignees: @simoneponcioni
-        # milestone: 0.1.0     
+        # milestone: 0.1.0
         get_image = sitk.GetImageFromArray(image_data)
         height = get_image.GetDepth() * self.spacing[0]
 
@@ -633,7 +632,7 @@ class OCC_volume():
             z_pos = height * i / (len(slice_index) - 1)
             xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew = self.sort_surface(
                 slices=slice)
-            
+
             if self.location == 'cort_ext':
                 dstack = np.dstack((xnew, ynew))
                 ext_contour_dstack.append(dstack)
@@ -645,14 +644,14 @@ class OCC_volume():
                 ext_contour_s, int_contour_s = self.input_sanity_check(ext_contour_t, int_contour_t)
 
                 cortex = csc.CorticalSanityCheck(MIN_THICKNESS=self.MIN_THICKNESS,
-                                                     ext_contour=ext_contour_s,
-                                                     int_contour=int_contour_s)
-                
-                
+                                                 ext_contour=ext_contour_s,
+                                                 int_contour=int_contour_s)
+
                 int_spline_corr = cortex.cortical_sanity_check(ext_contour=ext_contour_s,
                                                                int_contour=int_contour_s)
 
-                # check that after csc.CorticalSanityCheck elements of arrays external and internal contours have the same structure and shape as before csc.CorticalSanityCheck
+                # check that after csc.CorticalSanityCheck elements of arrays external and internal contours
+                # have the same structure and shape as before csc.CorticalSanityCheck
                 int_contour_s = self.output_sanity_check(int_contour_t, int_spline_corr)
                 xnew = int_contour_s[:, 0]
                 ynew = int_contour_s[:, 1]
@@ -709,66 +708,6 @@ class OCC_volume():
         ext_contour_dstack = np.squeeze(ext_contour_dstack)
         return ext_contour_dstack, str(self.filepath + self.filename)
 
-    def cortical_volume(self):
-        '''
-        Import external cortical volume and substract internal cortical volume with GMSH boolean operations
-        '''
-
-        self.factory.cut(objectDimTags=self.cortex_outer_tags,
-                         toolDimTags=self.cortex_outer_tags,
-                         removeObject=False,
-                         removeTool=False)
-
-        # self.outer_cortex_surface, self.inner_cortex_surface)
-
-        if self.show_plots is not False:
-            gmsh.fltk.run()
-        gmsh.clear()
-        gmsh.finalize()
-        print('Exiting GMSH...')
-
-
-class OCC_bool():
-    def __init__(self,
-                 cort_ext, cort_int, trab_ext,
-                 bool_op,
-                 filepath,
-                 filename,
-                 bool_name):
-
-        self.model = gmsh.model
-        self.factory = self.model.occ
-
-        self.cortical_ext = str(cort_ext)
-        self.cortical_int = str(cort_int)
-        self.trabecular = str(trab_ext)
-        self.bool_operation = str(bool_op)
-
-        self.filepath = str(filepath)
-        self.filename = str(filename)
-        self.bool_name = str(bool_name)
-        return None
-
-    def volume_difference(self, objectDimTags_s, toolDimTags_s, bool_name):
-        gmsh.initialize()
-        gmsh.model.occ.add(bool_name)
-        gmsh.merge(objectDimTags_s)
-        gmsh.merge(toolDimTags_s)
-
-        self.factory.cut(objectDimTags=objectDimTags_s,
-                         toolDimTags=toolDimTags_s,
-                         tag=-1,
-                         removeObject=True, removeTool=True)
-
-        gmsh.option.setNumber("Mesh.SaveAll", 1)
-        gmsh.write(str(self.filepath + self.filename))
-
-        if self.show_plots is not False:
-            gmsh.fltk.run()
-        gmsh.clear()
-        gmsh.finalize()
-        print('Exiting GMSH...')
-
 
 def main():
     img_path_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_CORT_MASK_cap01.mhd'
@@ -780,7 +719,7 @@ def main():
     interp_point_s = 100
     slicing_coeff_s = 50
     show_plots_s = False
-    thickness_tol_s = 100e-3
+    thickness_tol_s = 122e-3
 
     ext_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_ext,
                                   ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
@@ -819,6 +758,12 @@ def main():
     #                               ext_contour=None)
     # # int_cort_surface.plot_mhd_slice()
     # trab_ext_arr, trab_ext_vol = ext_trab_surface.volume_splines()
+
+    # Setup of the boolean operation - creation of the cortical volume
+    filename_sorted = str(Path(filepath_ext) / Path(img_path_ext).stem)
+    cortex = gu.GeoSort(cort_ext_vol, cort_int_vol, filename_sorted, boolean='Delete')
+    cortex.append_file2_to_file1(cort_ext_vol, cort_int_vol)
+    cortex.write_geo()
 
 
 if __name__ == "__main__":
