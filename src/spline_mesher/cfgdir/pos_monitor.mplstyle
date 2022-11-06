@@ -1,0 +1,30 @@
+# Font Properties
+font.family: STIXGeneral
+mathtext.fontset: stix
+font.size: 16
+# Axes properties
+axes.linewidth: 2
+axes.labelpad: 10
+# Tick properties
+# x-axis
+xtick.top: True
+xtick.direction: in# y-axis
+ytick.right: True
+ytick.direction: in
+
+# x-axis
+xtick.major.size: 7
+xtick.major.width: 2
+xtick.minor.size: 5
+xtick.minor.width: 2# y-axis
+ytick.major.size: 7
+ytick.major.width: 2
+ytick.minor.size: 5
+ytick.minor.width: 2
+
+# Lines properties
+lines.linewidth: 2
+
+# Legend properties
+legend.framealpha: 1
+legend.frameon: False

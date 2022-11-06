@@ -4,20 +4,16 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import spatial
-import sys
-# plt.style.use('simone')
 
-# TODO: find a way to include plt.style.use inside package
-#       labels: enhancement
-#       assignees: @simoneponcioni
-#       milestone: v0.1.0
+# plt.style.use('02_CODE/src/spline_mesher/cfgdir/pos_monitor.mplstyle')  # https://github.com/matplotlib/matplotlib/issues/17978
 
 
 class CorticalSanityCheck:
-    def __init__(self, MIN_THICKNESS, ext_contour, int_contour) -> None:
+    def __init__(self, MIN_THICKNESS, ext_contour, int_contour, save_plot) -> None:
         self.min_thickness = MIN_THICKNESS  # minimum thickness between internal and external contour
         self.ext_contour = ext_contour  # external contour
         self.int_contour = int_contour  # internal contour
+        self.save_plot = bool(save_plot) 
 
     def unit_vector(self, vector):
         """
@@ -110,6 +106,31 @@ class CorticalSanityCheck:
             raise RuntimeWarning('angle comparison is not possible and/or edge case')
         return bool_angle
 
+    def center_of_mass(self, array: np.ndarray):
+        total = array.sum()
+        x_coord = (array.sum(axis=1) @ range(array.shape[0])) / total
+        y_coord = (array.sum(axis=0) @ range(array.shape[1])) / total
+        return x_coord, y_coord
+
+    def is_internal_radius_bigger_than_external(self, p_e_0, p_i_0):
+        """
+        Returns True if the internal radius is bigger than the external radius, False otherwise
+
+        Args:
+            p_e_0 (numpy.ndarray): array of shape (2,) containing external radius
+            p_i_0 (numpy.ndarray): array of shape (2,) containing internal radius
+
+        Returns:
+            bool_radius: True if internal radius is bigger than external radius, False otherwise
+        """
+        # check if internal radius is bigger than external radius element-wise and return boolean element-wise
+        p_e_0_x = np.mean(p_e_0[:, 0])
+        p_e_0_y = np.mean(p_e_0[:, 1])
+        r_e = np.sqrt((p_e_0[:, 0] - p_e_0_x)**2 + (p_e_0[:, 1] - p_e_0_y)**2)
+        r_i = np.sqrt((p_i_0[:, 0] - p_e_0_x)**2 + (p_i_0[:, 1] - p_e_0_y)**2)
+        bool_radius = [r_e < r_i for (r_e, r_i) in zip(r_e, r_i)]
+        return bool_radius
+
     def is_internal_inside_external(self, p_e_0, p_i_0):
         """
         Rationale for deciding if internal contour is inside external contour based on
@@ -139,7 +160,7 @@ class CorticalSanityCheck:
         """
         p_e_1 = self.roll_index(p_e_0, idx=1)
         p_e_2 = self.roll_index(p_e_0, idx=2)
-        p_i_1 = self.roll_index(p_i_0, idx=2)
+        p_i_1 = self.roll_index(p_i_0, idx=1)
 
         alpha_ext = self.ccw_angle(p_e_2 - p_e_1, p_e_0 - p_e_1)
         alpha_int = self.ccw_angle(p_e_2 - p_e_1, p_i_1 - p_e_1)
@@ -363,7 +384,7 @@ class CorticalSanityCheck:
         ]
         return xy_interp
 
-    def plot_corrected_contours(self, fig, ax1, ax2, ext_s, dx_med, dy_med, ext_spline, int_spline, loc_int, new_int, save=False):
+    def plot_corrected_contours(self, fig, ax1, ax2, ext_s, dx_med, dy_med, ext_spline, int_spline, loc_int, new_int, iterator, save=False):
         ax1.scatter(ext_spline[0, 0], ext_spline[0, 1], marker='x', s=300)
         ax1.scatter(int_spline[0, 0], int_spline[0, 1], marker='x', s=300)
         ax1.scatter(loc_int[0], loc_int[1], marker='x', s=300)
@@ -379,15 +400,15 @@ class CorticalSanityCheck:
         ax1.plot((ext_s[:, 0], ext_s[:, 0] - dy_med), (ext_s[:, 1], ext_s[:, 1] + dx_med), color='tab:blue')
 
         if save is not False:
-            fig.savefig('04_OUTPUT/tmp/C0002231_CORT_Correction_int_ext_pos.svg')
-            fig.savefig('04_OUTPUT/tmp/C0002231_CORT_Correction_int_ext_pos.png', dpi=150)
+            # fig.savefig(f'04_OUTPUT/tmp/C0002231_CORT_Correction_int_ext_pos_{iterator}.svg')
+            fig.savefig(f'04_OUTPUT/tmp/C0002231_CORT_Correction_int_ext_pos_{iterator}.png', dpi=150)
         else:
             pass
 
         # plt.show()
         return None
 
-    def cortical_sanity_check(self, ext_contour, int_contour):
+    def cortical_sanity_check(self, ext_contour, int_contour, iterator):
         """
         Check if the internal contour is within the external contour.
 
@@ -432,8 +453,8 @@ class CorticalSanityCheck:
                                                                          x_int=int_contour[:, 0],
                                                                          y_int=int_contour[:, 1])
 
-        boolean_angle = self.is_internal_inside_external(ext_s, int_s)
-        print(f'Is internal contour outside external contour?\n{boolean_angle}')
+        boolean_radius = self.is_internal_radius_bigger_than_external(ext_s, int_s)
+        print(f'Is internal radius bigger than external contour?\n{boolean_radius}')
 
         dx_med[-1] = dx_med[0]  # guarantees continuity / closes the loop
         dy_med[-1] = dy_med[0]  # guarantees continuity / closes the loop
@@ -442,16 +463,30 @@ class CorticalSanityCheck:
                                             int_arr=int_s,
                                             dx=dx_med,
                                             dy=dy_med,
+                                            bool_arr=boolean_radius)
+
+        boolean_angle = self.is_internal_inside_external(ext_s, int_s)
+        print(f'Is internal contour outside external contour?\n{boolean_angle}')
+
+        new_int = self.correct_intersection(ext_arr=ext_s,
+                                            int_arr=new_int,
+                                            dx=dx_med,
+                                            dy=dy_med,
                                             bool_arr=boolean_angle
                                             )
 
-        bool_min_thickness_s = self.check_min_thickness(ext=ext_s, int=new_int, min_thickness=self.min_thickness)
+        bool_min_thickness_s_0 = self.check_min_thickness(ext=ext_s, int=new_int, min_thickness=self.min_thickness)
+        bool_min_thickness_s_1 = self.check_min_thickness(ext=ext_s, int=np.roll(new_int, 1), min_thickness=self.min_thickness)
+        bool_min_thickness_s_m1 = self.check_min_thickness(ext=ext_s, int=np.roll(new_int, -1), min_thickness=self.min_thickness)
+        bool_min_thickness_s = np.logical_or(np.array(bool_min_thickness_s_0), np.array(bool_min_thickness_s_1), np.array(bool_min_thickness_s_m1))
         new_int = self.correct_intersection(ext_arr=ext_s,
                                             int_arr=new_int,
                                             dx=dx_med,
                                             dy=dy_med,
                                             bool_arr=bool_min_thickness_s
                                             )
-
-        self.plot_corrected_contours(fig, ax1, ax2, ext_s, dx_med, dy_med, self.ext_contour, int_contour, loc_int, new_int, save=True)  # self.int_contour?
+        if self.save_plot is not False:
+            self.plot_corrected_contours(fig, ax1, ax2, ext_s, dx_med, dy_med, self.ext_contour, int_contour, loc_int, new_int, iterator, save=True)  # self.int_contour?
+        else:
+            print('Plotting of corrected contours is disabled')    
         return new_int

@@ -3,7 +3,8 @@ Geometry representation and meshing through spline reconstruction
 Author: Simone Poncioni, MSB
 Date: 07-09.2022
 '''
-
+from itertools import repeat
+from multiprocessing import Pool
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,13 +25,7 @@ import futils.geo_utils as gu
 
 pio.renderers.default = 'browser'
 logging.basicConfig(filename='app.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
-# rcParams
-f = 1
-plt.rcParams['figure.figsize'] = [8 * f, 8 * f]
-plt.rcParams['font.size'] = 15
-matplotlib.rcParams['mathtext.fontset'] = 'stix'
-matplotlib.rcParams['font.family'] = 'STIXGeneral'
+# plt.style.use('./src/spline_mesher/cfgdir/pos_monitor.mplstyle')  # https://github.com/matplotlib/matplotlib/issues/17978
 
 
 class OCC_volume():
@@ -306,8 +301,8 @@ class OCC_volume():
                            x=0.1, y=1, showarrow=False,
                            font=dict(size=18, family="stix"))
 
-        fig.update_xaxes(range=[0, 20])
-        fig.update_yaxes(range=[0, 35])
+        fig.update_xaxes(range=[0, 40])
+        fig.update_yaxes(range=[0, 40])
         fig.show()
         return fig
 
@@ -590,7 +585,6 @@ class OCC_volume():
             logging.warning('External contour has a different shape than the initial contour')
         else:
             logging.log(logging.INFO, 'External contour has the same shape as before csc.CorticalSanityCheck')
-        print(f'contour_s after output_sanity_check:\n{contour_s}')
         return contour_s
 
     def offset_tags(self, entities):
@@ -601,6 +595,65 @@ class OCC_volume():
             newTag_s = (tag[0], tag[1] + self.offset)
             gmsh.model.setTag(dim=tag[0], tag=tag[1], newTag=newTag_s[1])
         return None
+
+    def get_contours(self, height, i, slice, slice_index, fig):
+        z_pos = height * i / (len(slice_index) - 1)
+        xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew = self.sort_surface(
+            slices=slice)
+
+        if self.location == 'cort_ext':
+            dstack = np.dstack((xnew, ynew))
+            
+
+        if self.location == 'cort_int':
+            dstack = None
+            ext_contour_t = self.ext_contour[i]
+            int_contour_t = np.c_[xnew, ynew]
+
+            ext_contour_s, int_contour_s = self.input_sanity_check(ext_contour_t, int_contour_t)
+
+            cortex = csc.CorticalSanityCheck(MIN_THICKNESS=self.MIN_THICKNESS,
+                                                 ext_contour=ext_contour_s,
+                                                 int_contour=int_contour_s,
+                                                 save_plot=False)
+
+            int_spline_corr = cortex.cortical_sanity_check(ext_contour=ext_contour_s,
+                                                               int_contour=int_contour_s,
+                                                               iterator=i)
+
+            # check that after csc.CorticalSanityCheck elements of arrays external and internal contours
+            # have the same structure and shape as before csc.CorticalSanityCheck
+            int_contour_s = self.output_sanity_check(int_contour_t, int_spline_corr)
+            xnew = int_contour_s[:, 0]
+            ynew = int_contour_s[:, 1]
+
+        # lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
+        lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
+
+        if self.show_plots is not False:
+            fig = self.plotly_add_traces(
+                fig, xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew)
+        else:
+            fig = None
+
+        return curve_loop_tag, lines_s, points, dstack
+
+    def apply_args(self, fn, args):
+        '''https://stackoverflow.com/questions/45718523/pass-kwargs-to-starmap-while-using-pool-in-python'''
+        return fn(*args)
+
+    def starmap_with_args(self, pool, fn, args_iter):
+        args_for_starmap = zip(repeat(fn), args_iter)
+        return pool.starmap(self.apply_args, args_for_starmap)
+
+    def parallel_get_contours(self, n_cores, height, slice_index):
+        with Pool(processes=n_cores) as pool:
+            i_arr = []
+            slices_arr = []
+            [(i_arr.append(i), slices_arr.append(slice_s)) for i, slice_s in enumerate(slice_index)]
+            # results = pool.starmap(self.get_contours, repeat(height), zip(i_arr, slices_arr), repeat(slice_index))
+            results = self.starmap_with_args(pool, self.get_contours, zip(repeat(height), i_arr, slices_arr, repeat(slice_index)))
+        return results
 
     def volume_splines(self):
         self.binary_threshold()
@@ -619,53 +672,27 @@ class OCC_volume():
             fig = go.Figure(layout=self.layout)
         else:
             print(f'Volume_splines, show_plots:\t{self.show_plots}')
+            fig = None
 
         # gmsh initialization
         gmsh.initialize()
         gmsh.model.add(str(self.location))
+        gmsh.option.setNumber("Geometry.Tolerance", 1e-9)
 
         connector_arr = []
         lines_slices = []
         surfaces_slices = []
         ext_contour_dstack = []
         for i, slice in enumerate(slice_index):
-            z_pos = height * i / (len(slice_index) - 1)
-            xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew = self.sort_surface(
-                slices=slice)
-
-            if self.location == 'cort_ext':
-                dstack = np.dstack((xnew, ynew))
-                ext_contour_dstack.append(dstack)
-
-            if self.location == 'cort_int':
-                ext_contour_t = self.ext_contour[i]
-                int_contour_t = np.c_[xnew, ynew]
-
-                ext_contour_s, int_contour_s = self.input_sanity_check(ext_contour_t, int_contour_t)
-
-                cortex = csc.CorticalSanityCheck(MIN_THICKNESS=self.MIN_THICKNESS,
-                                                 ext_contour=ext_contour_s,
-                                                 int_contour=int_contour_s)
-
-                int_spline_corr = cortex.cortical_sanity_check(ext_contour=ext_contour_s,
-                                                               int_contour=int_contour_s)
-
-                # check that after csc.CorticalSanityCheck elements of arrays external and internal contours
-                # have the same structure and shape as before csc.CorticalSanityCheck
-                int_contour_s = self.output_sanity_check(int_contour_t, int_spline_corr)
-                xnew = int_contour_s[:, 0]
-                ynew = int_contour_s[:, 1]
-
-            # lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
-            lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
+            curve_loop_tag, lines_s, points, dstack = self.get_contours(height, i, slice, slice_index, fig)
+            ext_contour_dstack.append(dstack)
             surfaces_slices.append(curve_loop_tag)
             lines_slices = np.append(lines_slices, lines_s)
             connector_arr = np.append(connector_arr, points)
-            if self.show_plots is not False:
-                fig = self.plotly_add_traces(
-                    fig, xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew)
-            else:
-                pass
+
+        # results = self.parallel_get_contours(n_cores=6, height=height, slice_index=slice_index)
+        # print(results)
+        # curve_loop_tag, lines_s, points, dstack = zip(*results)     
 
         if self.show_plots is not False:
             fig = self.plotly_makefig(fig)
@@ -695,7 +722,7 @@ class OCC_volume():
         self.offset_tags(self.factory.getEntities())
 
         gmsh.option.setNumber("Mesh.SaveAll", 1)
-        gmsh.write(str(self.filepath + self.filename))
+        gmsh.write(str(self.filename))
         logging.info('GMSH file saved')
 
         if self.show_plots is not False:
@@ -706,64 +733,75 @@ class OCC_volume():
 
         # reduce nesting level of ext_contour_dstack
         ext_contour_dstack = np.squeeze(ext_contour_dstack)
-        return ext_contour_dstack, str(self.filepath + self.filename)
+        return ext_contour_dstack, str(self.filename)
 
 
 def main():
-    img_path_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_CORT_MASK_cap01.mhd'
-    filepath_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/99_testing_prototyping/'
-    img_path_trab = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_TRAB_MASK_cap02.mhd'
-    filename_ext = Path(img_path_ext).stem + '_ext2' + '.geo_unrolled'
-    filename_int = Path(img_path_ext).stem + '_int2' + '.geo_unrolled'
-    filename_trab_ext = Path(img_path_ext).stem + '_trab2' + '.geo_unrolled'
+
+    img_basefilename = ['C0002234']
+    img_basepath = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM'
+    img_outputpath = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/04_OUTPUT'
+    img_path_ext = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i] + '_CORT_MASK_cap.mhd')) for i in range(len(img_basefilename))]
+    img_path_int = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i] + '_TRAB_MASK_cap.mhd')) for i in range(len(img_basefilename))]
+    filepath_ext = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i])) for i in range(len(img_basefilename))]
+    filename_ext = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + '_ext.geo_unrolled')) for i in range(len(img_basefilename))]
+    filename_int = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + '_int.geo_unrolled')) for i in range(len(img_basefilename))]
+    # img_path_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_CORT_MASK_cap01.mhd'
+    # filepath_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/99_testing_prototyping/'
+    # img_path_trab = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_TRAB_MASK_cap02.mhd'
+    # filename_ext = Path(img_path_ext).stem + '_ext' + '.geo_unrolled'
+    # filename_int = Path(img_path_ext).stem + '_int' + '.geo_unrolled'
+    # filename_trab_ext = Path(img_path_ext).stem + '_trab' + '.geo_unrolled'
     interp_point_s = 100
-    slicing_coeff_s = 50
+    slicing_coeff_s = 40
     show_plots_s = False
-    thickness_tol_s = 122e-3
+    thickness_tol_s = 120e-3
 
-    ext_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_ext,
-                                  ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
-                                  INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                                  S=10, K=3, INTERP_POINTS=interp_point_s,
-                                  debug_orientation=0,
-                                  show_plots=show_plots_s,
-                                  location='cort_ext',
-                                  offset=10000,
-                                  ext_contour=None,
-                                  thickness_tol=thickness_tol_s)
-    # ext_cort_surface.plot_mhd_slice()
-    cort_ext_arr, cort_ext_vol = ext_cort_surface.volume_splines()
+    for i in range(len(img_basefilename)):
+        Path.mkdir(Path(img_outputpath, img_basefilename[i]), parents=True, exist_ok=True)
+        ext_cort_surface = OCC_volume(img_path_ext[i], filepath_ext[i], filename_ext[i],
+                                      ASPECT=50, SLICE=1, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
+                                      INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
+                                      S=3, K=3, INTERP_POINTS=interp_point_s,
+                                      debug_orientation=0,
+                                      show_plots=show_plots_s,
+                                      location='cort_ext',
+                                      offset=10000,
+                                      ext_contour=None,
+                                      thickness_tol=thickness_tol_s)
+        # ext_cort_surface.plot_mhd_slice()
+        cort_ext_arr, cort_ext_vol = ext_cort_surface.volume_splines()
 
-    int_cort_surface = OCC_volume(img_path_ext, filepath_ext, filename_int,
-                                  ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
-                                  INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                                  S=10, K=3, INTERP_POINTS=interp_point_s,
-                                  debug_orientation=0,
-                                  show_plots=show_plots_s,
-                                  location='cort_int',
-                                  offset=20000,
-                                  ext_contour=cort_ext_arr,
-                                  thickness_tol=thickness_tol_s)
-    # int_cort_surface.plot_mhd_slice()
-    cort_int_arr, cort_int_vol = int_cort_surface.volume_splines()
+        int_cort_surface = OCC_volume(img_path_ext[i], filepath_ext[i], filename_int[i],
+                                      ASPECT=50, SLICE=1, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
+                                      INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
+                                      S=3, K=3, INTERP_POINTS=interp_point_s,
+                                      debug_orientation=0,
+                                      show_plots=show_plots_s,
+                                      location='cort_int',
+                                      offset=20000,
+                                      ext_contour=cort_ext_arr,
+                                      thickness_tol=thickness_tol_s)
+        # int_cort_surface.plot_mhd_slice()
+        cort_int_arr, cort_int_vol = int_cort_surface.volume_splines()
 
-    # ext_trab_surface = OCC_volume(img_path_trab, filepath_ext, filename_trab_ext,
-    #                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
-    #                               INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-    #                               S=10, K=3, INTERP_POINTS=interp_point_s,
-    #                               debug_orientation=0,
-    #                               show_plots=show_plots_s,
-    #                               location='trab_ext',
-    #                               offset=30000,
-    #                               ext_contour=None)
-    # # int_cort_surface.plot_mhd_slice()
-    # trab_ext_arr, trab_ext_vol = ext_trab_surface.volume_splines()
+        # ext_trab_surface = OCC_volume(img_path_trab, filepath_ext, filename_trab_ext,
+        #                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
+        #                               INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
+        #                               S=10, K=3, INTERP_POINTS=interp_point_s,
+        #                               debug_orientation=0,
+        #                               show_plots=show_plots_s,
+        #                               location='trab_ext',
+        #                               offset=30000,
+        #                               ext_contour=None)
+        # # int_cort_surface.plot_mhd_slice()
+        # trab_ext_arr, trab_ext_vol = ext_trab_surface.volume_splines()
 
-    # Setup of the boolean operation - creation of the cortical volume
-    filename_sorted = str(Path(filepath_ext) / Path(img_path_ext).stem)
-    cortex = gu.GeoSort(cort_ext_vol, cort_int_vol, filename_sorted, boolean='Delete')
-    cortex.append_file2_to_file1(cort_ext_vol, cort_int_vol)
-    cortex.write_geo()
+        # Setup of the boolean operation - creation of the cortical volume
+        filename_sorted = str(Path(img_outputpath,  img_basefilename[i], Path(img_basefilename[i]).stem))
+        cortex = gu.GeoSort(cort_ext_vol, cort_int_vol, filename_sorted, boolean='Delete')
+        cortex.append_file2_to_file1(cort_ext_vol, cort_int_vol)
+        cortex.write_geo()
 
 
 if __name__ == "__main__":

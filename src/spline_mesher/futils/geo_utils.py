@@ -8,7 +8,6 @@ class GeoSort():
         self.file2 = str(file2)
         self.filename = str(filename)
         self.filename_sorted = str(filename + '_sorted.geo_unrolled')
-
         self.boolean = str(boolean)
 
     def append_file2_to_file1(self, file1, file2):
@@ -23,11 +22,8 @@ class GeoSort():
 
     def read_lines(self):
         file = self.sort_lines(self.filename_sorted)
-        # TODO: only return unique values contained in cl__ list
-        # label: bug
-        # assignee: @simoneponcioni
-        # milestone: 0.1.0
         cl__s = [line for line in file if 'cl__' in line.split('(')[0]]
+        cl__s = list(set(cl__s))
         points = [line for line in file if 'Point' in line]
         lines = [line for line in file if 'Line' in line]
         CurveLoops = [line for line in file if re.search(r'\bCurve Loop\b', line)]

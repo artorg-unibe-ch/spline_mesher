@@ -1,5 +1,4 @@
-
-import spline_mesher.cortical_sanity as cs
+from spline_mesher import cortical_sanity as cs
 import nose.tools as nt
 import numpy as np
 # Path: 02_CODE/tests/tests_cortical_sanity.py

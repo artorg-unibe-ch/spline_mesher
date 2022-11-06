@@ -179,7 +179,6 @@ def read_aim(name, bone):
     IMG_vtk = AIMreader(name, Spacing)[0]
     # convert AIM files to numpy arrays
     IMG_array = vtk2numpy(IMG_vtk)
-    np.save('imnp.npy', IMG_array)
     return bone, IMG_vtk
 
 
@@ -396,7 +395,7 @@ def main(base_path, filename_sample):
 
     for mask in masks_name:
         print(f'Mask being currently processed:\t{mask}')
-        mask_cap = ext(mask, '') + '_cap02.mhd'
+        mask_cap = ext(mask, '') + '_cap.mhd'
         gmsh_name = str(Path(stldir, ext(mask, '.msh')).resolve())
         # Convert original AIMs to numpy array
         bone, imvtk = read_aim(str(Path(filename_s, mask).resolve()), bone)  # TODO: name
@@ -412,6 +411,6 @@ def main(base_path, filename_sample):
 if __name__ == "__main__":
 
     base_path_m = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/'
-    filename_sample_m = 'C0001406'
+    filename_sample_m = 'D_FEA_PRE_196'
 
     main(base_path=base_path_m, filename_sample=filename_sample_m)
