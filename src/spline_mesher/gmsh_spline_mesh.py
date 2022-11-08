@@ -1,8 +1,8 @@
-'''
+"""
 Geometry representation and meshing through spline reconstruction
 Author: Simone Poncioni, MSB
 Date: 07-09.2022
-'''
+"""
 from itertools import repeat
 from multiprocessing import Pool
 import cv2
@@ -23,28 +23,45 @@ import logging
 import cortical_sanity as csc
 import futils.geo_utils as gu
 
-pio.renderers.default = 'browser'
-logging.basicConfig(filename='app.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+pio.renderers.default = "browser"
+logging.basicConfig(
+    filename="app.log",
+    filemode="w",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
 # plt.style.use('./src/spline_mesher/cfgdir/pos_monitor.mplstyle')  # https://github.com/matplotlib/matplotlib/issues/17978
 
 
-class OCC_volume():
-    def __init__(self,
-                 img_path, filepath, filename,
-                 ASPECT, SLICE, UNDERSAMPLING, SLICING_COEFFICIENT,
-                 INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH,
-                 S, K, INTERP_POINTS,
-                 debug_orientation,
-                 show_plots,
-                 location,
-                 offset,
-                 ext_contour,
-                 thickness_tol):
-        '''
+class OCC_volume:
+    def __init__(
+        self,
+        img_path,
+        filepath,
+        filename,
+        ASPECT,
+        SLICE,
+        UNDERSAMPLING,
+        SLICING_COEFFICIENT,
+        INSIDE_VAL,
+        OUTSIDE_VAL,
+        LOWER_THRESH,
+        UPPER_THRESH,
+        S,
+        K,
+        INTERP_POINTS,
+        debug_orientation,
+        show_plots,
+        location,
+        offset,
+        ext_contour,
+        thickness_tol,
+    ):
+        """
         Class that imports a voxel-based model and converts it to a geometrical simplified representation
         through the use of splines for each slice in the transverse plane.
         Following spline reconstruction, the model is meshed with GMSH.
-        '''
+        """
         self.model = gmsh.model
         self.factory = self.model.occ
 
@@ -58,8 +75,7 @@ class OCC_volume():
 
         self.ASPECT = ASPECT
         self.SLICE = SLICE
-        self.THRESHOLD_PARAM = [INSIDE_VAL,
-                                OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
+        self.THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
         self.UNDERSAMPLING = UNDERSAMPLING
         self.SLICING_COEFFICIENT = SLICING_COEFFICIENT
         self.S = S
@@ -88,13 +104,13 @@ class OCC_volume():
             xaxis=dict(
                 title="Medial - Lateral position (mm)",
                 linecolor="#BCCCDC",  # Sets color of X-axis line
-                showgrid=True  # Removes X-axis grid lines
+                showgrid=True,  # Removes X-axis grid lines
             ),
             yaxis=dict(
                 title="Palmar - Dorsal position (mm)",
                 linecolor="#BCCCDC",  # Sets color of Y-axis line
                 showgrid=True,  # Removes Y-axis grid lines
-            )
+            ),
         )
 
     def plot_mhd_slice(self):
@@ -108,11 +124,20 @@ class OCC_volume():
             img = sitk.PermuteAxes(sitk.ReadImage(self.img_path), [1, 2, 0])
             img_view = sitk.GetArrayViewFromImage(img)
 
-            plt.figure(f'Plot MHD slice n.{self.SLICE}',
-                       figsize=(np.shape(img_view)[0] / self.ASPECT, np.shape(img_view)[1] / self.ASPECT))
-            plt.imshow(img_view[self.SLICE, :, :], cmap='cividis',
-                       interpolation='nearest', aspect='equal')
-            plt.title(f'Slice n. {self.SLICE} of masked object', weight='bold')
+            plt.figure(
+                f"Plot MHD slice n.{self.SLICE}",
+                figsize=(
+                    np.shape(img_view)[0] / self.ASPECT,
+                    np.shape(img_view)[1] / self.ASPECT,
+                ),
+            )
+            plt.imshow(
+                img_view[self.SLICE, :, :],
+                cmap="cividis",
+                interpolation="nearest",
+                aspect="equal",
+            )
+            plt.title(f"Slice n. {self.SLICE} of masked object", weight="bold")
 
             ax = plt.gca()
             divider = make_axes_locatable(ax)
@@ -120,13 +145,13 @@ class OCC_volume():
             plt.colorbar(cax=cax)
             plt.show()
         else:
-            print(f'MHD slice, show_plots:\t\t{self.show_plots}')
+            print(f"MHD slice, show_plots:\t\t{self.show_plots}")
         return None
 
     def binary_threshold(self):
-        '''
+        """
         THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
-        '''
+        """
 
         image = sitk.ReadImage(self.img_path)
         # Binary threshold
@@ -139,26 +164,38 @@ class OCC_volume():
         spacing_image = image.GetSpacing()
 
         # https://itk.org/pipermail/community/2017-August/013464.html
-        img = sitk.JoinSeries([sitk.BinaryContour(
-            image_thr[z, :, :], fullyConnected=True) for z in range(image_thr.GetSize()[0])])
+        img = sitk.JoinSeries(
+            [
+                sitk.BinaryContour(image_thr[z, :, :], fullyConnected=True)
+                for z in range(image_thr.GetSize()[0])
+            ]
+        )
         depth = img.GetDepth()
         img = sitk.PermuteAxes(img, [2, 0, 1])
         img.SetSpacing([spacing_image[0], spacing_image[1], spacing_image[2]])
 
         if self.show_plots is not False:
-            plt.figure('Binary contour', figsize=(np.shape(sitk.GetArrayFromImage(image_thr))[
-                       1] / self.ASPECT, np.shape(sitk.GetArrayFromImage(image_thr))[2] / self.ASPECT))
-            plt.imshow(sitk.GetArrayViewFromImage(img)[
-                       :, :, self.SLICE], cmap='gray', interpolation='None', aspect='equal')
-            plt.title(
-                f'Binary threshold on slice n. {self.SLICE}', weight='bold')
+            plt.figure(
+                "Binary contour",
+                figsize=(
+                    np.shape(sitk.GetArrayFromImage(image_thr))[1] / self.ASPECT,
+                    np.shape(sitk.GetArrayFromImage(image_thr))[2] / self.ASPECT,
+                ),
+            )
+            plt.imshow(
+                sitk.GetArrayViewFromImage(img)[:, :, self.SLICE],
+                cmap="gray",
+                interpolation="None",
+                aspect="equal",
+            )
+            plt.title(f"Binary threshold on slice n. {self.SLICE}", weight="bold")
             ax = plt.gca()
             divider = make_axes_locatable(ax)
             cax = divider.append_axes("right", size="5%", pad=0.1)
             plt.colorbar(cax=cax)
             plt.show()
         else:
-            print(f'Binary threshold, show_plots:\t{self.show_plots}')
+            print(f"Binary threshold, show_plots:\t{self.show_plots}")
 
         # https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour
         self.spacing = img.GetSpacing()
@@ -167,50 +204,69 @@ class OCC_volume():
         self.contours_arr = []
         for z in range(depth):
             bin_img = sitk.GetArrayViewFromImage(img)[:, :, z]
-            if self.location == 'cort_ext':
+            if self.location == "cort_ext":
                 contours, hierarchy = cv2.findContours(
-                    bin_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    bin_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+                )
                 out = np.zeros_like(bin_img)
                 outer_contour = cv2.drawContours(out, contours, -1, 1, 1)
                 self.contours_arr.append(outer_contour)
-            elif self.location == 'cort_int':
+            elif self.location == "cort_int":
                 contours, hierarchy = cv2.findContours(
-                    bin_img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                    bin_img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+                )
                 inn = np.zeros_like(bin_img)
                 inner_contour = cv2.drawContours(inn, contours, 2, 1, 1)
                 self.contours_arr.append(inner_contour)
-            elif self.location == 'trab_ext':
+            elif self.location == "trab_ext":
                 contours, hierarchy = cv2.findContours(
-                    bin_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    bin_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+                )
                 out = np.zeros_like(bin_img)
                 outer_contour = cv2.drawContours(out, contours, -1, 1, 1)
                 self.contours_arr.append(outer_contour)
             else:
                 raise ValueError(
-                    'location argument is set neither to cort_external nor cort_internal')
+                    "location argument is set neither to cort_external nor cort_internal"
+                )
 
         img_contours = sitk.GetImageFromArray(self.contours_arr, isVector=True)
         image_data = sitk.GetArrayViewFromImage(img_contours)
         self.height = depth * self.spacing[0]
 
         if self.show_plots is not False:
-            plt.figure('Binary contour - only external',
-                       figsize=(np.shape(sitk.GetArrayFromImage(image_thr))[1] / self.ASPECT,
-                                np.shape(sitk.GetArrayFromImage(image_thr))[2] / self.ASPECT))
-            plt.imshow(image_data[self.SLICE, :, :], cmap='gray',
-                       interpolation='None', aspect='equal')
-            plt.title(
-                f'External contouring on slice n. {self.SLICE}', weight='bold')
+            plt.figure(
+                "Binary contour - only external",
+                figsize=(
+                    np.shape(sitk.GetArrayFromImage(image_thr))[1] / self.ASPECT,
+                    np.shape(sitk.GetArrayFromImage(image_thr))[2] / self.ASPECT,
+                ),
+            )
+            plt.imshow(
+                image_data[self.SLICE, :, :],
+                cmap="gray",
+                interpolation="None",
+                aspect="equal",
+            )
+            plt.title(f"External contouring on slice n. {self.SLICE}", weight="bold")
             ax = plt.gca()
             divider = make_axes_locatable(ax)
             cax = divider.append_axes("right", size="5%", pad=0.1)
             plt.colorbar(cax=cax)
             plt.show()
         else:
-            print(f'Binary threshold, show_plots:\t{self.show_plots}')
+            print(f"Binary threshold, show_plots:\t{self.show_plots}")
 
-        coordsX = np.arange(0, size[0] * self.spacing[0], size[0] * self.spacing[0] / float(image_data.shape[2]))
-        coordsY = np.arange(0, size[1] * self.spacing[1], size[1] * self.spacing[1] / float(image_data.shape[1]))
+        coordsX = np.arange(
+            0,
+            size[0] * self.spacing[0],
+            size[0] * self.spacing[0] / float(image_data.shape[2]),
+        )
+        coordsY = np.arange(
+            0,
+            size[1] * self.spacing[1],
+            size[1] * self.spacing[1] / float(image_data.shape[1]),
+        )
         self.coordsX, self.coordsY = np.meshgrid(coordsX, coordsY)
 
         return None
@@ -220,52 +276,56 @@ class OCC_volume():
 
         x0 = np.mean(x)
         y0 = np.mean(y)
-        r = np.sqrt((x - x0)**2 + (y - y0)**2)
+        r = np.sqrt((x - x0) ** 2 + (y - y0) ** 2)
 
-        angles = np.where((y - y0) > 0, np.arccos((x - x0) / r),
-                          2 * np.pi - np.arccos((x - x0) / r))
+        angles = np.where(
+            (y - y0) > 0, np.arccos((x - x0) / r), 2 * np.pi - np.arccos((x - x0) / r)
+        )
         mask = np.argsort(angles)
 
         x_sorted = x[mask]
         y_sorted = y[mask]
         return x_sorted, y_sorted
 
-    def plotly_add_traces(self, fig, xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew):
-        fig.add_traces([
-            go.Scatter(
-                mode='lines+markers',
-                marker=dict(
-                    color='Black',
-                    size=3),
-                visible=False,
-                line=dict(color=px.colors.qualitative.Dark2[0], width=2),
-                name="Original",
-                x=xy_sorted_closed[:, 0],
-                y=xy_sorted_closed[:, 1]),
-
-            go.Scatter(
-                visible=False,
-                mode='lines',
-                line=dict(color=px.colors.qualitative.Dark2[2], width=5),
-                name="Mahalanobis sorting",
-                x=x_mahalanobis,
-                y=y_mahalanobis),
-
-            go.Scatter(
-                visible=False,
-                line=dict(color=px.colors.qualitative.Dark2[1], width=5),
-                name=f"B-spline order {self.K}",
-                x=xnew,
-                y=ynew),
-        ])
+    def plotly_add_traces(
+        self, fig, xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew
+    ):
+        fig.add_traces(
+            [
+                go.Scatter(
+                    mode="lines+markers",
+                    marker=dict(color="Black", size=3),
+                    visible=False,
+                    line=dict(color=px.colors.qualitative.Dark2[0], width=2),
+                    name="Original",
+                    x=xy_sorted_closed[:, 0],
+                    y=xy_sorted_closed[:, 1],
+                ),
+                go.Scatter(
+                    visible=False,
+                    mode="lines",
+                    line=dict(color=px.colors.qualitative.Dark2[2], width=5),
+                    name="Mahalanobis sorting",
+                    x=x_mahalanobis,
+                    y=y_mahalanobis,
+                ),
+                go.Scatter(
+                    visible=False,
+                    line=dict(color=px.colors.qualitative.Dark2[1], width=5),
+                    name=f"B-spline order {self.K}",
+                    x=xnew,
+                    y=ynew,
+                ),
+            ]
+        )
         return fig
 
     def plotly_makefig(self, fig):
         img_contours = sitk.GetImageFromArray(
-            self.contours_arr, isVector=True)  # TODO: how to pass this one?
+            self.contours_arr, isVector=True
+        )  # TODO: how to pass this one?
         image_data = sitk.GetArrayViewFromImage(img_contours)
-        fig.data[len(image_data) // (2 * self.SLICING_COEFFICIENT)
-                 ].visible = True
+        fig.data[len(image_data) // (2 * self.SLICING_COEFFICIENT)].visible = True
 
         # Create and add slider
         steps = []
@@ -273,9 +333,13 @@ class OCC_volume():
             if i % 3 == 0:
                 step = dict(
                     method="update",
-                    args=[{"visible": [False] * len(fig.data)},
-                          {'title': f'Slice position {(((i) * self.height) / len(fig.data)):.2f} mm'}],
-                    label=i
+                    args=[
+                        {"visible": [False] * len(fig.data)},
+                        {
+                            "title": f"Slice position {(((i) * self.height) / len(fig.data)):.2f} mm"
+                        },
+                    ],
+                    label=i,
                 )
                 # Toggle i'th trace to "visible"
                 step["args"][0]["visible"][i] = True
@@ -283,23 +347,26 @@ class OCC_volume():
                 step["args"][0]["visible"][i + 2] = True
                 steps.append(step)
 
-        sliders = [dict(
-            active=10,
-            currentvalue={"prefix": "Slice: ", "suffix": " [-]"},
-            pad={"t": 50},
-            steps=steps
-        )]
+        sliders = [
+            dict(
+                active=10,
+                currentvalue={"prefix": "Slice: ", "suffix": " [-]"},
+                pad={"t": 50},
+                steps=steps,
+            )
+        ]
 
-        fig.update_layout(
-            sliders=sliders,
-            autosize=False,
-            width=1000,
-            height=1000)
+        fig.update_layout(sliders=sliders, autosize=False, width=1000, height=1000)
 
-        fig.add_annotation(text="Slice representation through splines",
-                           xref="paper", yref="paper",
-                           x=0.1, y=1, showarrow=False,
-                           font=dict(size=18, family="stix"))
+        fig.add_annotation(
+            text="Slice representation through splines",
+            xref="paper",
+            yref="paper",
+            x=0.1,
+            y=1,
+            showarrow=False,
+            font=dict(size=18, family="stix"),
+        )
 
         fig.update_xaxes(range=[0, 40])
         fig.update_yaxes(range=[0, 40])
@@ -307,7 +374,7 @@ class OCC_volume():
         return fig
 
     def check_orient(self, x, y, direction=1):
-        '''
+        """
         Author: Simone Poncioni, MSB
         Date: 18.08.2022
         Functionality: Orient all array in the same direction (cw or ccw)
@@ -321,43 +388,43 @@ class OCC_volume():
         Returns:
         x_o = reoriented x 1D-arr
         y_o = reoriented y 1D-arr
-        '''
+        """
 
         if direction == 1:
             if self.debug_orientation == 1:
-                print('Desired direction: cw')
+                print("Desired direction: cw")
             if y[1] > y[0]:
                 if self.debug_orientation == 1:
-                    print('Not flipping')
+                    print("Not flipping")
                 else:
                     pass
                 x_o = x
                 y_o = y
             elif y[1] < y[0]:
                 if self.debug_orientation == 1:
-                    print('Flipping')
+                    print("Flipping")
                 else:
                     pass
                 x_o = np.flip(x, axis=0)
                 y_o = np.flip(y, axis=0)
             else:
-                print('Something went wrong while flipping the array')
+                print("Something went wrong while flipping the array")
 
         if direction == 2:
             if self.debug_orientation == 1:
-                print('Desired direction: ccw')
+                print("Desired direction: ccw")
             if y[1] < y[0]:
                 if self.debug_orientation == 1:
-                    print('Not flipping')
+                    print("Not flipping")
                 x_o = x
                 y_o = y
             elif y[1] > y[0]:
                 if self.debug_orientation == 1:
-                    print('Flipping')
+                    print("Flipping")
                 x_o = np.flip(x, axis=0)
                 y_o = np.flip(y, axis=0)
             else:
-                print('Something went wrong while flipping the array')
+                print("Something went wrong while flipping the array")
 
         return x_o, y_o
 
@@ -399,105 +466,127 @@ class OCC_volume():
             self.ynew (numpy.ndarray): y array of sorted points interpolated with bspline and in the same direction
         """
         img_contours = sitk.GetImageFromArray(
-            self.contours_arr, isVector=True)  # TODO: how to pass this one?
+            self.contours_arr, isVector=True
+        )  # TODO: how to pass this one?
         image_data = sitk.GetArrayViewFromImage(img_contours)
         image_slice = image_data[slices, :, :][::-1, ::-1]
 
-        x = self.coordsX[image_slice == 1][0::self.UNDERSAMPLING]
-        y = self.coordsY[image_slice == 1][0::self.UNDERSAMPLING]
+        x = self.coordsX[image_slice == 1][0 :: self.UNDERSAMPLING]
+        y = self.coordsY[image_slice == 1][0 :: self.UNDERSAMPLING]
 
         x_s, y_s = self.sort_xy(x, y)
         self.xy_sorted = np.c_[x_s, y_s]
         self.xy_sorted_closed = np.vstack([self.xy_sorted, self.xy_sorted[0]])
         self.x_mahalanobis, self.y_mahalanobis = self.sort_mahalanobis(
-            self.xy_sorted.T, 'mahalanobis', 0)
-        self.x_mahalanobis = np.append(
-            self.x_mahalanobis, self.x_mahalanobis[0])
-        self.y_mahalanobis = np.append(
-            self.y_mahalanobis, self.y_mahalanobis[0])
+            self.xy_sorted.T, "mahalanobis", 0
+        )
+        self.x_mahalanobis = np.append(self.x_mahalanobis, self.x_mahalanobis[0])
+        self.y_mahalanobis = np.append(self.y_mahalanobis, self.y_mahalanobis[0])
 
         # find the knot points
-        tckp, u = splprep([self.x_mahalanobis, self.y_mahalanobis], s=self.S, k=self.K, per=True, ub=[
-                          self.x_mahalanobis, self.y_mahalanobis][0], ue=[self.x_mahalanobis, self.y_mahalanobis][0])
+        tckp, u = splprep(
+            [self.x_mahalanobis, self.y_mahalanobis],
+            s=self.S,
+            k=self.K,
+            per=True,
+            ub=[self.x_mahalanobis, self.y_mahalanobis][0],
+            ue=[self.x_mahalanobis, self.y_mahalanobis][0],
+        )
 
         # evaluate spline, including interpolated points
-        self.xnew, self.ynew = splev(
-            np.linspace(0, 1, self.INTERP_POINTS_S), tckp)
+        self.xnew, self.ynew = splev(np.linspace(0, 1, self.INTERP_POINTS_S), tckp)
         self.xnew = np.append(self.xnew, self.xnew[0])
         self.ynew = np.append(self.ynew, self.ynew[0])
 
         # Sanity check to ensure directionality of sorting in cw- or ccw-direction
-        self.xnew, self.ynew = self.check_orient(
-            self.xnew, self.ynew, direction=1)
-        return self.xy_sorted_closed, self.x_mahalanobis, self.y_mahalanobis, self.xnew, self.ynew
+        self.xnew, self.ynew = self.check_orient(self.xnew, self.ynew, direction=1)
+        return (
+            self.xy_sorted_closed,
+            self.x_mahalanobis,
+            self.y_mahalanobis,
+            self.xnew,
+            self.ynew,
+        )
 
     def surfaces_gmsh(self, x, y, z):
-        '''
+        """
         https://gitlab.onelab.info/gmsh/gmsh/-/issues/456
         https://bbanerjee.github.io/ParSim/fem/meshing/gmsh/quadrlateral-meshing-with-gmsh/
-        '''
+        """
         gmsh.option.setNumber("General.Terminal", 1)
 
         points = []
-        if self.location == 'cort_ext':
+        if self.location == "cort_ext":
             for i in range(1, len(x) - 1):
                 point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
-        elif self.location == 'cort_int':
+        elif self.location == "cort_int":
             for i in range(1, len(x) - 1):
                 point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
-        elif self.location == 'trab_ext':
+        elif self.location == "trab_ext":
             for i in range(1, len(x) - 1):
                 point = self.factory.addPoint(x[i], y[i], z, tag=-1)
                 points = np.append(points, point)
         else:
-            sys.exit(91, 'self.location not defined correctly')
+            sys.exit(91, "self.location not defined correctly")
 
         loop = []
-        loop = np.linspace(points[0], points[-1],
-                           num=self.INTERP_POINTS_S, dtype='int')
+        loop = np.linspace(points[0], points[-1], num=self.INTERP_POINTS_S, dtype="int")
         loop = np.append(loop, loop[0])
 
         lines = []
         for i in range(1, len(loop) - 1):
             line_tag = self.factory.addLine(
-                startTag=loop[i], endTag=loop[i + 1], tag=-1)
+                startTag=loop[i], endTag=loop[i + 1], tag=-1
+            )
             lines.append(line_tag)
 
         curve_loop_tag = self.factory.addCurveLoop(lines, tag=-1)
         return lines, points, curve_loop_tag
 
     def connector_gmsh(self, points, lines_slices, slice_index):
-        loop_v = np.linspace(points[0][0], points[-1]
-                             [0], num=len(points), dtype='int')
-        loop_h = np.linspace(points[0][0], points[0]
-                             [-1], num=np.ma.size(points, 1), dtype='int')
+        loop_v = np.linspace(points[0][0], points[-1][0], num=len(points), dtype="int")
+        loop_h = np.linspace(
+            points[0][0], points[0][-1], num=np.ma.size(points, 1), dtype="int"
+        )
 
         lines_connectors = []
         for i in range(0, len(loop_v) - 1):
             for j in range(0, len(loop_h)):
                 line = self.factory.addLine(
-                    startTag=points[i][j], endTag=points[i + 1][j], tag=-1)
+                    startTag=points[i][j], endTag=points[i + 1][j], tag=-1
+                )
                 lines_connectors.append(line)
 
-        lines_slices = np.ndarray.astype(lines_slices, dtype='int')
-        lines_tag_connectors = np.ndarray.astype(np.array(lines_connectors).reshape(
-            [len(slice_index) - 1, self.INTERP_POINTS_S - 1]), dtype='int')
+        lines_slices = np.ndarray.astype(lines_slices, dtype="int")
+        lines_tag_connectors = np.ndarray.astype(
+            np.array(lines_connectors).reshape(
+                [len(slice_index) - 1, self.INTERP_POINTS_S - 1]
+            ),
+            dtype="int",
+        )
 
         # append first element of each array
         points = np.c_[points, points[:, 0]]
         # append first element of each array
-        lines_tag_connectors = np.c_[
-            lines_tag_connectors, lines_tag_connectors[:, 0]]
+        lines_tag_connectors = np.c_[lines_tag_connectors, lines_tag_connectors[:, 0]]
 
         surf_ext_tag_l = []
         for i in range(0, len(loop_v) - 1):
             for j in range(0, len(loop_h)):
                 print(
-                    f'Connecting lines: {points[i][j]} {lines_tag_connectors[i][j]}{points[i+1][j]} {lines_tag_connectors[i][j+1]}')
+                    f"Connecting lines: {points[i][j]} {lines_tag_connectors[i][j]}{points[i+1][j]} {lines_tag_connectors[i][j+1]}"
+                )
                 ll = self.factory.addCurveLoop(
-                    [points[i][j], lines_tag_connectors[i][j], points[i + 1][j], lines_tag_connectors[i][j + 1]], tag=-1)
+                    [
+                        points[i][j],
+                        lines_tag_connectors[i][j],
+                        points[i + 1][j],
+                        lines_tag_connectors[i][j + 1],
+                    ],
+                    tag=-1,
+                )
                 surf_ext_tag_l.append(ll)
 
         return lines_connectors, surf_ext_tag_l
@@ -511,17 +600,16 @@ class OCC_volume():
         return shell_tags
 
     def add_volume(self, surf_b, surf_tags, surf_t, loc):
-        loop = self.factory.addSurfaceLoop(
-            [surf_b] + surf_tags + [surf_t], tag=-1)
+        loop = self.factory.addSurfaceLoop([surf_b] + surf_tags + [surf_t], tag=-1)
 
-        if loc == 'cort_ext':
+        if loc == "cort_ext":
             tag_v = int(3)
-        elif loc == 'cort_int':
+        elif loc == "cort_int":
             tag_v = int(2)
-        elif loc == 'trab':
+        elif loc == "trab":
             tag_v = int(1)
         else:
-            print(f'Error in the definition of the volume tag:\t{tag_v}')
+            print(f"Error in the definition of the volume tag:\t{tag_v}")
             sys.exit(90)
 
         tag_vol = self.factory.addVolume([loop], tag=-1)
@@ -562,7 +650,8 @@ class OCC_volume():
         # check that shape of ext_contour_s and int_contour_s are the same
         if ext_contour_s.shape != int_contour_s.shape:
             print(
-                f'Error in the shape of the external and internal contours of the slice:\t{slice}')
+                f"Error in the shape of the external and internal contours of the slice:\t{slice}"
+            )
             sys.exit(90)
         return ext_contour_s, int_contour_s
 
@@ -570,27 +659,36 @@ class OCC_volume():
         # check that after csc.CorticalSanityCheck elements of arrays external and internal contours have the same structure and shape as before csc.CorticalSanityCheck
         # sanity check of input data ext_contour_s and int_contour_s
         if np.allclose(initial_contour[0], initial_contour[1], rtol=1e-05, atol=1e-08):
-            logging.warning('External contour has a duplicate first point')
+            logging.warning("External contour has a duplicate first point")
             if not np.allclose(contour_s[0], contour_s[1], rtol=1e-05, atol=1e-08):
-                logging.warning('New external contour does not have a duplicate first point')
+                logging.warning(
+                    "New external contour does not have a duplicate first point"
+                )
                 contour_s = np.insert(contour_s, 0, contour_s[0], axis=0)
-                logging.info('New external contour now has a duplicate first point')
+                logging.info("New external contour now has a duplicate first point")
         if np.allclose(initial_contour[-1], initial_contour[-2]):
-            logging.warning('External contour has a duplicate last point')
+            logging.warning("External contour has a duplicate last point")
             if not np.allclose(contour_s[-1], contour_s[-2], rtol=1e-05, atol=1e-08):
-                logging.warning('New external contour does not have a duplicate last point')
+                logging.warning(
+                    "New external contour does not have a duplicate last point"
+                )
                 contour_s = np.append(contour_s, [contour_s[-1]], axis=0)
-                logging.info('New external contour now has a duplicate last point')
+                logging.info("New external contour now has a duplicate last point")
         if np.shape(initial_contour) != np.shape(contour_s):
-            logging.warning('External contour has a different shape than the initial contour')
+            logging.warning(
+                "External contour has a different shape than the initial contour"
+            )
         else:
-            logging.log(logging.INFO, 'External contour has the same shape as before csc.CorticalSanityCheck')
+            logging.log(
+                logging.INFO,
+                "External contour has the same shape as before csc.CorticalSanityCheck",
+            )
         return contour_s
 
     def offset_tags(self, entities):
-        '''
+        """
         get all entities of the model and add offset to make unique tags
-        '''
+        """
         for tag in entities:
             newTag_s = (tag[0], tag[1] + self.offset)
             gmsh.model.setTag(dim=tag[0], tag=tag[1], newTag=newTag_s[1])
@@ -599,27 +697,32 @@ class OCC_volume():
     def get_contours(self, height, i, slice, slice_index, fig):
         z_pos = height * i / (len(slice_index) - 1)
         xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew = self.sort_surface(
-            slices=slice)
+            slices=slice
+        )
 
-        if self.location == 'cort_ext':
+        if self.location == "cort_ext":
             dstack = np.dstack((xnew, ynew))
-            
 
-        if self.location == 'cort_int':
+        if self.location == "cort_int":
             dstack = None
             ext_contour_t = self.ext_contour[i]
             int_contour_t = np.c_[xnew, ynew]
 
-            ext_contour_s, int_contour_s = self.input_sanity_check(ext_contour_t, int_contour_t)
+            ext_contour_s, int_contour_s = self.input_sanity_check(
+                ext_contour_t, int_contour_t
+            )
 
-            cortex = csc.CorticalSanityCheck(MIN_THICKNESS=self.MIN_THICKNESS,
-                                                 ext_contour=ext_contour_s,
-                                                 int_contour=int_contour_s,
-                                                 save_plot=False)
+            cortex = csc.CorticalSanityCheck(
+                MIN_THICKNESS=self.MIN_THICKNESS,
+                ext_contour=ext_contour_s,
+                int_contour=int_contour_s,
+                model=self.filename,
+                save_plot=True,
+            )
 
-            int_spline_corr = cortex.cortical_sanity_check(ext_contour=ext_contour_s,
-                                                               int_contour=int_contour_s,
-                                                               iterator=i)
+            int_spline_corr = cortex.cortical_sanity_check(
+                ext_contour=ext_contour_s, int_contour=int_contour_s, iterator=i
+            )
 
             # check that after csc.CorticalSanityCheck elements of arrays external and internal contours
             # have the same structure and shape as before csc.CorticalSanityCheck
@@ -632,14 +735,15 @@ class OCC_volume():
 
         if self.show_plots is not False:
             fig = self.plotly_add_traces(
-                fig, xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew)
+                fig, xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew
+            )
         else:
             fig = None
 
         return curve_loop_tag, lines_s, points, dstack
 
     def apply_args(self, fn, args):
-        '''https://stackoverflow.com/questions/45718523/pass-kwargs-to-starmap-while-using-pool-in-python'''
+        """https://stackoverflow.com/questions/45718523/pass-kwargs-to-starmap-while-using-pool-in-python"""
         return fn(*args)
 
     def starmap_with_args(self, pool, fn, args_iter):
@@ -650,9 +754,16 @@ class OCC_volume():
         with Pool(processes=n_cores) as pool:
             i_arr = []
             slices_arr = []
-            [(i_arr.append(i), slices_arr.append(slice_s)) for i, slice_s in enumerate(slice_index)]
+            [
+                (i_arr.append(i), slices_arr.append(slice_s))
+                for i, slice_s in enumerate(slice_index)
+            ]
             # results = pool.starmap(self.get_contours, repeat(height), zip(i_arr, slices_arr), repeat(slice_index))
-            results = self.starmap_with_args(pool, self.get_contours, zip(repeat(height), i_arr, slices_arr, repeat(slice_index)))
+            results = self.starmap_with_args(
+                pool,
+                self.get_contours,
+                zip(repeat(height), i_arr, slices_arr, repeat(slice_index)),
+            )
         return results
 
     def volume_splines(self):
@@ -671,7 +782,7 @@ class OCC_volume():
             # Create figure
             fig = go.Figure(layout=self.layout)
         else:
-            print(f'Volume_splines, show_plots:\t{self.show_plots}')
+            print(f"Volume_splines, show_plots:\t{self.show_plots}")
             fig = None
 
         # gmsh initialization
@@ -684,7 +795,9 @@ class OCC_volume():
         surfaces_slices = []
         ext_contour_dstack = []
         for i, slice in enumerate(slice_index):
-            curve_loop_tag, lines_s, points, dstack = self.get_contours(height, i, slice, slice_index, fig)
+            curve_loop_tag, lines_s, points, dstack = self.get_contours(
+                height, i, slice, slice_index, fig
+            )
             ext_contour_dstack.append(dstack)
             surfaces_slices.append(curve_loop_tag)
             lines_slices = np.append(lines_slices, lines_s)
@@ -692,7 +805,7 @@ class OCC_volume():
 
         # results = self.parallel_get_contours(n_cores=6, height=height, slice_index=slice_index)
         # print(results)
-        # curve_loop_tag, lines_s, points, dstack = zip(*results)     
+        # curve_loop_tag, lines_s, points, dstack = zip(*results)
 
         if self.show_plots is not False:
             fig = self.plotly_makefig(fig)
@@ -700,36 +813,39 @@ class OCC_volume():
             pass
 
         # Create gmsh connectors
-        connectors_r = np.ndarray.astype(connector_arr.reshape(
-            [len(slice_index), self.INTERP_POINTS_S - 1]), dtype='int')
+        connectors_r = np.ndarray.astype(
+            connector_arr.reshape([len(slice_index), self.INTERP_POINTS_S - 1]),
+            dtype="int",
+        )
         lines, surf_ext_tags_s = self.connector_gmsh(
-            connectors_r, lines_slices, slice_index=slice_index)
+            connectors_r, lines_slices, slice_index=slice_index
+        )
 
         shell_tags = self.add_surface_connectors(surf_ext_tags=surf_ext_tags_s)
-        surfaces_first = self.factory.addPlaneSurface(
-            [surfaces_slices[0]], tag=-1)
-        surfaces_last = self.factory.addPlaneSurface(
-            [surfaces_slices[-1]], tag=-1)
+        surfaces_first = self.factory.addPlaneSurface([surfaces_slices[0]], tag=-1)
+        surfaces_last = self.factory.addPlaneSurface([surfaces_slices[-1]], tag=-1)
 
-        if self.location == 'cort_ext':
+        if self.location == "cort_ext":
             self.cortex_outer_tags = self.add_volume(
-                surfaces_first, shell_tags, surfaces_last, self.location)
-        elif self.location == 'cort_int':
+                surfaces_first, shell_tags, surfaces_last, self.location
+            )
+        elif self.location == "cort_int":
             self.cortex_inner_tags = self.add_volume(
-                surfaces_first, shell_tags, surfaces_last, self.location)
+                surfaces_first, shell_tags, surfaces_last, self.location
+            )
 
         self.factory.synchronize()
         self.offset_tags(self.factory.getEntities())
 
         gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filename))
-        logging.info('GMSH file saved')
+        logging.info("GMSH file saved")
 
         if self.show_plots is not False:
             gmsh.fltk.run()
         gmsh.clear()
         gmsh.finalize()
-        print('Exiting GMSH...')
+        print("Exiting GMSH...")
 
         # reduce nesting level of ext_contour_dstack
         ext_contour_dstack = np.squeeze(ext_contour_dstack)
@@ -738,14 +854,57 @@ class OCC_volume():
 
 def main():
 
-    img_basefilename = ['C0002234']
-    img_basepath = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM'
-    img_outputpath = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/04_OUTPUT'
-    img_path_ext = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i] + '_CORT_MASK_cap.mhd')) for i in range(len(img_basefilename))]
-    img_path_int = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i] + '_TRAB_MASK_cap.mhd')) for i in range(len(img_basefilename))]
-    filepath_ext = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i])) for i in range(len(img_basefilename))]
-    filename_ext = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + '_ext.geo_unrolled')) for i in range(len(img_basefilename))]
-    filename_int = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + '_int.geo_unrolled')) for i in range(len(img_basefilename))]
+    img_basefilename = ["C0002233"]
+    img_basepath = (
+        r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM"
+    )
+    img_outputpath = (
+        r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/04_OUTPUT"
+    )
+    img_path_ext = [
+        str(
+            Path(
+                img_basepath,
+                img_basefilename[i],
+                img_basefilename[i] + "_CORT_MASK_cap.mhd",
+            )
+        )
+        for i in range(len(img_basefilename))
+    ]
+    img_path_int = [
+        str(
+            Path(
+                img_basepath,
+                img_basefilename[i],
+                img_basefilename[i] + "_TRAB_MASK_cap.mhd",
+            )
+        )
+        for i in range(len(img_basefilename))
+    ]
+    filepath_ext = [
+        str(Path(img_basepath, img_basefilename[i], img_basefilename[i]))
+        for i in range(len(img_basefilename))
+    ]
+    filename_ext = [
+        str(
+            Path(
+                img_outputpath,
+                img_basefilename[i],
+                img_basefilename[i] + "_ext.geo_unrolled",
+            )
+        )
+        for i in range(len(img_basefilename))
+    ]
+    filename_int = [
+        str(
+            Path(
+                img_outputpath,
+                img_basefilename[i],
+                img_basefilename[i] + "_int.geo_unrolled",
+            )
+        )
+        for i in range(len(img_basefilename))
+    ]
     # img_path_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_CORT_MASK_cap01.mhd'
     # filepath_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/99_testing_prototyping/'
     # img_path_trab = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_TRAB_MASK_cap02.mhd'
@@ -753,37 +912,65 @@ def main():
     # filename_int = Path(img_path_ext).stem + '_int' + '.geo_unrolled'
     # filename_trab_ext = Path(img_path_ext).stem + '_trab' + '.geo_unrolled'
     interp_point_s = 100
-    slicing_coeff_s = 40
+    slicing_coeff_s = 20
     show_plots_s = False
     thickness_tol_s = 120e-3
 
     for i in range(len(img_basefilename)):
-        Path.mkdir(Path(img_outputpath, img_basefilename[i]), parents=True, exist_ok=True)
-        ext_cort_surface = OCC_volume(img_path_ext[i], filepath_ext[i], filename_ext[i],
-                                      ASPECT=50, SLICE=1, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
-                                      INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                                      S=3, K=3, INTERP_POINTS=interp_point_s,
-                                      debug_orientation=0,
-                                      show_plots=show_plots_s,
-                                      location='cort_ext',
-                                      offset=10000,
-                                      ext_contour=None,
-                                      thickness_tol=thickness_tol_s)
+        Path.mkdir(
+            Path(img_outputpath, img_basefilename[i]), parents=True, exist_ok=True
+        )
+        ext_cort_surface = OCC_volume(
+            img_path_ext[i],
+            filepath_ext[i],
+            filename_ext[i],
+            ASPECT=50,
+            SLICE=1,
+            UNDERSAMPLING=5,
+            SLICING_COEFFICIENT=slicing_coeff_s,
+            INSIDE_VAL=0,
+            OUTSIDE_VAL=1,
+            LOWER_THRESH=0,
+            UPPER_THRESH=0.9,
+            S=3,
+            K=3,
+            INTERP_POINTS=interp_point_s,
+            debug_orientation=0,
+            show_plots=show_plots_s,
+            location="cort_ext",
+            offset=10000,
+            ext_contour=None,
+            thickness_tol=thickness_tol_s,
+        )
         # ext_cort_surface.plot_mhd_slice()
         cort_ext_arr, cort_ext_vol = ext_cort_surface.volume_splines()
+        np.save("cort_ext_arr.npy", cort_ext_arr)
 
-        int_cort_surface = OCC_volume(img_path_ext[i], filepath_ext[i], filename_int[i],
-                                      ASPECT=50, SLICE=1, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
-                                      INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-                                      S=3, K=3, INTERP_POINTS=interp_point_s,
-                                      debug_orientation=0,
-                                      show_plots=show_plots_s,
-                                      location='cort_int',
-                                      offset=20000,
-                                      ext_contour=cort_ext_arr,
-                                      thickness_tol=thickness_tol_s)
+        int_cort_surface = OCC_volume(
+            img_path_ext[i],
+            filepath_ext[i],
+            filename_int[i],
+            ASPECT=50,
+            SLICE=1,
+            UNDERSAMPLING=5,
+            SLICING_COEFFICIENT=slicing_coeff_s,
+            INSIDE_VAL=0,
+            OUTSIDE_VAL=1,
+            LOWER_THRESH=0,
+            UPPER_THRESH=0.9,
+            S=3,
+            K=3,
+            INTERP_POINTS=interp_point_s,
+            debug_orientation=0,
+            show_plots=show_plots_s,
+            location="cort_int",
+            offset=20000,
+            ext_contour=cort_ext_arr,
+            thickness_tol=thickness_tol_s,
+        )
         # int_cort_surface.plot_mhd_slice()
         cort_int_arr, cort_int_vol = int_cort_surface.volume_splines()
+        np.save("cort_int_arr.npy", cort_int_arr)
 
         # ext_trab_surface = OCC_volume(img_path_trab, filepath_ext, filename_trab_ext,
         #                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
@@ -798,14 +985,18 @@ def main():
         # trab_ext_arr, trab_ext_vol = ext_trab_surface.volume_splines()
 
         # Setup of the boolean operation - creation of the cortical volume
-        filename_sorted = str(Path(img_outputpath,  img_basefilename[i], Path(img_basefilename[i]).stem))
-        cortex = gu.GeoSort(cort_ext_vol, cort_int_vol, filename_sorted, boolean='Delete')
+        filename_sorted = str(
+            Path(img_outputpath, img_basefilename[i], Path(img_basefilename[i]).stem)
+        )
+        cortex = gu.GeoSort(
+            cort_ext_vol, cort_int_vol, filename_sorted, boolean="Delete"
+        )
         cortex.append_file2_to_file1(cort_ext_vol, cort_int_vol)
         cortex.write_geo()
 
 
 if __name__ == "__main__":
-    logging.info('Starting meshing script...')
-    print('Executing gmsh_spline_mesh.py')
+    logging.info("Starting meshing script...")
+    print("Executing gmsh_spline_mesh.py")
     main()
-    logging.info('Meshing script finished.')
+    logging.info("Meshing script finished.")
