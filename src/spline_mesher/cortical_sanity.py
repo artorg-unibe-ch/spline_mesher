@@ -712,19 +712,6 @@ class CorticalSanityCheck:
         Returns:
 
         """
-        # TODO: Find better solution than resampling (or make sure it works)
-        #       And make sure that the resampling is done in the same way for both contours
-        #       (i.e. same number of points, same interpolation method, etc.)
-        #       labels: enhancement
-        #       assignees: @simoneponcioni
-        #       milestone: v0.1.0
-
-        # int_contour = self.resample_contour(int_contour, n_points=len(ext_contour))
-        # ext_contour = self.resample_contour(ext_contour, n_points=len(ext_contour))
-
-        # ext_contour = ext_contour[:-1]
-        # int_contour = int_contour[:-1]
-
         ext_s, int_s, dx_med, dy_med, fig, ax1, ax2 = self.plot_contours(
             min_thickness=self.min_thickness,
             x_ext=ext_contour[:, 0],
