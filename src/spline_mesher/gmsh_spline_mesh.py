@@ -576,7 +576,7 @@ class OCC_volume:
         for i in range(0, len(loop_v) - 1):
             for j in range(0, len(loop_h)):
                 print(
-                    f"Connecting lines: {points[i][j]} {lines_tag_connectors[i][j]}{points[i+1][j]} {lines_tag_connectors[i][j+1]}"
+                    f"Connecting lines: {points[i][j]} {lines_tag_connectors[i][j]} {points[i+1][j]} {lines_tag_connectors[i][j+1]}"
                 )
                 ll = self.factory.addCurveLoop(
                     [
@@ -727,8 +727,6 @@ class OCC_volume:
             # check that after csc.CorticalSanityCheck elements of arrays external and internal contours
             # have the same structure and shape as before csc.CorticalSanityCheck
             int_contour_s = self.output_sanity_check(int_contour_t, int_spline_corr)
-            xnew = int_contour_s[:, 0]
-            ynew = int_contour_s[:, 1]
 
         # lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
         lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
@@ -914,7 +912,8 @@ def main():
     interp_point_s = 100
     slicing_coeff_s = 20
     show_plots_s = False
-    thickness_tol_s = 120e-3
+    # thickness_tol_s = 180e-3
+    thickness_tol_s = 0.35
 
     for i in range(len(img_basefilename)):
         Path.mkdir(
@@ -932,7 +931,7 @@ def main():
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
             UPPER_THRESH=0.9,
-            S=3,
+            S=10,
             K=3,
             INTERP_POINTS=interp_point_s,
             debug_orientation=0,
@@ -958,7 +957,7 @@ def main():
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
             UPPER_THRESH=0.9,
-            S=3,
+            S=10,
             K=3,
             INTERP_POINTS=interp_point_s,
             debug_orientation=0,
