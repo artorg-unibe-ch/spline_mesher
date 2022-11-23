@@ -22,6 +22,7 @@ import sys
 import logging
 import cortical_sanity as csc
 import futils.geo_utils as gu
+import gmsh_mesh_builder as gmb
 
 pio.renderers.default = "browser"
 logging.basicConfig(
@@ -540,6 +541,7 @@ class OCC_volume:
             line_tag = self.factory.addLine(
                 startTag=loop[i], endTag=loop[i + 1], tag=-1
             )
+            # line_tag = self.factory.addBSpline([loop[i], loop[i + 1]], tag=-1)
             lines.append(line_tag)
 
         curve_loop_tag = self.factory.addCurveLoop(lines, tag=-1)
@@ -685,6 +687,43 @@ class OCC_volume:
             )
         return contour_s
 
+    def _pnts_on_line_(self, a, spacing=1, is_percent=False):  # densify by distance
+        """Add points, at a fixed spacing, to an array representing a line.
+        https://stackoverflow.com/questions/64995977/generating-equidistance-points-along-the-boundary-of-a-polygon-but-cw-ccw
+
+        **See**  `densify_by_distance` for documentation.
+
+        Parameters
+        ----------
+        a : array
+            A sequence of `points`, x,y pairs, representing the bounds of a polygon
+            or polyline object.
+        spacing : number
+            Spacing between the points to be added to the line.
+        is_percent : boolean
+            Express the densification as a percent of the total length.
+
+        Notes
+        -----
+        Called by `pnt_on_poly`.
+        """
+        N = len(a) - 1  # segments
+        dxdy = a[1:, :] - a[:-1, :]  # coordinate differences
+        leng = np.sqrt(np.einsum("ij,ij->i", dxdy, dxdy))  # segment lengths
+        if is_percent:  # as percentage
+            spacing = abs(spacing)
+            spacing = min(spacing / 100, 1.0)
+            steps = (sum(leng) * spacing) / leng  # step distance
+        else:
+            steps = leng / spacing  # step distance
+        deltas = dxdy / (steps.reshape(-1, 1))  # coordinate steps
+        pnts = np.empty((N,), dtype="O")  # construct an `O` array
+        for i in range(N):  # cycle through the segments and make
+            num = np.arange(steps[i])  # the new points
+            pnts[i] = np.array((num, num)).T * deltas[i] + a[i]
+        a0 = a[-1].reshape(1, -1)  # add the final point and concatenate
+        return np.concatenate((*pnts, a0), axis=0)
+
     def offset_tags(self, entities):
         """
         get all entities of the model and add offset to make unique tags
@@ -727,8 +766,9 @@ class OCC_volume:
             # check that after csc.CorticalSanityCheck elements of arrays external and internal contours
             # have the same structure and shape as before csc.CorticalSanityCheck
             int_contour_s = self.output_sanity_check(int_contour_t, int_spline_corr)
+            xnew = int_contour_s[:, 0]
+            ynew = int_contour_s[:, 1]
 
-        # lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
         lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
 
         if self.show_plots is not False:
@@ -832,6 +872,7 @@ class OCC_volume:
                 surfaces_first, shell_tags, surfaces_last, self.location
             )
 
+        self.factory.healShapes()
         self.factory.synchronize()
         self.offset_tags(self.factory.getEntities())
 
@@ -852,7 +893,7 @@ class OCC_volume:
 
 def main():
 
-    img_basefilename = ["C0002233"]
+    img_basefilename = ["C0002214"]
     img_basepath = (
         r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM"
     )
@@ -909,11 +950,12 @@ def main():
     # filename_ext = Path(img_path_ext).stem + '_ext' + '.geo_unrolled'
     # filename_int = Path(img_path_ext).stem + '_int' + '.geo_unrolled'
     # filename_trab_ext = Path(img_path_ext).stem + '_trab' + '.geo_unrolled'
+    smoothing = 5
     interp_point_s = 100
     slicing_coeff_s = 20
     show_plots_s = False
-    # thickness_tol_s = 180e-3
-    thickness_tol_s = 0.35
+    thickness_tol_s = 180e-3
+    # thickness_tol_s = 1
 
     for i in range(len(img_basefilename)):
         Path.mkdir(
@@ -931,19 +973,19 @@ def main():
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
             UPPER_THRESH=0.9,
-            S=10,
+            S=smoothing,
             K=3,
             INTERP_POINTS=interp_point_s,
             debug_orientation=0,
             show_plots=show_plots_s,
             location="cort_ext",
-            offset=10000,
+            offset=0,
             ext_contour=None,
             thickness_tol=thickness_tol_s,
         )
         # ext_cort_surface.plot_mhd_slice()
         cort_ext_arr, cort_ext_vol = ext_cort_surface.volume_splines()
-        np.save("cort_ext_arr.npy", cort_ext_arr)
+        # np.save("cort_ext_arr.npy", cort_ext_arr)
 
         int_cort_surface = OCC_volume(
             img_path_ext[i],
@@ -957,19 +999,19 @@ def main():
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
             UPPER_THRESH=0.9,
-            S=10,
+            S=smoothing,
             K=3,
             INTERP_POINTS=interp_point_s,
             debug_orientation=0,
             show_plots=show_plots_s,
             location="cort_int",
-            offset=20000,
+            offset=30000,
             ext_contour=cort_ext_arr,
             thickness_tol=thickness_tol_s,
         )
         # int_cort_surface.plot_mhd_slice()
         cort_int_arr, cort_int_vol = int_cort_surface.volume_splines()
-        np.save("cort_int_arr.npy", cort_int_arr)
+        # # np.save("cort_int_arr.npy", cort_int_arr)
 
         # ext_trab_surface = OCC_volume(img_path_trab, filepath_ext, filename_trab_ext,
         #                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
@@ -978,7 +1020,7 @@ def main():
         #                               debug_orientation=0,
         #                               show_plots=show_plots_s,
         #                               location='trab_ext',
-        #                               offset=30000,
+        #                               offset=50000,
         #                               ext_contour=None)
         # # int_cort_surface.plot_mhd_slice()
         # trab_ext_arr, trab_ext_vol = ext_trab_surface.volume_splines()
@@ -991,7 +1033,14 @@ def main():
             cort_ext_vol, cort_int_vol, filename_sorted, boolean="Delete"
         )
         cortex.append_file2_to_file1(cort_ext_vol, cort_int_vol)
-        cortex.write_geo()
+        filename_geo_unrolled = cortex.write_geo()
+
+        # automated test meshing
+        cortical_mesh = gmb.Mesher(
+            geo_file_path=filename_geo_unrolled,
+            mesh_file_path=Path(filename_sorted).with_suffix(".msh"),
+        )
+        cortical_mesh.build_msh()
 
 
 if __name__ == "__main__":
