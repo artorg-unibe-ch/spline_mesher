@@ -2,6 +2,7 @@
 
 # ignore temp files
 *temp*
+*tmp*
 
 # ignore numpy arrays stored for debugging
 *.npy
