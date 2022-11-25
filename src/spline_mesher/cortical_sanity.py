@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import spatial
 from pathlib import Path
-import matplotlib.cm as cm
-import operator
 import shapely.geometry as shpg
 
 
