@@ -23,6 +23,9 @@ import logging
 import cortical_sanity as csc
 import futils.geo_utils as gu
 import gmsh_mesh_builder as gmb
+import shapely.geometry as shpg
+from scipy import spatial
+
 
 pio.renderers.default = "browser"
 logging.basicConfig(
@@ -257,6 +260,9 @@ class OCC_volume:
             plt.show()
         else:
             print(f"Binary threshold, show_plots:\t{self.show_plots}")
+
+        print(f"size:\t{size}")
+        print(f"self.spacing:\t{self.spacing}")
 
         coordsX = np.arange(
             0,
@@ -759,6 +765,11 @@ class OCC_volume:
                 save_plot=True,
             )
 
+            # calculate tensor of inertia of cortical contour
+            # tensor_of_inertia = self.polygon_tensor_of_inertia(
+            # ext_arr=ext_contour_s, int_arr=int_contour_s
+            # )
+
             int_spline_corr = cortex.cortical_sanity_check(
                 ext_contour=ext_contour_s, int_contour=int_contour_s, iterator=i
             )
@@ -768,6 +779,10 @@ class OCC_volume:
             int_contour_s = self.output_sanity_check(int_contour_t, int_spline_corr)
             xnew = int_contour_s[:, 0]
             ynew = int_contour_s[:, 1]
+
+        # ext_contour_s, int_contour_s = self.insert_tensor_of_inertia(
+        # ext_contour_s, int_contour_s, tensor_of_inertia
+        # )
 
         lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
 
@@ -872,9 +887,10 @@ class OCC_volume:
                 surfaces_first, shell_tags, surfaces_last, self.location
             )
 
-        self.factory.healShapes()
+        #  self.factory.healShapes()
         self.factory.synchronize()
         self.offset_tags(self.factory.getEntities())
+        self.factory.synchronize()  # TODO: check if synchonize is needed after offset_tags
 
         gmsh.option.setNumber("Mesh.SaveAll", 1)
         gmsh.write(str(self.filename))
@@ -893,7 +909,7 @@ class OCC_volume:
 
 def main():
 
-    img_basefilename = ["C0002214"]
+    img_basefilename = ["C0002234"]
     img_basepath = (
         r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM"
     )
@@ -946,16 +962,13 @@ def main():
     ]
     # img_path_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_CORT_MASK_cap01.mhd'
     # filepath_ext = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/99_testing_prototyping/'
-    # img_path_trab = r'/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0002231_TRAB_MASK_cap02.mhd'
     # filename_ext = Path(img_path_ext).stem + '_ext' + '.geo_unrolled'
     # filename_int = Path(img_path_ext).stem + '_int' + '.geo_unrolled'
-    # filename_trab_ext = Path(img_path_ext).stem + '_trab' + '.geo_unrolled'
     smoothing = 5
-    interp_point_s = 100
-    slicing_coeff_s = 20
+    interp_point_s = 50
+    slicing_coeff_s = 40
     show_plots_s = False
     thickness_tol_s = 180e-3
-    # thickness_tol_s = 1
 
     for i in range(len(img_basefilename)):
         Path.mkdir(
@@ -1013,18 +1026,6 @@ def main():
         cort_int_arr, cort_int_vol = int_cort_surface.volume_splines()
         # # np.save("cort_int_arr.npy", cort_int_arr)
 
-        # ext_trab_surface = OCC_volume(img_path_trab, filepath_ext, filename_trab_ext,
-        #                               ASPECT=50, SLICE=5, UNDERSAMPLING=5, SLICING_COEFFICIENT=slicing_coeff_s,
-        #                               INSIDE_VAL=0, OUTSIDE_VAL=1, LOWER_THRESH=0, UPPER_THRESH=0.9,
-        #                               S=10, K=3, INTERP_POINTS=interp_point_s,
-        #                               debug_orientation=0,
-        #                               show_plots=show_plots_s,
-        #                               location='trab_ext',
-        #                               offset=50000,
-        #                               ext_contour=None)
-        # # int_cort_surface.plot_mhd_slice()
-        # trab_ext_arr, trab_ext_vol = ext_trab_surface.volume_splines()
-
         # Setup of the boolean operation - creation of the cortical volume
         filename_sorted = str(
             Path(img_outputpath, img_basefilename[i], Path(img_basefilename[i]).stem)
@@ -1036,11 +1037,11 @@ def main():
         filename_geo_unrolled = cortex.write_geo()
 
         # automated test meshing
-        cortical_mesh = gmb.Mesher(
-            geo_file_path=filename_geo_unrolled,
-            mesh_file_path=Path(filename_sorted).with_suffix(".msh"),
-        )
-        cortical_mesh.build_msh()
+        # cortical_mesh = gmb.Mesher(
+        # geo_file_path=filename_geo_unrolled,
+        # mesh_file_path=Path(filename_sorted).with_suffix(".msh"),
+        # )
+        # cortical_mesh.build_msh()
 
 
 if __name__ == "__main__":
