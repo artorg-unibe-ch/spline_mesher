@@ -47,6 +47,8 @@ class Mesher:
         gmsh.finalize()
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
+        ext_arr = np.vstack((ext_arr, ext_arr[0]))
+        int_arr = np.vstack((int_arr, int_arr[0]))
         extpol = shpg.polygon.Polygon(ext_arr)
         intpol = shpg.polygon.Polygon(int_arr)
         cortex = extpol.difference(intpol)
@@ -92,12 +94,12 @@ class Mesher:
             ndarray: new array with intersection points
         """
         # fmt: off
-        _, closest_idx_2 = spatial.KDTree(arr).query(intersection, k=2)
+        dists, closest_idx_2 = spatial.KDTree(arr).query(intersection, k=2)
         if (closest_idx_2 == [0, len(arr) - 1]).all():
-            return closest_idx_2[1]
+            return dists, closest_idx_2[1]
         else:
             print(f"closest index where to insert the intersection point: {np.min(closest_idx_2)} (indices: {closest_idx_2})")
-            return np.min(closest_idx_2)
+            return dists, np.min(closest_idx_2)
         # fmt: on
 
     def insert_closest_point(self, arr, closest_idx, values):
@@ -112,10 +114,8 @@ class Mesher:
         arr = np.insert(arr, closest_idx, values, axis=0)
         return arr
 
-    def close_loop_if_open(self, array):
-        if array[0][0] != array[-1][0] and array[0][1] != array[-1][1]:
-            array[0][0] = array[-1][0]
-            array[0][1] = array[-1][1]
+    def close_loop(self, array):
+        array = np.vstack((array, array[0]))
         return array
 
     def insert_tensor_of_inertia(self, array, centroid) -> np.ndarray:
@@ -136,55 +136,59 @@ class Mesher:
 
         # TODO: rm after debug
         fig, ax = plt.subplots()
-        ax.set_title("Calculating nearest neighbor of the intersection point")
-        ax.scatter(array[:, 0], array[:, 1])
-        ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
-        ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
-        for i, txt in enumerate(array[:, 0]):
-            ax.annotate(i, (array[:, 0][i], array[:, 1][i]))
-        plt.show()
+        # ax.set_title("Calculating nearest neighbor of the intersection point")
+        # ax.scatter(array[:, 0], array[:, 1])
+        # ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
+        # ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
+        # for i, txt in enumerate(array[:, 0]):
+        #     ax.annotate(i, (array[:, 0][i], array[:, 1][i]))
+        # plt.show()
 
         idx_list = []
         for i, intersection in enumerate(intersections):
             for j, inters in enumerate(intersection):
-                closest_idx = self.intersection_point(array, inters)
+                dists, closest_idx = self.intersection_point(array, inters)
                 # array = self.insert_closest_point(array, closest_idx, inters)
 
-                # # TODO: rm after debug
+                # TODO: rm after debug
                 # fig, ax = plt.subplots()
                 # ax.set_title("BEFORE")
                 # ax.plot(array[:, 0], array[:, 1])
                 # ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
                 # ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
-                # for i, txt in enumerate(array[:, 0]):
-                #     ax.annotate(i, (array[:, 0][i], array[:, 1][i]))
-                # plt.show()
-                if closest_idx == len(array) - 1:
-                    array = np.vstack((array, array[-1]))
-                else:
-                    array = np.insert(array, closest_idx + 1, inters, axis=0)
+                # for n, txt in enumerate(array[:, 0]):
+                #     ax.annotate(n, (array[:, 0][n], array[:, 1][n]))
+                # plt.savefig(f"before_{i}_{j}.png")
 
-                # # TODO: rm after debug
+                if abs(dists[0] - dists[1]) < 1e-5:
+                    array = np.insert(array, closest_idx, inters, axis=0)
+                else:
+                    try:
+                        array = np.insert(array, closest_idx + 1, inters, axis=0)
+                    except:
+                        array = np.insert(array, 0, inters, axis=0)
+
+                # TODO: rm after debug
                 # fig, ax = plt.subplots()
                 # ax.set_title("AFTER")
                 # ax.plot(array[:, 0], array[:, 1])
                 # ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
                 # ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
-                # for i, txt in enumerate(array[:, 0]):
-                #     ax.annotate(i, (array[:, 0][i], array[:, 1][i]))
-                # plt.show()
+                # for n, txt in enumerate(array[:, 0]):
+                #     ax.annotate(n, (array[:, 0][n], array[:, 1][n]))
+                # plt.savefig(f"after_{i}_{j}.png")
 
                 idx_list.append(closest_idx)
         # TODO: rm after debug
-        fig, ax = plt.subplots()
-        ax.set_title("Inserting intersection points into the contours")
-        ax.plot(array[:, 0], array[:, 1])
-        ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
-        ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
-        for i, txt in enumerate(array[:, 0]):
-            ax.annotate(i, (array[:, 0][i], array[:, 1][i]))
-        plt.show()
-        array = self.close_loop_if_open(array)  # TODO: maybe reactivate it?
+        #  fig, ax = plt.subplots()
+        #  ax.set_title("Inserting intersection points into the contours")
+        #  ax.plot(array[:, 0], array[:, 1])
+        #  ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
+        #  ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
+        #  for i, txt in enumerate(array[:, 0]):
+        #      ax.annotate(i, (array[:, 0][i], array[:, 1][i]))
+        #  plt.show()
+        array = self.close_loop(array)  # TODO: maybe reactivate it?
         return array, idx_list
 
     # adding here all the functions related to the mesh building
@@ -206,11 +210,7 @@ class Mesher:
         # points
         array_pts_tags = []
         for i, _ in enumerate(array):
-            array_tag = self.gmsh_add_points(
-                array[i][0],
-                array[i][1],
-                array[i][2],
-            )
+            array_tag = self.gmsh_add_points(array[i][0], array[i][1], array[i][2],)
             array_pts_tags = np.append(array_pts_tags, array_tag)
         array_pts_tags = np.asarray(array_pts_tags, dtype=int)
 
