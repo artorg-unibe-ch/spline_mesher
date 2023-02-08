@@ -5,6 +5,7 @@ Date: 07-09.2022
 """
 from itertools import repeat
 from multiprocessing import Pool
+import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -820,7 +821,13 @@ class OCC_volume:
         return results
 
     def volume_splines(self):
+        # calculate timing of this function
+        start = time.time()
         self.binary_threshold()
+        end = time.time()
+        elapsed = end - start
+        print(f"Binary thresholding:\t{elapsed:.2f} seconds")
+
         img_contours = sitk.GetImageFromArray(self.contours_arr, isVector=True)
         image_data = sitk.GetArrayViewFromImage(img_contours)
         slice_index = np.arange(1, len(image_data), self.SLICING_COEFFICIENT)
@@ -908,7 +915,6 @@ class OCC_volume:
 
 
 def main():
-
     img_basefilename = ["C0002234"]
     img_basepath = (
         r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM"
@@ -1000,6 +1006,7 @@ def main():
         cort_ext_arr, cort_ext_vol = ext_cort_surface.volume_splines()
         # np.save("cort_ext_arr.npy", cort_ext_arr)
 
+    """
         int_cort_surface = OCC_volume(
             img_path_ext[i],
             filepath_ext[i],
@@ -1042,6 +1049,7 @@ def main():
         # mesh_file_path=Path(filename_sorted).with_suffix(".msh"),
         # )
         # cortical_mesh.build_msh()
+        """
 
 
 if __name__ == "__main__":

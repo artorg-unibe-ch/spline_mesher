@@ -323,7 +323,7 @@ class CorticalSanityCheck:
         )
         return None
 
-    def get_normals(self, xs, ys, ax1, ax2, thickness=1):
+    def get_normals(self, xs, ys, ax1, ax2, thickness=1, debug=False):
         """
         Get normal arrays point-wise for array [xs, ys]
 
@@ -345,9 +345,11 @@ class CorticalSanityCheck:
         for idx in range(len(xs) - 1):
             x0, y0, xa, ya = xs[idx], ys[idx], xs[idx + 1], ys[idx + 1]
             dx, dy = xa - x0, ya - y0
-            print(f"dx: {dx}, dy: {dy}")
+            if debug is True:
+                print(f"dx: {dx}, dy: {dy}")
             norm = math.hypot(dx, dy) * 1 / thickness
-            print(f"norm: {norm}")
+            if debug is True:
+                print(f"norm: {norm}")
             dx /= norm
             dy /= norm
 
@@ -391,7 +393,7 @@ class CorticalSanityCheck:
                 color="tab:green",
             )
 
-        return dx_arr, dy_arr, dx_med, dy_med
+        return dx_med, dy_med
 
     def nearest_point(self, arr, pt):
         """
@@ -491,7 +493,15 @@ class CorticalSanityCheck:
         bool_thickness = np.append(bool_thickness, bool_thickness[0])
         return bool_thickness
 
-    def plot_contours(self, min_thickness, x_ext, y_ext, x_int, y_int):
+    def plot_contours(
+        self,
+        min_thickness: float,
+        x_ext: np.ndarray,
+        y_ext: np.ndarray,
+        x_int: np.ndarray,
+        y_int: np.ndarray,
+        debug: bool = False,
+    ):
         """
         Create contours, get normals, plot
 
@@ -515,14 +525,15 @@ class CorticalSanityCheck:
         """
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
 
-        dx, dy, dx_med, dy_med = self.get_normals(
-            x_ext, y_ext, ax1, ax2, thickness=min_thickness
+        dx_med, dy_med = self.get_normals(
+            x_ext, y_ext, ax1, ax2, thickness=min_thickness, debug=False
         )
 
         ext_a = np.c_[x_ext, y_ext]
         int_a = np.c_[x_int, y_int]
-        print(f"Plotting ext_a: {ext_a}")
-        print(f"Plotting int_a: {int_a}")
+        if debug:
+            print(f"Plotting ext_a: {ext_a}")
+            print(f"Plotting int_a: {int_a}")
 
         ax1.scatter(x_ext, y_ext, label="external contour", s=5)
         ax2.scatter(x_ext, y_ext)
@@ -535,7 +546,7 @@ class CorticalSanityCheck:
             ax2.annotate(txt, (x_ext[i], y_ext[i]), color="tab:blue")
             ax2.annotate(txt, (x_int[i], y_int[i]), color="tab:orange")
 
-        return ext_a, int_a, dx_med, dy_med, fig, ax1, ax2
+        return ext_a, dx_med, dy_med, fig, ax1, ax2
 
     def resample_contour(self, xy: np.ndarray, n_points: int = 100) -> np.ndarray:
         """
@@ -642,7 +653,7 @@ class CorticalSanityCheck:
             filename_png = f"{savepath}_CORT_Correction_int_ext_pos_{iterator}.png"
             filename_npy_ext = f"{savepath}_CORT_ext_{iterator}.npy"
             filename_npy_int = f"{savepath}_CORT_int_{iterator}.npy"
-            fig.savefig(filename_png, dpi=600)
+            fig.savefig(filename_png, dpi=150)
             np.save(filename_npy_ext, ext_spline)
             np.save(filename_npy_int, int_spline)
         else:
@@ -675,11 +686,13 @@ class CorticalSanityCheck:
         _, p_nn = spatial.KDTree(arr).query(p)
         return p_nn
 
-    def push_contour(self, ext_contour, int_contour, offset):
+    def push_contour(
+        self, ext_contour: np.ndarray, int_contour: np.ndarray, offset: float
+    ):
+        RESAMPLING = int(500)
         ext_offset = self.offset_surface(ext_contour, offset)
-        resampling = int(500)
-        ext_offset_hres = self.resample_contour(ext_offset, n_points=resampling)
-        int_contour_hres = self.resample_contour(int_contour, n_points=resampling)
+        ext_offset_hres = self.resample_contour(ext_offset, n_points=RESAMPLING)
+        int_contour_hres = self.resample_contour(int_contour, n_points=RESAMPLING)
 
         is_inside = [
             shpg.Point(int_contour_hres[i]).within(shpg.Polygon(ext_offset_hres))
@@ -699,7 +712,9 @@ class CorticalSanityCheck:
         int_contour = self.resample_contour(int_contour_hres, n_points=len(int_contour))
         return int_contour, ext_offset
 
-    def cortical_sanity_check(self, ext_contour, int_contour, iterator):
+    def cortical_sanity_check(
+        self, ext_contour, int_contour, iterator, show_plots: bool = True
+    ):
         """
         Check if the internal contour is within the external contour.
 
@@ -710,157 +725,21 @@ class CorticalSanityCheck:
         Returns:
 
         """
-        ext_s, int_s, dx_med, dy_med, fig, ax1, ax2 = self.plot_contours(
-            min_thickness=self.min_thickness,
-            x_ext=ext_contour[:, 0],
-            y_ext=ext_contour[:, 1],
-            x_int=int_contour[:, 0],
-            y_int=int_contour[:, 1],
-        )
+        if show_plots is True:
+            ext_s, dx_med, dy_med, fig, ax1, ax2 = self.plot_contours(
+                min_thickness=self.min_thickness,
+                x_ext=ext_contour[:, 0],
+                y_ext=ext_contour[:, 1],
+                x_int=int_contour[:, 0],
+                y_int=int_contour[:, 1],
+                debug=False,
+            )
 
         new_int, ext_offset = self.push_contour(
             ext_contour, int_contour, -self.min_thickness
         )
 
-        # dists_ = self.KD_2_Tree(ext_s, int_s, ext_contour_offset)
-        # bool_kdtree = dists_ < float(0)
-
-        # print(f"bool_kdtree: {bool_kdtree.sum()}")
-        # Calculate nearest point pairs between the two contours
-        # dist_nn, base_idx, closest_idx = self.nearest_pairs_arrs(
-        #     ext_contour, int_contour
-        # )
-        # # Compute boolean array of points that are within the minimum thickness
-        # bool_thickness_nn = dist_nn < self.min_thickness
-
-        # print(f"Number of points within min thickness: {bool_thickness_nn.sum()}")
-        # print(
-        #     f"Is the Euclidean distance between the two contours < min thickness?\n{bool_thickness_nn}"
-        # )
-        # # Correct the internal contour
-        # new_int = self.correct_intersection(
-        #     ext_arr=ext_s,
-        #     int_arr=int_s,
-        #     base_idx=base_idx,
-        #     dx=dx_med,
-        #     dy=dy_med,
-        #     bool_arr=bool_thickness_nn,
-        # )
-
-        # bool_thickness = self.hyp_min_thickness(
-        #     ext_contour=ext_contour,
-        #     int_contour=int_s,
-        #     idx_=base_idx,
-        # )
-
-        # # print(f"Is the thickness requirement violated?\n{bool_thickness}")
-
-        # bool_combined = np.logical_or(bool_thickness_nn, bool_thickness)
-
-        # new_int = self.correct_intersection(
-        #     ext_arr=ext_s,
-        #     int_arr=int_s,
-        #     base_idx=base_idx,
-        #     dx=dx_med,
-        #     dy=dy_med,
-        #     bool_arr=bool_combined,
-        # )
-
-        # # Calculate nearest point pairs between the two contours
-        # dist_nn, base_idx, _ = self.nearest_pairs_arrs(ext_contour, new_int)
-        # # Compute boolean array of points that are within the minimum thickness
-        # bool_thickness_nn = dist_nn < self.min_thickness
-
-        # new_int = self.correct_intersection(
-        #     ext_arr=ext_s,
-        #     int_arr=new_int,
-        #     base_idx=base_idx,
-        #     dx=dx_med,
-        #     dy=dy_med,
-        #     bool_arr=bool_thickness_nn,
-        # )
-
-        """
-        boolean_radius = self.is_internal_radius_bigger_than_external(
-            ext_s, new_int, idx_ext, idx_int
-        )
-        print(f"Is internal radius bigger than external contour?\n{boolean_radius}")
-
-        dx_med[-1] = dx_med[0]  # guarantees continuity / closes the loop
-        dy_med[-1] = dy_med[0]  # guarantees continuity / closes the loop
-
-        new_int = self.correct_intersection(
-            ext_arr=ext_s,
-            int_arr=new_int,
-            pairs=np.c_[idx_ext, idx_int],
-            dx=dx_med,
-            dy=dy_med,
-            bool_arr=boolean_radius,
-        )
-        
-
-        boolean_angle = self.is_internal_inside_external(ext_s, int_s, idx_ext, idx_int)
-        print(f"Is internal contour outside external contour?\n{boolean_angle}")
-
-        new_int = self.correct_intersection(
-            ext_arr=ext_s,
-            int_arr=new_int,
-            pairs=np.c_[idx_ext, idx_int],
-            dx=dx_med,
-            dy=dy_med,
-            bool_arr=boolean_angle,
-        )
-
-
-        bool_min_thickness_s_0 = self.check_min_thickness(
-            ext=ext_s,
-            int=new_int,
-            idx_ext=idx_ext,
-            idx_int=idx_int,
-            min_thickness=self.min_thickness,
-        )
-        print(f"Is minimal thickness respected?\n{bool_min_thickness_s_0}")
-
-        bool_min_thickness_s_1 = self.check_min_thickness(
-            ext=ext_s,
-            int=np.roll(new_int, 1),
-            idx_ext=idx_ext,
-            idx_int=idx_int,
-            min_thickness=self.min_thickness,
-        )
-        bool_min_thickness_s_m1 = self.check_min_thickness(
-            ext=ext_s,
-            int=np.roll(new_int, -1),
-            idx_ext=idx_ext,
-            idx_int=idx_int,
-            min_thickness=self.min_thickness,
-        )
-        bool_min_thickness_s = np.logical_or(
-            np.array(bool_min_thickness_s_0),
-            np.array(bool_min_thickness_s_1),
-            np.array(bool_min_thickness_s_m1),
-        )
-
-        bool_arr = np.c_[bool_min_thickness_s, bool_min_thickness_s]
-        int_corr = np.array(
-            [
-                ext_s[idx_ext][:, 0] - dy_med[idx_ext],
-                ext_s[idx_ext][:, 1] + dx_med[idx_ext],
-            ]
-        ).transpose()
-        np.copyto(dst=new_int, src=int_corr, where=bool_arr)
-
-        new_int = self.correct_intersection(
-            ext_arr=ext_s,
-            int_arr=new_int,
-            pairs=np.c_[idx_ext, idx_int],
-            dx=dx_med,
-            dy=dy_med,
-            bool_arr=bool_min_thickness_s,
-        )
-        """
-
-        if self.save_plot is not False:
+        if self.save_plot is True:
             self.plot_corrected_contours(
                 fig,
                 ax1,
@@ -874,8 +753,7 @@ class CorticalSanityCheck:
                 new_int,
                 iterator,
                 save=True,
-            )  # self.int_contour?
+            )
         else:
-            print("Plotting of corrected contours is disabled")
-
+            pass
         return new_int
