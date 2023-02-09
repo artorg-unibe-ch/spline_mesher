@@ -17,20 +17,14 @@ import scipy.spatial as ss
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import gmsh
 import sys
-import logging
+import coloredlogs, logging
 import cortical_sanity as csc
 from gmsh_mesh_builder import Mesher
 import os
 
 
 pio.renderers.default = "browser"
-logging.basicConfig(
-    filename="app.log",
-    filemode="w",
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
-)
-
+coloredlogs.install()
 
 class OCC_volume:
     def __init__(
@@ -742,6 +736,14 @@ class OCC_volume:
 
 
 def main():
+    logging.basicConfig(
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        level=logging.DEBUG,
+    )
+    logging.getLogger(os.getlogin())
+    logging.info("Starting meshing script...")
+    start = time.time()
+
     # fmt: off
     img_basefilename = ["C0002234"]
     cwd = os.getcwd()
@@ -799,17 +801,14 @@ def main():
             cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
         cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
 
-        # ! fino a qui tutto ok
-        
         gmsh.initialize()
         gmsh.clear()
         mesher = Mesher(geo_file_path, mesh_file_path)
-        
+
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))  # center of mass of each slice (x, y, z)
         cortical_int_sanity_split = np.array_split(cortical_int_sanity, len(np.unique(cortical_int_sanity[:, 2])))
-        INTERSECTION_NUMBER = 0
-        cortical_ext_centroid = np.zeros((np.shape(cortical_ext_split)[0], np.shape(cortical_ext_split)[1] + INTERSECTION_NUMBER, np.shape(cortical_ext_split)[2]))
-        cortical_int_centroid = np.zeros((np.shape(cortical_int_split)[0], np.shape(cortical_int_split)[1] + INTERSECTION_NUMBER, np.shape(cortical_int_split)[2]))
+        cortical_ext_centroid = np.zeros((np.shape(cortical_ext_split)[0], np.shape(cortical_ext_split)[1], np.shape(cortical_ext_split)[2]))
+        cortical_int_centroid = np.zeros((np.shape(cortical_int_split)[0], np.shape(cortical_int_split)[1], np.shape(cortical_int_split)[2]))
         idx_list_ext = np.zeros((len(cortical_ext_split), 4), dtype=int)
         idx_list_int = np.zeros((len(cortical_ext_split), 4), dtype=int)
 
@@ -820,29 +819,23 @@ def main():
             cortical_int_sanity_split[i][np.sort(idx)]
             cortex_centroid[i][:-1] = mesher.polygon_tensor_of_inertia(cortical_ext_split[i], cortical_int_sanity_split[i])
             cortex_centroid[i][-1] = cortical_ext_split[i][0, -1]
-            print(f'index:\t{i}')
             cortical_ext_centroid[i], idx_list_ext[i] = mesher.insert_tensor_of_inertia(cortical_ext_split[i], cortex_centroid[i][:-1])
             cortical_int_centroid[i], idx_list_int[i] = mesher.insert_tensor_of_inertia(cortical_int_sanity_split[i], cortex_centroid[i][:-1])
 
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
-        
-        #cort_ext_pts_tags, cortical_ext_bspline, intersection_line_tags = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
+
         cort_ext_pts_tags, cortical_ext_bspline, intersection_line_tags_ext = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
         cort_int_pts_tags, cortical_int_bspline, intersection_line_tags_int = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
-        
+
         mesher.factory.synchronize()
-        # gmsh.write('test_tensor_of_inertia.geo_unrolled')
-        # gmsh.fltk.run()
+        # gmsh.fltk.run()
         gmsh.finalize()
+        end = time.time()
+        elapsed = round(end - start, ndigits=3)
+        logging.info(f"Elapsed time:\t{elapsed} (s)")
+        logging.info("Meshing script finished.")
 
 
 if __name__ == "__main__":
-    logging.log(logging.INFO, "Starting meshing script...")
-    print("Executing gmsh_spline_mesh.py")
-    start = time.time()
     main()
-    end = time.time()
-    elapsed = end - start
-    print("Elapsed time: ", elapsed)
-    logging.log(logging.INFO, "Meshing script finished.")

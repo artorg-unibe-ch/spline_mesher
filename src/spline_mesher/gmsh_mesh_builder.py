@@ -93,14 +93,12 @@ class Mesher:
         Returns:
             ndarray: new array with intersection points
         """
-        # fmt: off
         dists, closest_idx_2 = spatial.KDTree(arr).query(intersection, k=2)
         if (closest_idx_2 == [0, len(arr) - 1]).all():
             return dists, closest_idx_2[1]
         else:
-            print(f"closest index where to insert the intersection point: {np.min(closest_idx_2)} (indices: {closest_idx_2})")
+            # print(f"closest index where to insert the intersection point: {np.min(closest_idx_2)} (indices: {closest_idx_2})")
             return dists, np.min(closest_idx_2)
-        # fmt: on
 
     def shift_point(self, arr, intersection):
         _, closest_idx = spatial.KDTree(arr).query(intersection)
@@ -253,19 +251,34 @@ class Mesher:
         #  add last column at the beginning of the array
         idx_list_sorted = np.insert(idx_list_sorted, 0, idx_list_sorted[:, -1], axis=1)
         # array_bspline = np.empty([len(array_pts_tags_split)])
-        
-        array_pts_tags_split = [np.append(array_pts_tags_split[i], array_pts_tags_split[i]) for i in range(len(array_pts_tags_split))]
-        
+
+        array_pts_tags_split = [
+            np.append(array_pts_tags_split[i], array_pts_tags_split[i])
+            for i in range(len(array_pts_tags_split))
+        ]
+
         array_bspline = []
         for j in range(len(idx_list_sorted[0, :]) - 1):
             for i, _ in enumerate(array_pts_tags_split):
                 # section the array with the idx_list
                 if j == 0:
-                    idx_min = min(np.where(array_pts_tags_split[i] == idx_list_sorted[i, j])[0])
-                    idx_max = max(np.where(array_pts_tags_split[i] == idx_list_sorted[i, j+1])[0])
+                    idx_min = min(
+                        np.where(array_pts_tags_split[i] == idx_list_sorted[i, j])[0]
+                    )
+                    idx_max = max(
+                        np.where(array_pts_tags_split[i] == idx_list_sorted[i, j + 1])[
+                            0
+                        ]
+                    )
                 else:
-                    idx_min = min(np.where(array_pts_tags_split[i] == idx_list_sorted[i, j])[0])
-                    idx_max = min(np.where(array_pts_tags_split[i] == idx_list_sorted[i, j+1])[0])
+                    idx_min = min(
+                        np.where(array_pts_tags_split[i] == idx_list_sorted[i, j])[0]
+                    )
+                    idx_max = min(
+                        np.where(array_pts_tags_split[i] == idx_list_sorted[i, j + 1])[
+                            0
+                        ]
+                    )
                 array_split_idx = array_pts_tags_split[i][idx_min : idx_max + 1]
 
                 array_bspline_s = self.gmsh_insert_bspline(array_split_idx)
