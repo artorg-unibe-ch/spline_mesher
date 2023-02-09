@@ -140,7 +140,7 @@ class Mesher:
         intersections = np.array([intersection_1, intersection_2])
 
         # TODO: rm after debug
-        fig, ax = plt.subplots()
+        # fig, ax = plt.subplots()
         # ax.set_title("Calculating nearest neighbor of the intersection point")
         # ax.scatter(array[:, 0], array[:, 1])
         # ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
@@ -210,13 +210,13 @@ class Mesher:
         point_tag = self.factory.addPoint(x, y, z, tag=-1)
         return point_tag
 
-    def gmsh_insert_bspline(self, point_tags, points):
-        indexed_points = np.array(point_tags)[points - 1].tolist()
-        line = self.factory.addBSpline(indexed_points)
+    def gmsh_insert_bspline(self, points):
+        points = np.array(points).tolist()
+        line = self.factory.addBSpline(points)
         return line
 
-    def insert_intersection_line(self, point_tags_tuple, idx_list: list):
-        point_tags = [tup[1] for tup in point_tags_tuple]
+    def insert_intersection_line(self, point_tags, idx_list: list):
+        # point_tags = [tup[1] for tup in point_tags_tuple]
         #  for each slice, take only the point_tags indexed by the idx_list
         reshaped_point_tags = np.reshape(point_tags, (len(idx_list), -1))
         indexed_points = reshaped_point_tags[
@@ -242,7 +242,7 @@ class Mesher:
 
         #  insert line at the intersection point with the center of inertia
         intersection_line_tag, indexed_points_coi = self.insert_intersection_line(
-            self.factory.get_entities(0), idx_list
+            array_pts_tags.tolist(), idx_list
         )
 
         # bsplines
@@ -254,25 +254,20 @@ class Mesher:
         idx_list_sorted = np.insert(idx_list_sorted, 0, idx_list_sorted[:, -1], axis=1)
         # array_bspline = np.empty([len(array_pts_tags_split)])
         
+        array_pts_tags_split = [np.append(array_pts_tags_split[i], array_pts_tags_split[i]) for i in range(len(array_pts_tags_split))]
+        
         array_bspline = []
-        for j in range(len(idx_list_sorted[:, 0])):
+        for j in range(len(idx_list_sorted[0, :]) - 1):
             for i, _ in enumerate(array_pts_tags_split):
-                # 1. duplicate the array
-                array_pts_tags_split[i] = np.vstack(
-                    np.vstack((array_pts_tags_split[i], array_pts_tags_split[i]))
-                ).flatten()
-                # 2. section the array with the idx_list
-                array_split_idx = array_pts_tags_split[i][min(
-                    np.where(array_pts_tags_split[i] == array_pts_tags_split[i][idx_list_sorted[j, 0]])[0]) : max(
-                    np.where(array_pts_tags_split[i] == array_pts_tags_split[i][idx_list_sorted[j, 1]])[0])]
+                # section the array with the idx_list
+                if j == 0:
+                    idx_min = min(np.where(array_pts_tags_split[i] == idx_list_sorted[i, j])[0])
+                    idx_max = max(np.where(array_pts_tags_split[i] == idx_list_sorted[i, j+1])[0])
+                else:
+                    idx_min = min(np.where(array_pts_tags_split[i] == idx_list_sorted[i, j])[0])
+                    idx_max = min(np.where(array_pts_tags_split[i] == idx_list_sorted[i, j+1])[0])
+                array_split_idx = array_pts_tags_split[i][idx_min : idx_max + 1]
 
-                #  reduce dimensionality of array_pts_tags_split
-                array_pts_tags_split = np.squeeze(array_pts_tags_split)
-                flat_point_tags = [
-                    item for sublist in array_pts_tags_split for item in sublist
-                ]
-                array_bspline_s = self.gmsh_insert_bspline(
-                    flat_point_tags, array_split_idx
-                )
+                array_bspline_s = self.gmsh_insert_bspline(array_split_idx)
                 array_bspline = np.append(array_bspline, array_bspline_s)
-        return array_pts_tags  # , array_bspline, intersection_line_tag
+        return array_pts_tags, array_bspline, intersection_line_tag

@@ -828,21 +828,21 @@ def main():
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
         
         #cort_ext_pts_tags, cortical_ext_bspline, intersection_line_tags = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
-        cort_ext_pts_tags = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
-        # cort_int_pts_tags, cortical_int_bspline, intersection_line_tags = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
+        cort_ext_pts_tags, cortical_ext_bspline, intersection_line_tags_ext = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
+        cort_int_pts_tags, cortical_int_bspline, intersection_line_tags_int = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
         
         mesher.factory.synchronize()
         # gmsh.write('test_tensor_of_inertia.geo_unrolled')
-        gmsh.fltk.run()
+        # gmsh.fltk.run()
         gmsh.finalize()
 
 
 if __name__ == "__main__":
-    logging.log(logging.WARNING, "Starting meshing script...")
+    logging.log(logging.INFO, "Starting meshing script...")
     print("Executing gmsh_spline_mesh.py")
     start = time.time()
     main()
     end = time.time()
     elapsed = end - start
     print("Elapsed time: ", elapsed)
-    logging.log(logging.WARNING, "Meshing script finished.")
+    logging.log(logging.INFO, "Meshing script finished.")
