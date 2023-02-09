@@ -796,25 +796,21 @@ def main():
             cortical_int_sanity[i][:, :-1] = cortex.cortical_sanity_check(ext_contour=cortical_ext_split[i], int_contour=cortical_int_split[i], iterator=i, show_plots=False)
             cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
         cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
-        
-        
-        # TODO: add here calculation of tensor of inertia (partially written in gmsh_mesh_builder.py)
-        # --> the cortical_ext, cortical_int_sanity will be used to calculate the tensor of inertia
-        # --> return: cort_ext, cort_int with points including ToI
+
+        # ! fino a qui tutto ok
         
         gmsh.initialize()
         gmsh.clear()
         mesher = Mesher(geo_file_path, mesh_file_path)
         
-        cortex_centroid = np.zeros((len(cortical_ext_split), 3))
+        cortex_centroid = np.zeros((len(cortical_ext_split), 3))  # center of mass of each slice (x, y, z)
         cortical_int_sanity_split = np.array_split(cortical_int_sanity, len(np.unique(cortical_int_sanity[:, 2])))
-        INTERSECTION_NUMBER = 5
-        cortical_ext_centroid = np.zeros((np.shape(cortical_ext_split)[0] + INTERSECTION_NUMBER, np.shape(cortical_ext_split)[1] + INTERSECTION_NUMBER, np.shape(cortical_ext_split)[2]))
-        cortical_int_centroid = np.zeros((np.shape(cortical_int_split)[0] + INTERSECTION_NUMBER, np.shape(cortical_int_split)[1] + INTERSECTION_NUMBER, np.shape(cortical_int_split)[2]))
+        INTERSECTION_NUMBER = 0
+        cortical_ext_centroid = np.zeros((np.shape(cortical_ext_split)[0], np.shape(cortical_ext_split)[1] + INTERSECTION_NUMBER, np.shape(cortical_ext_split)[2]))
+        cortical_int_centroid = np.zeros((np.shape(cortical_int_split)[0], np.shape(cortical_int_split)[1] + INTERSECTION_NUMBER, np.shape(cortical_int_split)[2]))
         idx_list_ext = np.zeros((len(cortical_ext_split), 4), dtype=int)
         idx_list_int = np.zeros((len(cortical_ext_split), 4), dtype=int)
 
-        _cnt = 1
         for i, _ in enumerate(cortical_ext_split):
             _, idx = np.unique(cortical_ext_split[i].round(decimals=6), axis=0, return_index=True)
             cortical_ext_split[i][np.sort(idx)]
@@ -829,8 +825,9 @@ def main():
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
         
-        cort_ext_pts_tags, cortical_ext_bspline = mesher.gmsh_geometry_formulation(cortical_ext_msh)
-        cort_int_pts_tags, cortical_int_bspline = mesher.gmsh_geometry_formulation(cortical_int_msh)
+        #cort_ext_pts_tags, cortical_ext_bspline, intersection_line_tags = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
+        cort_ext_pts_tags = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
+        # cort_int_pts_tags, cortical_int_bspline, intersection_line_tags = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
         
         mesher.factory.synchronize()
         gmsh.write('test_tensor_of_inertia.geo_unrolled')
