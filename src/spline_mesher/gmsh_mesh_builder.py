@@ -210,10 +210,8 @@ class Mesher:
         point_tag = self.factory.addPoint(x, y, z, tag=-1)
         return point_tag
 
-    def gmsh_insert_bspline(self, point_tags_tuple, points):
-        point_tags_list = [tup[1] for tup in point_tags_tuple]
-        point_tags_np = np.array(point_tags_list)
-        indexed_points = point_tags_np[points - 1].tolist()
+    def gmsh_insert_bspline(self, point_tags, points):
+        indexed_points = np.array(point_tags)[points - 1].tolist()
         line = self.factory.addBSpline(indexed_points)
         return line
 
@@ -251,12 +249,12 @@ class Mesher:
         array_pts_tags_split = np.array_split(
             array_pts_tags, len(np.unique(array[:, 2]))
         )
-        idx_list_sorted = np.sort(idx_list)
+        idx_list_sorted = np.sort(indexed_points_coi)
         #  add last column at the beginning of the array
         idx_list_sorted = np.insert(idx_list_sorted, 0, idx_list_sorted[:, -1], axis=1)
         # array_bspline = np.empty([len(array_pts_tags_split)])
+        
         array_bspline = []
-
         for j in range(len(idx_list_sorted[:, 0])):
             for i, _ in enumerate(array_pts_tags_split):
                 # 1. duplicate the array
@@ -264,25 +262,17 @@ class Mesher:
                     np.vstack((array_pts_tags_split[i], array_pts_tags_split[i]))
                 ).flatten()
                 # 2. section the array with the idx_list
-                array_split_idx = array_pts_tags_split[i][
-                    min(
-                        np.where(
-                            array_pts_tags_split[i]
-                            == array_pts_tags_split[i][idx_list_sorted[j, 0]]
-                        )[0]
-                    ) : max(
-                        np.where(
-                            array_pts_tags_split[i]
-                            == array_pts_tags_split[i][idx_list_sorted[j, 1]]
-                        )
-                    )[
-                        1
-                    ]
-                    + 1
-                ]
+                array_split_idx = array_pts_tags_split[i][min(
+                    np.where(array_pts_tags_split[i] == array_pts_tags_split[i][idx_list_sorted[j, 0]])[0]) : max(
+                    np.where(array_pts_tags_split[i] == array_pts_tags_split[i][idx_list_sorted[j, 1]])[0])]
 
+                #  reduce dimensionality of array_pts_tags_split
+                array_pts_tags_split = np.squeeze(array_pts_tags_split)
+                flat_point_tags = [
+                    item for sublist in array_pts_tags_split for item in sublist
+                ]
                 array_bspline_s = self.gmsh_insert_bspline(
-                    self.factory.get_entities(0), array_split_idx
+                    flat_point_tags, array_split_idx
                 )
                 array_bspline = np.append(array_bspline, array_bspline_s)
         return array_pts_tags  # , array_bspline, intersection_line_tag

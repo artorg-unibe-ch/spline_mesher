@@ -20,6 +20,7 @@ import sys
 import logging
 import cortical_sanity as csc
 from gmsh_mesh_builder import Mesher
+import os
 
 
 pio.renderers.default = "browser"
@@ -743,15 +744,16 @@ class OCC_volume:
 def main():
     # fmt: off
     img_basefilename = ["C0002234"]
-    img_basepath = r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM"
-    img_outputpath = r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/04_OUTPUT"
+    cwd = os.getcwd()
+    img_basepath = f"{cwd}/01_AIM"
+    img_outputpath = f"{cwd}/04_OUTPUT"
     img_path_ext = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i] + "_CORT_MASK_cap.mhd",)) for i in range(len(img_basefilename))]
     filepath_ext = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i])) for i in range(len(img_basefilename))]
     filename_ext = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + "_ext.geo_unrolled")) for i in range(len(img_basefilename))]
     filename_int = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + "_int.geo_unrolled")) for i in range(len(img_basefilename))]
 
-    geo_file_path = r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/04_OUTPUT/C0002237/fake_example.geo_unrolled"
-    mesh_file_path = r"/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/04_OUTPUT/C0002237/C0002237.msh"
+    geo_file_path = f"{cwd}/04_OUTPUT/C0002237/fake_example.geo_unrolled"
+    mesh_file_path = f"{cwd}/04_OUTPUT/C0002237/C0002237.msh"
 
     for i in range(len(img_basefilename)):
         Path.mkdir(Path(img_outputpath, img_basefilename[i]), parents=True, exist_ok=True)
@@ -830,8 +832,8 @@ def main():
         # cort_int_pts_tags, cortical_int_bspline, intersection_line_tags = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
         
         mesher.factory.synchronize()
-        gmsh.write('test_tensor_of_inertia.geo_unrolled')
-        # gmsh.fltk.run()
+        # gmsh.write('test_tensor_of_inertia.geo_unrolled')
+        gmsh.fltk.run()
         gmsh.finalize()
 
 
