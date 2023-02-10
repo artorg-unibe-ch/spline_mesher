@@ -17,7 +17,8 @@ import scipy.spatial as ss
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import gmsh
 import sys
-import coloredlogs, logging
+import coloredlogs
+import logging
 import cortical_sanity as csc
 from gmsh_mesh_builder import Mesher
 import os
@@ -25,6 +26,7 @@ import os
 
 pio.renderers.default = "browser"
 coloredlogs.install()
+
 
 class OCC_volume:
     def __init__(
@@ -138,7 +140,7 @@ class OCC_volume:
             plt.colorbar(cax=cax)
             plt.show()
         else:
-            print(f"MHD slice, show_plots:\t\t{self.show_plots}")
+            logging.info(f"MHD slice\t\tshow_plots:\t{self.show_plots}")
         return None
 
     def plot_slice(self, image, SLICE, title, ASPECT):
@@ -228,7 +230,7 @@ class OCC_volume:
                 img_thr_join, SLICE, f"Binary threshold on slice n. {SLICE}", ASPECT
             )
         else:
-            print(f"Binary threshold, show_plots:\t{self.show_plots}")
+            logging.info(f"Binary threshold\tshow_plots:\t{self.show_plots}")
 
         if self.phases >= 1:
             outer_contour_np = self.get_draw_contour(
@@ -248,7 +250,7 @@ class OCC_volume:
                         ASPECT,
                     )
                 else:
-                    print(f"Binary threshold, show_plots:\t{self.show_plots}")
+                    logging.info(f"Binary threshold\tshow_plots:\t{self.show_plots}")
 
         if self.phases == 2:
             inner_contour_np = self.get_draw_contour(
@@ -267,7 +269,7 @@ class OCC_volume:
                     ASPECT,
                 )
             else:
-                print(f"Binary threshold, show_plots:\t{self.show_plots}")
+                logging.info(f"Binary threshold\tshow_plots:\t{self.show_plots}")
 
         if self.phases > 2:
             raise ValueError(
@@ -399,39 +401,39 @@ class OCC_volume:
 
         if direction == 1:
             if self.debug_orientation == 1:
-                print("Desired direction: cw")
+                logging.debug("Desired direction: cw")
             if y[1] > y[0]:
                 if self.debug_orientation == 1:
-                    print("Not flipping")
+                    logging.debug("Not flipping")
                 else:
                     pass
                 x_o = x
                 y_o = y
             elif y[1] < y[0]:
                 if self.debug_orientation == 1:
-                    print("Flipping")
+                    logging.debug("Flipping")
                 else:
                     pass
                 x_o = np.flip(x, axis=0)
                 y_o = np.flip(y, axis=0)
             else:
-                print("Something went wrong while flipping the array")
+                logging.debug("Something went wrong while flipping the array")
 
         if direction == 2:
             if self.debug_orientation == 1:
-                print("Desired direction: ccw")
+                logging.debug("Desired direction: ccw")
             if y[1] < y[0]:
                 if self.debug_orientation == 1:
-                    print("Not flipping")
+                    logging.debug("Not flipping")
                 x_o = x
                 y_o = y
             elif y[1] > y[0]:
                 if self.debug_orientation == 1:
-                    print("Flipping")
+                    logging.debug("Flipping")
                 x_o = np.flip(x, axis=0)
                 y_o = np.flip(y, axis=0)
             else:
-                print("Something went wrong while flipping the array")
+                logging.warning("Something went wrong while flipping the array")
         return x_o, y_o
 
     def sort_mahalanobis(self, data, metrics, start):
@@ -447,7 +449,6 @@ class OCC_volume:
             nneigbour = candidate[dist_m[target, candidate].argmin()]
             points_index.discard(nneigbour)
             points_index.discard(target)
-            # print points_index, target, nneigbour
             sorted_index.append(target)
             target = nneigbour
         sorted_index.append(target)
@@ -516,8 +517,11 @@ class OCC_volume:
             int_contour_s (np.ndarray): array of internal contour points
 
         Returns:
-            ext_contour_s (np.ndarray): array of external contour points with defined shape and structure (no duplicates, closed contour)
-            int_contour_s (np.ndarray): array of internal contour points with defined shape and structure (no duplicates, closed contour)
+            ext_contour_s (np.ndarray): array of external contour points
+            with defined shape and structure (no duplicates, closed contour)
+
+            int_contour_s (np.ndarray): array of internal contour points
+            with defined shape and structure (no duplicates, closed contour)
         """
         # sanity check of input data ext_contour_s and int_contour_s
         # make sure that arr[0] is the same as arr[-1]
@@ -539,14 +543,15 @@ class OCC_volume:
             ext_contour_s = np.append(ext_contour_s, [ext_contour_s[0]], axis=0)
         # check that shape of ext_contour_s and int_contour_s are the same
         if ext_contour_s.shape != int_contour_s.shape:
-            print(
+            logging.warning(
                 f"Error in the shape of the external and internal contours of the slice:\t{slice}"
             )
             sys.exit(90)
         return ext_contour_s, int_contour_s
 
     def output_sanity_check(self, initial_contour: np.ndarray, contour_s: np.ndarray):
-        # check that after csc.CorticalSanityCheck elements of arrays external and internal contours have the same structure and shape as before csc.CorticalSanityCheck
+        # check that after csc.CorticalSanityCheck elements of arrays external and
+        # internal contours have the same structure and shape as before csc.CorticalSanityCheck
         # sanity check of input data ext_contour_s and int_contour_s
         if np.allclose(initial_contour[0], initial_contour[1], rtol=1e-05, atol=1e-08):
             logging.warning("External contour has a duplicate first point")
@@ -612,57 +617,6 @@ class OCC_volume:
         a0 = a[-1].reshape(1, -1)  # add the final point and concatenate
         return np.concatenate((*pnts, a0), axis=0)
 
-    def get_contours(self, i, fig):
-
-        if self.phases == 1:
-            # dstack = np.dstack((xnew, ynew))
-            dstack = np.dstack(
-                (self.contour_ext[i][:, 0], self.contour_ext[i][:, 1])
-            )  # TODO: to be tested, could potentially work
-
-        if self.phases == 2:
-            ext_contour_s, int_contour_s = self.input_sanity_check(
-                self.ext_contour[i], self.int_contour[i]
-            )
-
-            cortex = csc.CorticalSanityCheck(
-                MIN_THICKNESS=self.MIN_THICKNESS,
-                ext_contour=ext_contour_s,
-                int_contour=int_contour_s,
-                model=self.filename,
-                save_plot=True,
-            )
-
-            # calculate tensor of inertia of cortical contour
-            # tensor_of_inertia = self.polygon_tensor_of_inertia(
-            # ext_arr=ext_contour_s, int_arr=int_contour_s
-            # )
-
-            int_spline_corr = cortex.cortical_sanity_check(
-                ext_contour=ext_contour_s, int_contour=int_contour_s, iterator=i
-            )
-
-            # check that after csc.CorticalSanityCheck elements of arrays external and internal contours
-            # have the same structure and shape as before csc.CorticalSanityCheck
-            # int_contour_s = self.output_sanity_check(int_contour_t, int_spline_corr)
-            # xnew = int_contour_s[:, 0] # ! old
-            # ynew = int_contour_s[:, 1] # ! old
-            dstack = np.dstack((int_contour_s[:, 0], int_contour_s[:, 1]))  #! new
-        # ext_contour_s, int_contour_s = self.insert_tensor_of_inertia(
-        # ext_contour_s, int_contour_s, tensor_of_inertia
-        # )
-
-        # lines_s, points, curve_loop_tag = self.surfaces_gmsh(x=xnew, y=ynew, z=z_pos)
-
-        # if self.show_plots is not False:
-        #     fig = self.plotly_add_traces(
-        #         fig, xy_sorted_closed, x_mahalanobis, y_mahalanobis, xnew, ynew
-        #     )
-        # else:
-        #     fig = None
-
-        # return curve_loop_tag, lines_s, points, dstack # commeented just for removing problems with pylint, to be reactivated
-
     def volume_splines(self):
         contour_ext_fig = []
         contour_int_fig = []
@@ -677,7 +631,7 @@ class OCC_volume:
         if self.show_plots is True:
             fig = go.Figure(layout=self.layout)
         else:
-            print(f"Volume_splines, show_plots:\t{self.show_plots}")
+            logging.info(f"Volume_splines\tshow_plots:\t{self.show_plots}")
             fig = None
 
         # fmt: off
@@ -691,13 +645,14 @@ class OCC_volume:
         contour_ext = []
         contour_int = []
         for i, _slice in enumerate(self.slice_index):
-            print(f"Slice:\t{_slice}")
+            logging.debug(f"Slice:\t{_slice}")
             if self.phases >= 1:
-                image_slice_ext = image_data_ext[_slice, :, :][::-1, ::-1]  # TODO: check if ::-1 is still needed (minus sign)
+                # TODO: check if ::-1 is still needed (minus sign)
+                image_slice_ext = image_data_ext[_slice, :, :][::-1, ::-1]
                 original, cortical_ext_x, cortical_ext_y = self.sort_surface(image_slice_ext)
-                z = np.ones(len(cortical_ext_x)) * (self.spacing[0]* _slice)
+                z = np.ones(len(cortical_ext_x)) * (self.spacing[0] * _slice)
                 contour_ext = np.append(contour_ext, np.c_[cortical_ext_x, cortical_ext_y, z])
-                
+
                 if self.phases == 1:
                     if self.show_plots is True:
                         fig = self.plotly_add_traces(
@@ -706,10 +661,11 @@ class OCC_volume:
                     else:
                         fig = None
             else:
-                print(f"Phases is not >= 1: {self.phases}")
-            
+                logging.warning(f"Phases is not >= 1: {self.phases}")
+
             if self.phases == 2:
-                image_slice_int = image_data_int[_slice, :, :][::-1, ::-1]  # TODO: check if ::-1 is still needed (minus sign)
+                # TODO: check if ::-1 is still needed (minus sign)
+                image_slice_int = image_data_int[_slice, :, :][::-1, ::-1]
                 original, cortical_int_x, cortical_int_y = self.sort_surface(image_slice_int)
                 contour_int = np.append(contour_int, np.c_[cortical_int_x, cortical_int_y, z])
 
@@ -721,7 +677,7 @@ class OCC_volume:
                     else:
                         fig = None
             else:
-                print(f"Phases =/= 2: {self.phases}")
+                logging.warning(f"Phases =/= 2: {self.phases}")
         # fmt: on
 
         if self.show_plots is True:
@@ -751,8 +707,7 @@ def main():
     img_outputpath = f"{cwd}/04_OUTPUT"
     img_path_ext = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i] + "_CORT_MASK_cap.mhd",)) for i in range(len(img_basefilename))]
     filepath_ext = [str(Path(img_basepath, img_basefilename[i], img_basefilename[i])) for i in range(len(img_basefilename))]
-    filename_ext = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + "_ext.geo_unrolled")) for i in range(len(img_basefilename))]
-    filename_int = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + "_int.geo_unrolled")) for i in range(len(img_basefilename))]
+    filename = [str(Path(img_outputpath, img_basefilename[i], img_basefilename[i] + "_ext.geo_unrolled")) for i in range(len(img_basefilename))]
 
     geo_file_path = f"{cwd}/04_OUTPUT/C0002237/fake_example.geo_unrolled"
     mesh_file_path = f"{cwd}/04_OUTPUT/C0002237/C0002237.msh"
@@ -764,7 +719,7 @@ def main():
         cortical_v = OCC_volume(
             img_path_ext[i],
             filepath_ext[i],
-            filename_ext[i],
+            filename[i],
             ASPECT=30,
             SLICE=1,
             UNDERSAMPLING=5,
@@ -792,7 +747,7 @@ def main():
                                          int_contour=cortical_int,
                                          model=cortical_v.filename,
                                          save_plot=False)
-        
+
         cortical_ext_split = np.array_split(cortical_ext, len(np.unique(cortical_ext[:, 2])))
         cortical_int_split = np.array_split(cortical_int, len(np.unique(cortical_int[:, 2])))
         cortical_int_sanity = np.zeros(np.shape(cortical_int_split))
@@ -829,11 +784,11 @@ def main():
         cort_int_pts_tags, cortical_int_bspline, intersection_line_tags_int = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
 
         mesher.factory.synchronize()
-        # gmsh.fltk.run()
+        gmsh.fltk.run()
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=3)
-        logging.info(f"Elapsed time:\t{elapsed} (s)")
+        logging.info(f"Elapsed time:  {elapsed} (s)")
         logging.info("Meshing script finished.")
 
 

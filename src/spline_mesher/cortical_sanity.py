@@ -1,8 +1,6 @@
 import numpy as np
 import math
-import matplotlib
 import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy import spatial
 from pathlib import Path
 import shapely.geometry as shpg
@@ -227,9 +225,7 @@ class CorticalSanityCheck:
             [arr[base_idx[:, 0]][:, 0] - dy, arr[base_idx[:, 0]][:, 1] + dx]
         ).transpose()
 
-    def correct_intersection(
-        self, ext_arr, int_arr, base_idx, dx, dy, bool_arr
-    ):  # closest_idx,
+    def correct_intersection(self, ext_arr, int_arr, base_idx, dx, dy, bool_arr):
         """
         Takes ext and int arrays and applies nodal displacement to the elements where bool_min_thickness == True
 
@@ -243,20 +239,16 @@ class CorticalSanityCheck:
         Returns:
             ndarray: new array of internal polygon
         """
-
-        # bool_arr = np.c_[bool_arr, bool_arr]
         bool_arr = bool_arr[:-1]
 
         ext_arr = ext_arr[:-1]
         base_idx = base_idx[:-1]
-        # int_arr = int_arr[:-1]
-        # closest_idx = closest_idx[:-1]
         corr_arr = int_arr
         dx = dx[:-1]
         dy = dy[:-1]
 
         for idx_, bool_ in enumerate(bool_arr[:-1]):
-            if bool_ == True:
+            if bool_ is True:
                 corr_arr[idx_] = (
                     ext_arr[idx_][0] - dy[idx_],
                     ext_arr[idx_][1] + dx[idx_],
@@ -276,17 +268,7 @@ class CorticalSanityCheck:
                     )
 
         corr_arr = np.append(corr_arr, corr_arr[0].reshape(1, 2), axis=0)
-
         return corr_arr
-
-        # int_corr = self.correct_internal_point(ext_arr, base_idx, dx, dy)
-        # np.copyto(dst=int_arr, src=int_corr, where=bool_arr)
-        # return int_arr
-
-        # bool_arr = np.c_[bool_arr, bool_arr]
-        # int_corr = self.correct_internal_point(ext_arr, pairs, dx, dy)
-        # np.copyto(dst=int_arr[pairs[:, 1]], src=int_corr, where=bool_arr)
-        # return int_arr[pairs[:, 1]]
 
     def draw_arrow(self, ax, arr_start, arr_end, text, color):
         """
@@ -571,20 +553,23 @@ class CorticalSanityCheck:
         ]
         return xy_interp
 
-    def offset_surface(self, ext_line, offset):
+    def offset_surface(self, line, offset):
         """
         Create artificial internal surface based on an offset
-        Don't implement in main script it's just for testing
+        Input:
+            np.ndarray: 2D array of [x, y] points of the external surface
+        Returns:
+            np.ndarray: 2D array of [x, y] points of the offset surface
         """
+
         # Create a Polygon from the 2d array
-        poly = shpg.Polygon(ext_line)
+        poly = shpg.Polygon(line)
 
         # Create offset in inward direction
         noffpoly = poly.buffer(offset)  # offset
 
         # Turn polygon points into numpy arrays for plotting
-        afpolypts = np.array(poly.exterior)
-        noffafpolypts = np.array(noffpoly.exterior)
+        noffafpolypts = np.array(noffpoly.exterior.coords)
         return noffafpolypts
 
     def plot_corrected_contours(

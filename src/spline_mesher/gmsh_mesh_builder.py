@@ -3,8 +3,6 @@ from pathlib import Path
 import numpy as np
 import shapely.geometry as shpg
 from scipy import spatial
-import matplotlib.pyplot as plt
-import sys
 
 
 class Mesher:
@@ -26,20 +24,6 @@ class Mesher:
         gmsh.model.add(modelname)
         gmsh.merge(self.geo_file_path)
 
-        coords = np.array(
-            [
-                gmsh.model.getValue(0, point[1], [])
-                for point in gmsh.model.getEntities(0)
-            ]
-        )
-        z_list = np.unique(coords[:, 2])
-        # for z in z_list:
-        #     print(f"z: {z}")
-        #     slices = coords[coords[:, 2] == z]
-        #     print(slices)
-        #     plt.plot(slices[:, 0], slices[:, 1], "o")
-        #     plt.show()
-        #     print("a")
         self.factory.synchronize()
 
         # self.write_msh()
@@ -97,7 +81,11 @@ class Mesher:
         if (closest_idx_2 == [0, len(arr) - 1]).all():
             return dists, closest_idx_2[1]
         else:
-            # print(f"closest index where to insert the intersection point: {np.min(closest_idx_2)} (indices: {closest_idx_2})")
+            # print(
+            #     f"closest index where to insert the intersection point: \
+            # {np.min(closest_idx_2)} (indices: {closest_idx_2})"
+            # )
+            pass
             return dists, np.min(closest_idx_2)
 
     def shift_point(self, arr, intersection):
@@ -250,7 +238,6 @@ class Mesher:
         idx_list_sorted = np.sort(indexed_points_coi)
         #  add last column at the beginning of the array
         idx_list_sorted = np.insert(idx_list_sorted, 0, idx_list_sorted[:, -1], axis=1)
-        # array_bspline = np.empty([len(array_pts_tags_split)])
 
         array_pts_tags_split = [
             np.append(array_pts_tags_split[i], array_pts_tags_split[i])
