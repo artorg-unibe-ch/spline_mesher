@@ -125,64 +125,12 @@ class Mesher:
         )
         intersections = np.array([intersection_1, intersection_2])
 
-        # TODO: rm after debug
-        # fig, ax = plt.subplots()
-        # ax.set_title("Calculating nearest neighbor of the intersection point")
-        # ax.scatter(array[:, 0], array[:, 1])
-        # ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
-        # ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
-        # for i, txt in enumerate(array[:, 0]):
-        #     ax.annotate(i, (array[:, 0][i], array[:, 1][i]))
-        # plt.show()
-
         idx_list = []
-        for i, intersection in enumerate(intersections):
-            for j, inters in enumerate(intersection):
-                dists, closest_idx = self.intersection_point(array, inters)
-                # array = self.insert_closest_point(array, closest_idx, inters)
-
-                # TODO: rm after debug
-                # fig, ax = plt.subplots()
-                # ax.set_title("BEFORE")
-                # ax.plot(array[:, 0], array[:, 1])
-                # ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
-                # ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
-                # for n, txt in enumerate(array[:, 0]):
-                #     ax.annotate(n, (array[:, 0][n], array[:, 1][n]))
-                # plt.savefig(f"before_{i}_{j}.png")
+        for _, intersection in enumerate(intersections):
+            for _, inters in enumerate(intersection):
+                _, closest_idx = self.intersection_point(array, inters)
                 array[closest_idx] = inters
-
-                """
-                if abs(dists[0] - dists[1]) < 1e-5:
-                    array = np.insert(array, closest_idx, inters, axis=0)
-                else:
-                    try:
-                        array = np.insert(array, closest_idx + 1, inters, axis=0)
-                    except:
-                        array = np.insert(array, 0, inters, axis=0)
-                """
-
-                # TODO: rm after debug
-                # fig, ax = plt.subplots()
-                # ax.set_title("AFTER")
-                # ax.plot(array[:, 0], array[:, 1])
-                # ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
-                # ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
-                # for n, txt in enumerate(array[:, 0]):
-                #     ax.annotate(n, (array[:, 0][n], array[:, 1][n]))
-                # plt.savefig(f"after_{i}_{j}.png")
-
                 idx_list.append(closest_idx)
-        # TODO: rm after debug
-        #  fig, ax = plt.subplots()
-        #  ax.set_title("Inserting intersection points into the contours")
-        #  ax.plot(array[:, 0], array[:, 1])
-        #  ax.scatter(intersections[0][:, 0], intersections[0][:, 1], color="red")
-        #  ax.scatter(intersections[1][:, 0], intersections[1][:, 1], color="red")
-        #  for i, txt in enumerate(array[:, 0]):
-        #      ax.annotate(i, (array[:, 0][i], array[:, 1][i]))
-        #  plt.show()
-        # array = self.close_loop(array)  # TODO: maybe reactivate it?
         return array, idx_list
 
     # adding here all the functions related to the mesh building
@@ -196,14 +144,16 @@ class Mesher:
         point_tag = self.factory.addPoint(x, y, z, tag=-1)
         return point_tag
 
-    def gmsh_insert_bspline(self, points):
-        points = np.array(points).tolist()
-        line = self.factory.addBSpline(points)
-        return line
+    def insert_points(self, array):
+        array_pts_tags = []
+        for i, _ in enumerate(array):
+            array_tag = self.gmsh_add_points(array[i][0], array[i][1], array[i][2])
+            array_pts_tags = np.append(array_pts_tags, array_tag)
+        array_pts_tags = np.asarray(array_pts_tags, dtype=int)
+        return array_pts_tags
 
     def insert_intersection_line(self, point_tags, idx_list: list):
-        # point_tags = [tup[1] for tup in point_tags_tuple]
-        #  for each slice, take only the point_tags indexed by the idx_list
+        point_tags = np.array(point_tags).tolist()
         reshaped_point_tags = np.reshape(point_tags, (len(idx_list), -1))
         indexed_points = reshaped_point_tags[
             np.arange(len(idx_list))[:, np.newaxis], idx_list
@@ -218,20 +168,29 @@ class Mesher:
                 line_tags = np.append(line_tags, line)
         return line_tags, indexed_points
 
-    def gmsh_geometry_formulation(self, array: np.ndarray, idx_list: list):
-        # points
-        array_pts_tags = []
-        for i, _ in enumerate(array):
-            array_tag = self.gmsh_add_points(array[i][0], array[i][1], array[i][2])
-            array_pts_tags = np.append(array_pts_tags, array_tag)
-        array_pts_tags = np.asarray(array_pts_tags, dtype=int)
+    def gmsh_insert_bspline(self, points):
+        points = np.array(points).tolist()
+        b_spline = self.factory.addBSpline(points)
+        return b_spline
 
-        #  insert line at the intersection point with the center of inertia
-        intersection_line_tag, indexed_points_coi = self.insert_intersection_line(
-            array_pts_tags.tolist(), idx_list
-        )
+    def insert_bspline(
+        self,
+        array: np.ndarray,
+        array_pts_tags: np.ndarray,
+        indexed_points_coi: np.ndarray,
+    ) -> np.ndarray:
+        """
+        Insert plane bsplines based on the slices' points cloud
+        Returns the list of the bspline tags and creates bspline in gmsh
 
-        # bsplines
+        Args:
+            array (np.ndarray): array containing geometry point cloud
+            array_pts_tags (np.ndarray): array containing the tags of the points
+            indexed_points_coi (np.ndarray): indices at which the bspline is inserted (start-end points of the bspline)
+
+        Returns:
+            array_bspline (np.ndarray): point tags of the bspline
+        """
         array_pts_tags_split = np.array_split(
             array_pts_tags, len(np.unique(array[:, 2]))
         )
@@ -270,4 +229,16 @@ class Mesher:
 
                 array_bspline_s = self.gmsh_insert_bspline(array_split_idx)
                 array_bspline = np.append(array_bspline, array_bspline_s)
+        return array_bspline
+
+    def gmsh_geometry_formulation(self, array: np.ndarray, idx_list: list):
+
+        array_pts_tags = self.insert_points(array)
+
+        intersection_line_tag, indexed_points_coi = self.insert_intersection_line(
+            array_pts_tags, idx_list
+        )
+
+        array_bspline = self.insert_bspline(array, array_pts_tags, indexed_points_coi)
+
         return array_pts_tags, array_bspline, intersection_line_tag
