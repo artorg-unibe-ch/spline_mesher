@@ -105,10 +105,6 @@ class Mesher:
         arr = np.insert(arr, closest_idx, values, axis=0)
         return arr
 
-    def close_loop(self, array):
-        array = np.vstack((array, array[0]))
-        return array
-
     def insert_tensor_of_inertia(self, array, centroid) -> np.ndarray:
         """
         1. calculate centroid of the cortex
