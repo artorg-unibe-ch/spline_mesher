@@ -506,7 +506,7 @@ class OCC_volume:
             xy_sorted_closed,
             xnew[1:],
             ynew[1:],
-        )  # TODO: evaluate if point removal is necessary
+        )
 
     def input_sanity_check(self, ext_contour_s: np.ndarray, int_contour_s: np.ndarray):
         """
