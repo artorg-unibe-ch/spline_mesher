@@ -6,11 +6,12 @@ from scipy import spatial
 
 
 class Mesher:
-    def __init__(self, geo_file_path, mesh_file_path):
+    def __init__(self, geo_file_path, mesh_file_path, slicing_coefficient):
         self.model = gmsh.model
         self.factory = self.model.occ
         self.geo_file_path = geo_file_path
         self.mesh_file_path = mesh_file_path
+        self.slicing_coefficient = slicing_coefficient
 
     def write_msh(self):
         gmsh.model.mesh.generate(2)
@@ -168,6 +169,32 @@ class Mesher:
                 line_tags = np.append(line_tags, line)
         return line_tags, indexed_points
 
+    def sort_bspline_cw(self, coords, point_tags):
+        coords = np.asarray(coords)
+        center = np.mean(coords, axis=0)
+        angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
+        sorted_indices = np.argsort(angles)
+        sorted_indices = list(sorted_indices)
+        point_tags_sorted = [point_tags[i] for i in sorted_indices]
+        return point_tags_sorted
+
+    def get_sort_coords(self, point_tags):
+        gmsh.model.occ.synchronize()
+        start_point = [lst[0] for lst in point_tags]
+        coords = [self.model.getValue(0, point, []) for point in start_point]
+        # slice it into 4 sub-arrays (division of 4 per each slice)
+        coords_sliced = [coords[i : i + 4] for i in range(0, len(coords), 4)]
+        point_tags_sliced = [
+            point_tags[i : i + 4] for i in range(0, len(point_tags), 4)
+        ]
+
+        # sort the sub-arrays in clockwise order
+        point_tags_sliced_sorted = []
+        for i, coord_slice in enumerate(coords_sliced):
+            point_tags_sorted = self.sort_bspline_cw(coord_slice, point_tags_sliced[i])
+            point_tags_sliced_sorted.append(point_tags_sorted)
+        return point_tags_sliced_sorted
+
     def gmsh_insert_bspline(self, points):
         points = np.array(points).tolist()
         b_spline = self.factory.addBSpline(points)
@@ -194,8 +221,9 @@ class Mesher:
         array_pts_tags_split = np.array_split(
             array_pts_tags, len(np.unique(array[:, 2]))
         )
+
         idx_list_sorted = np.sort(indexed_points_coi)
-        #  add last column at the beginning of the array
+        # add last column at the beginning of the array
         idx_list_sorted = np.insert(idx_list_sorted, 0, idx_list_sorted[:, -1], axis=1)
 
         array_pts_tags_split = [
@@ -203,9 +231,9 @@ class Mesher:
             for i in range(len(array_pts_tags_split))
         ]
 
-        array_bspline = []
-        for j in range(len(idx_list_sorted[0, :]) - 1):
-            for i, _ in enumerate(array_pts_tags_split):
+        array_split_idx_full = []
+        for i, _ in enumerate(array_pts_tags_split):
+            for j in range(len(idx_list_sorted[0, :]) - 1):
                 # section the array with the idx_list
                 if j == 0:
                     idx_min = min(
@@ -226,10 +254,51 @@ class Mesher:
                         ]
                     )
                 array_split_idx = array_pts_tags_split[i][idx_min : idx_max + 1]
+                array_split_idx_full.append(array_split_idx)
 
-                array_bspline_s = self.gmsh_insert_bspline(array_split_idx)
+        array_split_idx_full_sorted = self.get_sort_coords(array_split_idx_full)
+
+        array_bspline = []
+        for array_split_idx_slice in array_split_idx_full_sorted:
+            for bspline_indices in array_split_idx_slice:
+                print(bspline_indices)
+                array_bspline_s = self.gmsh_insert_bspline(bspline_indices)
                 array_bspline = np.append(array_bspline, array_bspline_s)
-        return array_bspline
+
+        return array_bspline, array_split_idx
+
+    def add_bspline_filling(self, bsplines, intersections, slicing):
+        # reshape and convert to list
+        array_bspline_sliced = bsplines.reshape((-1, self.slicing_coefficient))
+        array_bspline_sliced = np.array(array_bspline_sliced, dtype="int").tolist()
+        # TODO: find a way to call the coordinates of the first point of the intersection line
+        # intersections_sliced_s = intersections.reshape((-1, (slicing - 1)))
+        # intersections_sliced_n = np.append(
+        #     intersections_sliced_s[1:], intersections_sliced_s[0]
+        # ).reshape((-1, (slicing - 1)))
+        # intersections_sliced = np.array(intersections_sliced_n, dtype="int").tolist()
+        # fmt: off
+        intersections = [6, 16, 1, 11, 6, 7, 17, 2, 12, 7, 8, 18, 3, 13, 8, 9, 19, 4, 14, 9, 10, 20, 5, 15, 10]  # ! DON'T YOU DARE USE THIS LIKE THAT
+        intersections_sliced = np.array(intersections, dtype="int").reshape(5, -1)
+        # fmt: on
+        BSplineFilling_tags = []
+        # TODO: create a loop to create the bspline filling
+        for i in range(len(array_bspline_sliced) - 4):
+            for j in range(len(array_bspline_sliced[i]) - 1):
+                W1 = self.factory.addWire(
+                    [
+                        intersections_sliced[i][j],
+                        array_bspline_sliced[i][j],
+                        intersections_sliced[i][j + 1],
+                        array_bspline_sliced[j][i + 4],
+                    ],
+                    tag=-1,
+                )
+            BSplineFilling = self.factory.addBSplineFilling(W1, type="Stretch", tag=-1)
+            # BSplineFilling = self.factory.addBSplineFilling(W1, type="Curved", tag=-1)
+            BSplineFilling_tags = np.append(BSplineFilling_tags, BSplineFilling)
+
+        return BSplineFilling_tags
 
     def gmsh_geometry_formulation(self, array: np.ndarray, idx_list: list):
 
@@ -239,6 +308,13 @@ class Mesher:
             array_pts_tags, idx_list
         )
 
-        array_bspline = self.insert_bspline(array, array_pts_tags, indexed_points_coi)
+        array_bspline, array_split_idx = self.insert_bspline(
+            array, array_pts_tags, indexed_points_coi
+        )
+
+        # create curveloop between array_bspline and intersection_line_tag
+        bspline_filling_tags = self.add_bspline_filling(
+            array_bspline, intersection_line_tag, self.slicing_coefficient
+        )
 
         return array_pts_tags, array_bspline, intersection_line_tag

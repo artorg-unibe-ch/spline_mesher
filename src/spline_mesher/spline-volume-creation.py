@@ -758,7 +758,7 @@ def main():
 
         gmsh.initialize()
         gmsh.clear()
-        mesher = Mesher(geo_file_path, mesh_file_path)
+        mesher = Mesher(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT)
 
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))  # center of mass of each slice (x, y, z)
         cortical_int_sanity_split = np.array_split(cortical_int_sanity, len(np.unique(cortical_int_sanity[:, 2])))
@@ -778,10 +778,10 @@ def main():
             cortical_int_centroid[i], idx_list_int[i] = mesher.insert_tensor_of_inertia(cortical_int_sanity_split[i], cortex_centroid[i][:-1])
 
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
-        cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
+        # cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
 
         cort_ext_pts_tags, cortical_ext_bspline, intersection_line_tags_ext = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
-        cort_int_pts_tags, cortical_int_bspline, intersection_line_tags_int = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
+        # cort_int_pts_tags, cortical_int_bspline, intersection_line_tags_int = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
 
         mesher.factory.synchronize()
         gmsh.fltk.run()
