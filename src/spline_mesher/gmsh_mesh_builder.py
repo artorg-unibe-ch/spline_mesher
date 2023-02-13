@@ -106,10 +106,6 @@ class Mesher:
         arr = np.insert(arr, closest_idx, values, axis=0)
         return arr
 
-    def close_loop(self, array):
-        array = np.vstack((array, array[0]))
-        return array
-
     def insert_tensor_of_inertia(self, array, centroid) -> np.ndarray:
         """
         1. calculate centroid of the cortex
@@ -153,6 +149,22 @@ class Mesher:
         array_pts_tags = np.asarray(array_pts_tags, dtype=int)
         return array_pts_tags
 
+    def sort_intersection_points(self, array):
+        """
+        Sort the intersection points in cw direction
+        """
+        self.factory.synchronize()
+        array_sorted = []
+        for i, subarray in enumerate(array):
+            point = [self.model.getValue(0, point, []) for point in subarray]
+            point_np = np.array(point, dtype=float)
+            centroid = np.mean(point_np, axis=0)
+            dists = point_np - centroid
+            angles_subarray = np.arctan2(dists[:, 1], dists[:, 0])
+            idx = np.argsort(angles_subarray)
+            array_sorted.append(array[i][idx])
+        return np.array(array_sorted, dtype=int)
+
     def insert_intersection_line(self, point_tags, idx_list: list):
         point_tags = np.array(point_tags).tolist()
         reshaped_point_tags = np.reshape(point_tags, (len(idx_list), -1))
@@ -161,13 +173,15 @@ class Mesher:
         ]
 
         line_tags = []
-        for j in range(len(indexed_points[0, :])):
-            for i in range(len(indexed_points[:, j]) - 1):
+
+        sorted_indexed_points = self.sort_intersection_points(indexed_points)
+        for j in range(len(sorted_indexed_points[0, :])):
+            for i in range(len(sorted_indexed_points[:, j]) - 1):
                 line = self.factory.addLine(
-                    indexed_points[i][j], indexed_points[i + 1][j]
+                    sorted_indexed_points[i][j], sorted_indexed_points[i + 1][j]
                 )
                 line_tags = np.append(line_tags, line)
-        return line_tags, indexed_points
+        return line_tags, sorted_indexed_points
 
     def sort_bspline_cw(self, coords, point_tags):
         coords = np.asarray(coords)
