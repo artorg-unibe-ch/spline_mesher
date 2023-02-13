@@ -778,12 +778,21 @@ def main():
             cortical_int_centroid[i], idx_list_int[i] = mesher.insert_tensor_of_inertia(cortical_int_sanity_split[i], cortex_centroid[i][:-1])
 
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
-        # cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
+        cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
 
-        cort_ext_pts_tags, cortical_ext_bspline, intersection_line_tags_ext = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
-        # cort_int_pts_tags, cortical_int_bspline, intersection_line_tags_int = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
+        indices_coi_ext, cortical_ext_bspline, intersection_line_tags_ext, cortical_ext_surfs = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
+        indices_coi_int, cortical_int_bspline, intersection_line_tags_int, cortical_int_surfs = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
+        intersurface_line_tags = mesher.add_interslice_segments(indices_coi_ext, indices_coi_int)
+        slices_tags = mesher.add_slice_surfaces(cortical_ext_bspline, cortical_int_bspline, intersurface_line_tags)
+        intersurface_surface_tags = mesher.add_intersurface_planes(intersurface_line_tags, indices_coi_ext, indices_coi_int)
 
-        mesher.factory.synchronize()
+        intersection_line_tags = np.append(intersection_line_tags_ext, intersection_line_tags_int)
+        cortical_bspline_tags = np.append(cortical_ext_bspline, cortical_int_bspline)
+        cortical_surfs = np.concatenate((cortical_ext_surfs, cortical_int_surfs, slices_tags), axis=None)
+
+        mesher.meshing_transfinite_ext_surfs(intersection_line_tags, cortical_bspline_tags, cortical_surfs)
+        mesher.mesh_generate()
+
         gmsh.fltk.run()
         gmsh.finalize()
         end = time.time()

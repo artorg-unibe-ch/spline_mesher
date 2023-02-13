@@ -165,16 +165,16 @@ class Mesher:
             array_sorted.append(array[i][idx])
         return np.array(array_sorted, dtype=int)
 
-    def insert_intersection_line(self, point_tags, idx_list: list):
+    def insert_intersection_line(self, point_tags, transf_pts: int, idx_list: list):
         point_tags = np.array(point_tags).tolist()
         reshaped_point_tags = np.reshape(point_tags, (len(idx_list), -1))
         indexed_points = reshaped_point_tags[
             np.arange(len(idx_list))[:, np.newaxis], idx_list
         ]
 
-        line_tags = []
-
         sorted_indexed_points = self.sort_intersection_points(indexed_points)
+
+        line_tags = []
         for j in range(len(sorted_indexed_points[0, :])):
             for i in range(len(sorted_indexed_points[:, j]) - 1):
                 line = self.factory.addLine(
@@ -193,7 +193,7 @@ class Mesher:
         return point_tags_sorted
 
     def get_sort_coords(self, point_tags):
-        gmsh.model.occ.synchronize()
+        self.factory.synchronize()
         start_point = [lst[0] for lst in point_tags]
         coords = [self.model.getValue(0, point, []) for point in start_point]
         # slice it into 4 sub-arrays (division of 4 per each slice)
@@ -237,7 +237,6 @@ class Mesher:
         )
 
         idx_list_sorted = np.sort(indexed_points_coi)
-        # add last column at the beginning of the array
         idx_list_sorted = np.insert(idx_list_sorted, 0, idx_list_sorted[:, -1], axis=1)
 
         array_pts_tags_split = [
@@ -275,51 +274,115 @@ class Mesher:
         array_bspline = []
         for array_split_idx_slice in array_split_idx_full_sorted:
             for bspline_indices in array_split_idx_slice:
-                print(bspline_indices)
                 array_bspline_s = self.gmsh_insert_bspline(bspline_indices)
                 array_bspline = np.append(array_bspline, array_bspline_s)
-
         return array_bspline, array_split_idx
 
-    def add_bspline_filling(self, bsplines, intersections, slicing):
+    def add_bspline_filling(self, bsplines, intersections, slicing_coefficient):
         # reshape and convert to list
-        array_bspline_sliced = bsplines.reshape((-1, self.slicing_coefficient))
-        array_bspline_sliced = np.array(array_bspline_sliced, dtype="int").tolist()
-        # TODO: find a way to call the coordinates of the first point of the intersection line
-        # intersections_sliced_s = intersections.reshape((-1, (slicing - 1)))
-        # intersections_sliced_n = np.append(
-        #     intersections_sliced_s[1:], intersections_sliced_s[0]
-        # ).reshape((-1, (slicing - 1)))
-        # intersections_sliced = np.array(intersections_sliced_n, dtype="int").tolist()
-        # fmt: off
-        intersections = [6, 16, 1, 11, 6, 7, 17, 2, 12, 7, 8, 18, 3, 13, 8, 9, 19, 4, 14, 9, 10, 20, 5, 15, 10]  # ! DON'T YOU DARE USE THIS LIKE THAT
-        intersections_sliced = np.array(intersections, dtype="int").reshape(5, -1)
-        # fmt: on
+        bspline_t = np.array(bsplines, dtype="int").reshape((slicing_coefficient, -1))
+        bspline_first_elements = bspline_t[:, 0][:, np.newaxis]
+        array_bspline_sliced = np.concatenate(
+            (bspline_t, bspline_first_elements), axis=1
+        )
+
+        intersections_t = np.array(intersections, dtype=int).reshape(
+            (-1, slicing_coefficient - 1)
+        )
+        intersections_first_elements = intersections_t[:, [0]]
+        intersections_s = np.concatenate(
+            (intersections_t, intersections_first_elements), axis=1
+        )
+        intersections_append_s = np.append(
+            intersections_s, intersections_s[0, :][np.newaxis, :], axis=0
+        )
+        intersections_append = (
+            np.array(intersections_append_s).reshape((-1, slicing_coefficient)).tolist()
+        )
+
         BSplineFilling_tags = []
-        # TODO: create a loop to create the bspline filling
-        for i in range(len(array_bspline_sliced) - 4):
-            for j in range(len(array_bspline_sliced[i]) - 1):
-                W1 = self.factory.addWire(
+        for i in range(len(array_bspline_sliced) - 1):
+            bspline_s = array_bspline_sliced[i]
+            for j in range(len(bspline_s) - 1):
+                print(
+                    f"{intersections_append[j][i]}, {array_bspline_sliced[i][j]}, {intersections_append[j + 1][i]}, {array_bspline_sliced[i + 1][j]}"
+                )
+
+                WIRE = self.factory.addWire(
                     [
-                        intersections_sliced[i][j],
+                        intersections_append[j][i],
                         array_bspline_sliced[i][j],
-                        intersections_sliced[i][j + 1],
-                        array_bspline_sliced[j][i + 4],
+                        intersections_append[j + 1][i],
+                        array_bspline_sliced[i + 1][j],
                     ],
                     tag=-1,
                 )
-            BSplineFilling = self.factory.addBSplineFilling(W1, type="Stretch", tag=-1)
-            # BSplineFilling = self.factory.addBSplineFilling(W1, type="Curved", tag=-1)
-            BSplineFilling_tags = np.append(BSplineFilling_tags, BSplineFilling)
 
+                BSplineFilling = self.factory.addBSplineFilling(
+                    WIRE, type="Stretch", tag=-1
+                )
+                # BSplineFilling = self.factory.addBSplineFilling(W1, type="Curved", tag=-1)
+
+                BSplineFilling_tags = np.append(BSplineFilling_tags, BSplineFilling)
         return BSplineFilling_tags
+
+    def add_interslice_segments(self, point_tags_ext, point_tags_int):
+        point_tags_ext = point_tags_ext.flatten().tolist()
+        point_tags_int = point_tags_int.flatten().tolist()
+
+        interslice_seg_tag = []
+        for i, _ in enumerate(point_tags_ext):
+            interslice_seg_tag_s = self.factory.addLine(
+                point_tags_ext[i], point_tags_int[i], tag=-1
+            )
+            interslice_seg_tag = np.append(interslice_seg_tag, interslice_seg_tag_s)
+
+        return interslice_seg_tag
+
+    def add_slice_surfaces(self, ext_tags, int_tags, interslice_seg_tags):
+        ext_r = ext_tags.reshape((self.slicing_coefficient, -1))
+        int_r = int_tags.reshape((self.slicing_coefficient, -1))
+        inter_r = interslice_seg_tags.reshape((self.slicing_coefficient, -1))
+        inter_c = np.concatenate(
+            (inter_r[:, 0:], inter_r[:, 0].reshape(self.slicing_coefficient, 1)), axis=1
+        )
+        inter_a = np.concatenate((inter_c, inter_c[-1].reshape(1, -1)), axis=0)
+
+        ext_int_tags = []
+        for i in range(len(inter_a) - 1):
+            interslice_i = inter_a[i]
+            for j in range(len(interslice_i) - 1):
+                print(
+                    f"{inter_a[i][j]}, {ext_r[i][j]}, {inter_a[i][j+1]}, {int_r[i][j]}"
+                )
+
+                ext_int_tags_s = self.factory.addCurveLoop(
+                    [
+                        inter_a[i][j],
+                        ext_r[i][j],
+                        inter_a[i][j + 1],
+                        int_r[i][j],
+                    ],
+                    tag=-1,
+                )
+                ext_int_tags = np.append(ext_int_tags, ext_int_tags_s)
+
+        ext_int_tags_l = np.array(ext_int_tags, dtype="int").tolist()
+        slices_ext_int_tags = []
+        for surf_tag in ext_int_tags_l:
+            slice_tag = self.factory.addSurfaceFilling(surf_tag, tag=-1)
+            slices_ext_int_tags.append(slice_tag)
+        return np.array(slices_ext_int_tags)
+
+    def add_intersurface_planes(self, intersurface_line_tags, indices_coi_ext, indices_coi_int):
+        
 
     def gmsh_geometry_formulation(self, array: np.ndarray, idx_list: list):
 
         array_pts_tags = self.insert_points(array)
 
         intersection_line_tag, indexed_points_coi = self.insert_intersection_line(
-            array_pts_tags, idx_list
+            array_pts_tags, 20, idx_list
         )
 
         array_bspline, array_split_idx = self.insert_bspline(
@@ -330,5 +393,37 @@ class Mesher:
         bspline_filling_tags = self.add_bspline_filling(
             array_bspline, intersection_line_tag, self.slicing_coefficient
         )
+        return (
+            indexed_points_coi,
+            array_bspline,
+            intersection_line_tag,
+            bspline_filling_tags,
+        )
 
-        return array_pts_tags, array_bspline, intersection_line_tag
+    def meshing_transfinite_ext_surfs(
+        self,
+        intersection_tags,
+        bspline_tags,
+        surface_tags,
+    ):
+        self.factory.synchronize()
+
+        intersection_tags = list(map(int, intersection_tags))
+        bspline_tags = list(map(int, bspline_tags))
+        surface_tags = list(map(int, surface_tags))
+
+        for intersection in intersection_tags:
+            self.model.mesh.setTransfiniteCurve(intersection, 5)
+
+        for bspline in bspline_tags:
+            self.model.mesh.setTransfiniteCurve(bspline, 10)
+
+        for surface in surface_tags:
+            self.model.mesh.setTransfiniteSurface(surface)
+
+    def mesh_generate(self):
+        gmsh.option.setNumber("Mesh.RecombineAll", 1)
+        gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
+        gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
+        gmsh.option.setNumber("Mesh.ElementOrder", 1)
+        self.model.mesh.generate(2)
