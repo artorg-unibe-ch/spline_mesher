@@ -433,6 +433,8 @@ class Mesher:
         bspline_tags,
         surface_tags,
         volume_tags,
+        n_transverse=5,
+        n_radial=10,
     ):
         self.factory.synchronize()
 
@@ -441,10 +443,10 @@ class Mesher:
         surface_tags = list(map(int, surface_tags))
 
         for intersection in intersection_tags:
-            self.model.mesh.setTransfiniteCurve(intersection, 5)
+            self.model.mesh.setTransfiniteCurve(intersection, n_transverse)
 
         for bspline in bspline_tags:
-            self.model.mesh.setTransfiniteCurve(bspline, 10)
+            self.model.mesh.setTransfiniteCurve(bspline, n_radial)
 
         for surface in surface_tags:
             self.model.mesh.setTransfiniteSurface(surface)
@@ -477,9 +479,6 @@ class Mesher:
         for i in range(len(slices_tags_r) - 1):
             slices_tag_s = slices_tags_r[i]
             for j, _ in enumerate(slices_tag_s):
-                print(
-                    f"{intersurface_surface_tags_s[i][j]}  {slices_tags_r[i][j]}  {cortical_ext_surfs[i][j]}  {slices_tags_r[i+1][j]}  {cortical_int_surfs[i][j]}  {intersurface_surface_tags_s[i][j+1]}"
-                )
                 surface_loop_t = self.factory.addSurfaceLoop(
                     [
                         intersurface_surface_tags_s[i][j],
