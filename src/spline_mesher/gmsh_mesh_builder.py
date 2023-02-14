@@ -165,7 +165,7 @@ class Mesher:
             array_sorted.append(array[i][idx])
         return np.array(array_sorted, dtype=int)
 
-    def insert_intersection_line(self, point_tags, transf_pts: int, idx_list: list):
+    def insert_intersection_line(self, point_tags, idx_list: list):
         point_tags = np.array(point_tags).tolist()
         reshaped_point_tags = np.reshape(point_tags, (len(idx_list), -1))
         indexed_points = reshaped_point_tags[
@@ -304,10 +304,6 @@ class Mesher:
         for i in range(len(array_bspline_sliced) - 1):
             bspline_s = array_bspline_sliced[i]
             for j in range(len(bspline_s) - 1):
-                print(
-                    f"{intersections_append[j][i]}, {array_bspline_sliced[i][j]}, {intersections_append[j + 1][i]}, {array_bspline_sliced[i + 1][j]}"
-                )
-
                 WIRE = self.factory.addWire(
                     [
                         intersections_append[j][i],
@@ -352,10 +348,6 @@ class Mesher:
         for i in range(len(inter_a) - 1):
             interslice_i = inter_a[i]
             for j in range(len(interslice_i) - 1):
-                print(
-                    f"{inter_a[i][j]}, {ext_r[i][j]}, {inter_a[i][j+1]}, {int_r[i][j]}"
-                )
-
                 ext_int_tags_s = self.factory.addCurveLoop(
                     [
                         inter_a[i][j],
@@ -374,15 +366,50 @@ class Mesher:
             slices_ext_int_tags.append(slice_tag)
         return np.array(slices_ext_int_tags)
 
-    def add_intersurface_planes(self, intersurface_line_tags, indices_coi_ext, indices_coi_int):
-        
+    def add_intersurface_planes(
+        self,
+        intersurface_line_tags,
+        intersection_line_tag_ext,
+        intersection_line_tag_int,
+    ):
+        # 4 lines per surface
+        intersurface_line_tags_r = np.array(intersurface_line_tags, dtype=int).reshape(
+            (-1, 4)
+        )
+        intersection_line_tag_ext_r = (
+            np.array(intersection_line_tag_ext, dtype=int).reshape((4, -1)).T
+        )
+        intersection_line_tag_int_r = (
+            np.array(intersection_line_tag_int, dtype=int).reshape((4, -1)).T
+        )
+
+        intersurface_curveloop_tag = []
+        for i in range(len(intersurface_line_tags_r) - 1):
+            intersurface_line_tags_r_i = intersurface_line_tags_r[i]
+            for j in range(len(intersurface_line_tags_r_i)):
+                intersurf_tag = self.factory.addCurveLoop(
+                    [
+                        intersurface_line_tags_r[i][j],
+                        intersection_line_tag_int_r[i][j],
+                        intersurface_line_tags_r[i + 1][j],
+                        intersection_line_tag_ext_r[i][j],
+                    ],
+                    tag=-1,
+                )
+                intersurface_curveloop_tag.append(intersurf_tag)
+
+        intersurface_surface_tags = []
+        for surf_tag in intersurface_curveloop_tag:
+            intersurf_tag = self.factory.addSurfaceFilling(surf_tag, tag=-1)
+            intersurface_surface_tags.append(intersurf_tag)
+        return intersurface_surface_tags
 
     def gmsh_geometry_formulation(self, array: np.ndarray, idx_list: list):
 
         array_pts_tags = self.insert_points(array)
 
         intersection_line_tag, indexed_points_coi = self.insert_intersection_line(
-            array_pts_tags, 20, idx_list
+            array_pts_tags, idx_list
         )
 
         array_bspline, array_split_idx = self.insert_bspline(

@@ -784,16 +784,16 @@ def main():
         indices_coi_int, cortical_int_bspline, intersection_line_tags_int, cortical_int_surfs = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
         intersurface_line_tags = mesher.add_interslice_segments(indices_coi_ext, indices_coi_int)
         slices_tags = mesher.add_slice_surfaces(cortical_ext_bspline, cortical_int_bspline, intersurface_line_tags)
-        intersurface_surface_tags = mesher.add_intersurface_planes(intersurface_line_tags, indices_coi_ext, indices_coi_int)
+        intersurface_surface_tags = mesher.add_intersurface_planes(intersurface_line_tags, intersection_line_tags_ext, intersection_line_tags_int)
 
         intersection_line_tags = np.append(intersection_line_tags_ext, intersection_line_tags_int)
         cortical_bspline_tags = np.append(cortical_ext_bspline, cortical_int_bspline)
-        cortical_surfs = np.concatenate((cortical_ext_surfs, cortical_int_surfs, slices_tags), axis=None)
+        cortical_surfs = np.concatenate((cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags), axis=None)
 
         mesher.meshing_transfinite_ext_surfs(intersection_line_tags, cortical_bspline_tags, cortical_surfs)
         mesher.mesh_generate()
 
-        gmsh.fltk.run()
+        # gmsh.fltk.run()
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=3)
