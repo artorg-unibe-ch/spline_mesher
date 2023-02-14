@@ -790,10 +790,12 @@ def main():
         cortical_bspline_tags = np.append(cortical_ext_bspline, cortical_int_bspline)
         cortical_surfs = np.concatenate((cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags), axis=None)
 
-        mesher.meshing_transfinite_ext_surfs(intersection_line_tags, cortical_bspline_tags, cortical_surfs)
+        volume_tags = mesher.add_volume(cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags)  # 
+
+        mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags)
         mesher.mesh_generate()
 
-        # gmsh.fltk.run()
+        gmsh.fltk.run()
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=3)

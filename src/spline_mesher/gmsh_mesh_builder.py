@@ -427,11 +427,12 @@ class Mesher:
             bspline_filling_tags,
         )
 
-    def meshing_transfinite_ext_surfs(
+    def meshing_transfinite(
         self,
         intersection_tags,
         bspline_tags,
         surface_tags,
+        volume_tags,
     ):
         self.factory.synchronize()
 
@@ -448,9 +449,60 @@ class Mesher:
         for surface in surface_tags:
             self.model.mesh.setTransfiniteSurface(surface)
 
+        for volume in volume_tags:
+            self.model.mesh.setTransfiniteVolume(volume)
+
+    def add_volume(
+        self,
+        cortical_ext_surfs,
+        cortical_int_surfs,
+        slices_tags,
+        intersurface_surface_tags,
+    ):
+
+        cortical_ext_surfs = np.array(cortical_ext_surfs, dtype=int).reshape((-1, 4))
+        cortical_int_surfs = np.array(cortical_int_surfs, dtype=int).reshape((-1, 4))
+        slices_tags_r = np.array(slices_tags, dtype=int).reshape((-1, 4))
+
+        intersurface_surface_tags_r = np.array(intersurface_surface_tags).reshape(
+            (-1, 4)
+        )
+        intersurface_surface_tags_s = np.append(
+            intersurface_surface_tags_r,
+            intersurface_surface_tags_r[:, 0][:, np.newaxis],
+            axis=1,
+        )
+
+        surface_loop_tag = []
+        for i in range(len(slices_tags_r) - 1):
+            slices_tag_s = slices_tags_r[i]
+            for j, _ in enumerate(slices_tag_s):
+                print(
+                    f"{intersurface_surface_tags_s[i][j]}  {slices_tags_r[i][j]}  {cortical_ext_surfs[i][j]}  {slices_tags_r[i+1][j]}  {cortical_int_surfs[i][j]}  {intersurface_surface_tags_s[i][j+1]}"
+                )
+                surface_loop_t = self.factory.addSurfaceLoop(
+                    [
+                        intersurface_surface_tags_s[i][j],
+                        slices_tags_r[i][j],
+                        cortical_ext_surfs[i][j],
+                        slices_tags_r[i + 1][j],
+                        cortical_int_surfs[i][j],
+                        intersurface_surface_tags_s[i][j + 1],
+                    ],
+                    tag=-1,
+                )
+                surface_loop_tag.append(surface_loop_t)
+
+        volume_tag = []
+        for i in range(len(surface_loop_tag)):
+            volume_t = self.factory.addVolume([surface_loop_tag[i]], tag=-1)
+            volume_tag.append(volume_t)
+
+        return volume_tag
+
     def mesh_generate(self):
         gmsh.option.setNumber("Mesh.RecombineAll", 1)
         gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
         gmsh.option.setNumber("Mesh.ElementOrder", 1)
-        self.model.mesh.generate(2)
+        self.model.mesh.generate(3)
