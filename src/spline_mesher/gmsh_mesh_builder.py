@@ -485,12 +485,12 @@ class Mesher:
 
         return volume_tag
 
-    def mesh_generate(self):
+    def mesh_generate(self, dim):
         gmsh.option.setNumber("Mesh.RecombineAll", 1)
         gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
         gmsh.option.setNumber("Mesh.ElementOrder", 1)
-        self.model.mesh.generate(3)
+        self.model.mesh.generate(dim)
 
     def trabecular_volume(self, coi_idx):
         print("here 1")
