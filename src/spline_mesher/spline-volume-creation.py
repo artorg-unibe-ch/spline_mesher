@@ -762,10 +762,13 @@ def main():
 
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))  # center of mass of each slice (x, y, z)
         cortical_int_sanity_split = np.array_split(cortical_int_sanity, len(np.unique(cortical_int_sanity[:, 2])))
+
         cortical_ext_centroid = np.zeros((np.shape(cortical_ext_split)[0], np.shape(cortical_ext_split)[1], np.shape(cortical_ext_split)[2]))
         cortical_int_centroid = np.zeros((np.shape(cortical_int_split)[0], np.shape(cortical_int_split)[1], np.shape(cortical_int_split)[2]))
         idx_list_ext = np.zeros((len(cortical_ext_split), 4), dtype=int)
         idx_list_int = np.zeros((len(cortical_ext_split), 4), dtype=int)
+        intersections_ext = np.zeros((len(cortical_ext_split), 2, 2, 3), dtype=float)
+        intersections_int = np.zeros((len(cortical_ext_split), 2, 2, 3), dtype=float)
 
         for i, _ in enumerate(cortical_ext_split):
             _, idx = np.unique(cortical_ext_split[i].round(decimals=6), axis=0, return_index=True)
@@ -774,9 +777,10 @@ def main():
             cortical_int_sanity_split[i][np.sort(idx)]
             cortex_centroid[i][:-1] = mesher.polygon_tensor_of_inertia(cortical_ext_split[i], cortical_int_sanity_split[i])
             cortex_centroid[i][-1] = cortical_ext_split[i][0, -1]
-            cortical_ext_centroid[i], idx_list_ext[i] = mesher.insert_tensor_of_inertia(cortical_ext_split[i], cortex_centroid[i][:-1])
-            cortical_int_centroid[i], idx_list_int[i] = mesher.insert_tensor_of_inertia(cortical_int_sanity_split[i], cortex_centroid[i][:-1])
+            cortical_ext_centroid[i], idx_list_ext[i], intersections_ext[i] = mesher.insert_tensor_of_inertia(cortical_ext_split[i], cortex_centroid[i][:-1])
+            cortical_int_centroid[i], idx_list_int[i], intersections_int[i] = mesher.insert_tensor_of_inertia(cortical_int_sanity_split[i], cortex_centroid[i][:-1])
 
+        np.save(f'{cwd}/04_OUTPUT/C0002237/C0002237_intersections_int.npy', intersections_int)  # TODO: remove after debugging
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
 

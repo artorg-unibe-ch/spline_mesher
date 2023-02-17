@@ -1,5 +1,4 @@
 import gmsh
-from pathlib import Path
 import numpy as np
 import shapely.geometry as shpg
 from scipy import spatial
@@ -12,24 +11,6 @@ class Mesher:
         self.geo_file_path = geo_file_path
         self.mesh_file_path = mesh_file_path
         self.slicing_coefficient = slicing_coefficient
-
-    def write_msh(self):
-        gmsh.model.mesh.generate(2)
-        gmsh.write(self.mesh_file_path)
-        return None
-
-    def build_msh(self):
-        modelname = Path(self.geo_file_path).stem
-        gmsh.initialize()
-        gmsh.clear()
-        gmsh.model.add(modelname)
-        gmsh.merge(self.geo_file_path)
-
-        self.factory.synchronize()
-
-        # self.write_msh()
-        gmsh.fltk.run()
-        gmsh.finalize()
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
         ext_arr = np.vstack((ext_arr, ext_arr[0]))
@@ -128,9 +109,7 @@ class Mesher:
                 _, closest_idx = self.intersection_point(array, inters)
                 array[closest_idx] = inters
                 idx_list.append(closest_idx)
-        return array, idx_list
-
-    # adding here all the functions related to the mesh building
+        return array, idx_list, intersections
 
     def gmsh_add_points(self, x, y, z):
         """
@@ -148,6 +127,13 @@ class Mesher:
             array_pts_tags = np.append(array_pts_tags, array_tag)
         array_pts_tags = np.asarray(array_pts_tags, dtype=int)
         return array_pts_tags
+
+    def insert_lines(self, array):
+        array_lines_tags = []
+        for i in range(len(array) - 1):
+            array_tag = self.factory.addLine(array[i], array[i + 1])
+            array_lines_tags.append(array_tag)
+        return array_lines_tags
 
     def sort_intersection_points(self, array):
         """
@@ -505,3 +491,18 @@ class Mesher:
         gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
         gmsh.option.setNumber("Mesh.ElementOrder", 1)
         self.model.mesh.generate(3)
+
+    def trabecular_volume(self, coi_idx):
+        print("here 1")
+
+        def get_centers_of_inertia():
+            point = [self.model.getValue(0, point, []) for point in coi_idx]
+            return point
+
+        def calculate_trabecular_points():
+            pass
+
+        def add_trabecular_volume():
+            pass
+
+        return get_centers_of_inertia()
