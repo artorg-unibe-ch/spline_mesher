@@ -758,7 +758,7 @@ def main():
 
         gmsh.initialize()
         gmsh.clear()
-        mesher = Mesher(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT)
+        mesher = Mesher(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=10, n_radial=5)
 
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))  # center of mass of each slice (x, y, z)
         cortical_int_sanity_split = np.array_split(cortical_int_sanity, len(np.unique(cortical_int_sanity[:, 2])))
@@ -796,7 +796,10 @@ def main():
 
         volume_tags = mesher.add_volume(cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags)
 
-        mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags, n_transverse=10, n_radial=14)
+        # add here trabecular meshing
+        
+        
+        mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags)
         mesher.mesh_generate(dim=3)
 
         gmsh.fltk.run()

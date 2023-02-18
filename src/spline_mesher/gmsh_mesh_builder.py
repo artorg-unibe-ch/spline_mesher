@@ -5,12 +5,16 @@ from scipy import spatial
 
 
 class Mesher:
-    def __init__(self, geo_file_path, mesh_file_path, slicing_coefficient):
+    def __init__(
+        self, geo_file_path, mesh_file_path, slicing_coefficient, n_transverse, n_radial
+    ):
         self.model = gmsh.model
         self.factory = self.model.occ
         self.geo_file_path = geo_file_path
         self.mesh_file_path = mesh_file_path
         self.slicing_coefficient = slicing_coefficient
+        self.n_transverse = n_transverse
+        self.n_radial = n_radial
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
         ext_arr = np.vstack((ext_arr, ext_arr[0]))
@@ -414,13 +418,7 @@ class Mesher:
         )
 
     def meshing_transfinite(
-        self,
-        intersection_tags,
-        bspline_tags,
-        surface_tags,
-        volume_tags,
-        n_transverse=5,
-        n_radial=10,
+        self, intersection_tags, bspline_tags, surface_tags, volume_tags
     ):
         self.factory.synchronize()
 
@@ -429,10 +427,10 @@ class Mesher:
         surface_tags = list(map(int, surface_tags))
 
         for intersection in intersection_tags:
-            self.model.mesh.setTransfiniteCurve(intersection, n_transverse)
+            self.model.mesh.setTransfiniteCurve(intersection, self.n_transverse)
 
         for bspline in bspline_tags:
-            self.model.mesh.setTransfiniteCurve(bspline, n_radial)
+            self.model.mesh.setTransfiniteCurve(bspline, self.n_radial)
 
         for surface in surface_tags:
             self.model.mesh.setTransfiniteSurface(surface)
