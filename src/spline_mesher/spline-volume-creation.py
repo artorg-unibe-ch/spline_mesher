@@ -20,7 +20,7 @@ import sys
 import coloredlogs
 import logging
 import cortical_sanity as csc
-from gmsh_mesh_builder import Mesher
+from gmsh_mesh_builder import Mesher, TrabecularVolume
 import os
 
 
@@ -631,7 +631,7 @@ class OCC_volume:
         if self.show_plots is True:
             fig = go.Figure(layout=self.layout)
         else:
-            logging.info(f"Volume_splines\tshow_plots:\t{self.show_plots}")
+            logging.info(f"Volume_splines\t\tshow_plots:\t{self.show_plots}")
             fig = None
 
         # fmt: off
@@ -723,7 +723,7 @@ def main():
             ASPECT=30,
             SLICE=1,
             UNDERSAMPLING=5,
-            SLICING_COEFFICIENT=6,
+            SLICING_COEFFICIENT=5,
             INSIDE_VAL=0,
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
@@ -758,7 +758,10 @@ def main():
 
         gmsh.initialize()
         gmsh.clear()
-        mesher = Mesher(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=10, n_radial=5)
+
+        N_TRANSVERSE = 5
+        N_RADIAL = 15
+        mesher = Mesher(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=N_TRANSVERSE, n_radial=N_RADIAL)
 
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))  # center of mass of each slice (x, y, z)
         cortical_int_sanity_split = np.array_split(cortical_int_sanity, len(np.unique(cortical_int_sanity[:, 2])))
@@ -780,7 +783,6 @@ def main():
             cortical_ext_centroid[i], idx_list_ext[i], intersections_ext[i] = mesher.insert_tensor_of_inertia(cortical_ext_split[i], cortex_centroid[i][:-1])
             cortical_int_centroid[i], idx_list_int[i], intersections_int[i] = mesher.insert_tensor_of_inertia(cortical_int_sanity_split[i], cortex_centroid[i][:-1])
 
-        np.save(f'{cwd}/04_OUTPUT/C0002237/C0002237_intersections_int.npy', intersections_int)  # TODO: remove after debugging
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
 
@@ -797,8 +799,11 @@ def main():
         volume_tags = mesher.add_volume(cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags)
 
         # add here trabecular meshing
-        
-        
+        trabecular_volume = TrabecularVolume(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=N_TRANSVERSE, n_radial=N_RADIAL)
+        trabecular_volume.set_length_factor(0.4)
+        trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
+        trabecular_volume.meshing_transfinite(trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols)
+
         mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags)
         mesher.mesh_generate(dim=3)
 

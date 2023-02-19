@@ -490,17 +490,172 @@ class Mesher:
         gmsh.option.setNumber("Mesh.ElementOrder", 1)
         self.model.mesh.generate(dim)
 
-    def trabecular_volume(self, coi_idx):
-        print("here 1")
 
-        def get_centers_of_inertia():
-            point = [self.model.getValue(0, point, []) for point in coi_idx]
-            return point
+class TrabecularVolume(Mesher):
+    def __init__(
+        self, geo_file_path, mesh_file_path, slicing_coefficient, n_transverse, n_radial
+    ):
+        self.model = gmsh.model
+        self.factory = self.model.occ
+        self.geo_file_path = geo_file_path
+        self.mesh_file_path = mesh_file_path
+        self.slicing_coefficient = slicing_coefficient
+        self.n_transverse = n_transverse
+        self.n_radial = n_radial
+        self.coi_idx = []
+        self.line_tags_v = []
+        self.line_tags_h = []
+        self.surf_tags = []
+        self.vol_tags = []
+        self.LENGTH_FACTOR = float(1.0)
+        super().__init__(
+            geo_file_path, mesh_file_path, slicing_coefficient, n_transverse, n_radial
+        )
 
-        def calculate_trabecular_points():
-            pass
+    def principal_axes_length(self, array):
+        l_i = np.linalg.norm(array[0] - array[1])
+        l_j = np.linalg.norm(array[0] - array[2])
+        return l_i, l_j
 
-        def add_trabecular_volume():
-            pass
+    def get_offset_points(self, array, _center, l_i, l_j):
+        # calculate offset point from _center and float(LENGTH_FACTOR) * half of the principal axes length
+        offset_i = [self.LENGTH_FACTOR * l_i / 2, 0, 0]
+        offset_j = [0, self.LENGTH_FACTOR * l_j / 2, 0]
 
-        return get_centers_of_inertia()
+        # replace the offset point in the array
+        array[0] = np.array(_center) + np.array(offset_i)
+        array[1] = np.array(_center) - np.array(offset_i)
+        array[2] = np.array(_center) + np.array(offset_j)
+        array[3] = np.array(_center) - np.array(offset_j)
+        return array
+
+    def get_trabecular_position(self):
+        coi_idx_r = np.reshape(self.coi_idx, (-1, 3))
+        # create subarrays of the coi_idx array for each slice (coi_idx[:, 2])
+        coi_idx_every_4_points = np.split(
+            coi_idx_r, np.where(np.diff(coi_idx_r[:, 2]))[0] + 1
+        )
+
+        # iterate over the subarrays and calculate the principal axes length
+        trabecular_points = np.empty((len(coi_idx_every_4_points), 4, 3))
+        for i, _ in enumerate(coi_idx_every_4_points):
+            c_x = coi_idx_every_4_points[i][:, 0]
+            c_y = coi_idx_every_4_points[i][:, 1]
+            c_z = coi_idx_every_4_points[i][:, 2]
+            _center = [np.mean(c_x), np.mean(c_y), np.mean(c_z)]
+
+            # calculate the principal axes length
+            l_i, l_j = self.principal_axes_length(coi_idx_every_4_points[i])
+            trabecular_points[i] = self.get_offset_points(
+                coi_idx_every_4_points[i], _center, l_i, l_j
+            )
+
+            # sort points in cw direction
+            trabecular_points[i] = trabecular_points[i][[0, 2, 1, 3]]
+        return np.array(trabecular_points, dtype=np.float32).reshape((-1, 3))
+
+    def get_trabecular_vol(self, coi_idx):
+        self.coi_idx = coi_idx
+        trabecular_points = self.get_trabecular_position()
+        point_tags = self.insert_points(trabecular_points)
+        point_tags_r = np.reshape(point_tags, (-1, 4))
+
+        # concatenate first point to the end of each subarray
+        points_first_column = point_tags_r[:, 0]
+        point_tags_c = np.concatenate(
+            (point_tags_r, points_first_column[:, None]), axis=1
+        )
+
+        line_tags_h = []
+        for i in range(len(point_tags_c[:, 0])):
+            line_tags_s = self.insert_lines(point_tags_c[i])
+            line_tags_h.append(line_tags_s)
+
+        surf_tags_h = []
+        for i, _ in enumerate(line_tags_h):
+            trab_curveloop_h = self.factory.addCurveLoop(line_tags_h[i], tag=-1)
+            trab_tag_h = self.factory.addPlaneSurface([trab_curveloop_h], tag=-1)
+            surf_tags_h.append(trab_tag_h)
+
+        line_tags_v = []
+        for j in range(len(point_tags_c[0, :]) - 1):
+            line_tags_s = self.insert_lines(point_tags_c[:, j])
+            line_tags_v.append(line_tags_s)
+
+        line_tags_v = np.array(line_tags_v, dtype=int).reshape(
+            (-1, (self.slicing_coefficient - 1))
+        )
+        line_tags_v = np.concatenate((line_tags_v, line_tags_v[:, 0][:, None]), axis=1)
+        line_tags_v = np.append(
+            line_tags_v, line_tags_v[0, :][None, :], axis=0
+        ).tolist()
+
+        line_tags_h = np.array(line_tags_h, dtype=int).reshape((-1, 4))
+        line_tags_h = np.concatenate(
+            (line_tags_h, line_tags_h[:, 0][:, None]), axis=1
+        ).tolist()
+
+        surf_tags_v = []
+        for j in range(len(line_tags_v) - 1):
+            line_tag = line_tags_v[j]
+            for i in range(len(line_tag) - 1):
+                trab_curveloop_v = self.factory.addCurveLoop(
+                    [
+                        line_tags_h[i][j],
+                        line_tags_v[j][i],
+                        line_tags_h[i + 1][j],
+                        line_tags_v[j + 1][i],
+                    ],
+                    tag=-1,
+                )
+                trab_tag_v = self.factory.addSurfaceFilling(trab_curveloop_v, tag=-1)
+                surf_tags_v.append(trab_tag_v)
+
+        # create volumes
+        surf_tags_v = np.array(surf_tags_v).reshape((4, -1))
+        surf_tags_h = np.array(surf_tags_h)
+
+        trab_surf_loop_tag = []
+        for i in range(3, len(surf_tags_v[:, 0])):
+            for j in range(1, len(surf_tags_h)):
+                trab_surf_loop_s = self.factory.addSurfaceLoop(
+                    [
+                        surf_tags_h[j - 1],
+                        surf_tags_v[i - 3, j - 1],
+                        surf_tags_v[i - 2, j - 1],
+                        surf_tags_v[i - 1, j - 1],
+                        surf_tags_v[i, j - 1],
+                        surf_tags_h[j],
+                    ],
+                    tag=-1,
+                )
+                trab_surf_loop_tag.append(trab_surf_loop_s)
+
+        # make volume
+        trab_vol_tag = []
+        for _, surf_tag in enumerate(trab_surf_loop_tag):
+            volume_t = self.factory.addVolume([surf_tag], tag=-1)
+            trab_vol_tag.append(volume_t)
+
+        self.line_tags_h = list(map(int, np.unique(line_tags_h)))
+        self.line_tags_v = list(map(int, np.unique(line_tags_v)))
+        self.surf_tags = np.append(np.unique(surf_tags_h), np.unique(surf_tags_v))
+        self.surf_tags = list(map(int, self.surf_tags))
+        self.vol_tags = list(map(int, trab_vol_tag))
+
+        return self.line_tags_v, self.line_tags_h, self.surf_tags, self.vol_tags
+
+    def trabecular_transfinite(self, line_tags_v, line_tags_h, surf_tags, vol_tags):
+        # make transfinite
+        self.factory.synchronize()
+        for line in line_tags_v:
+            self.model.mesh.setTransfiniteCurve(line, self.n_transverse)
+        for line in line_tags_h:
+            self.model.mesh.setTransfiniteCurve(line, self.n_radial)
+        for surface in surf_tags:
+            self.model.mesh.setTransfiniteSurface(surface)
+        for volume in vol_tags:
+            self.model.mesh.setTransfiniteVolume(volume)
+
+    def set_length_factor(self, length_factor):
+        self.LENGTH_FACTOR = length_factor
