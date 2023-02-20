@@ -493,7 +493,7 @@ class Mesher:
         """ """"""
         coi_coords = []
         trab_coords = []
-        for i, idx in enumerate(list_1):
+        for i, _ in enumerate(list_1):
             coi_coords_s = [self.model.getValue(0, idx, []) for idx in list_1[i]]
             trab_coords_s = [
                 self.model.getValue(0, idx, []) for idx in list_2[i]
@@ -501,15 +501,21 @@ class Mesher:
             coi_coords.append(coi_coords_s)
             trab_coords.append(trab_coords_s)
 
-        # coi_points = [self.model.getValue(0, idx, []) for idx in coi_idx]
-        # trab_points = [self.model.getValue(0, idx, []) for idx in trab_point_tags]
         coi_idx_s = np.array(list_1, dtype=int).flatten()
         trab_point_tags_s = np.array(list_2, dtype=int).flatten()
+
+        coi_coords_np = np.array(coi_coords).reshape((-1, 3))
+        trab_coords_np = np.array(trab_coords).reshape((-1, 3))
         # for each trab_point_tags, find the closest point in coi_idx with KDTree
-        tree = KDTree(np.array(coi_coords).reshape((-1, 3)))
-        _, ind = tree.query(np.array(trab_coords).reshape((-1, 3)))
-        coi_closest = (coi_idx_s[ind]).reshape((-1, 4))
-        trab_idx_closest = trab_point_tags_s.reshape((-1, 4))
+
+        # TODO: correcting this to avoid that closest point come from the same slice
+        coi_closest = np.zeros((len(coi_coords_np[:, 0]), 4), dtype=int)
+        trab_idx_closest = np.zeros((len(coi_coords_np[:, 0]), 4), dtype=int)
+        for i in range(len(coi_coords_np[0])):
+            tree = KDTree(coi_coords_np[i])
+            _, ind = tree.query(trab_coords_np[i])
+            coi_closest[i] = np.array(coi_idx_s[ind]).reshape((-1, 4))
+            trab_idx_closest[i] = np.array(trab_point_tags_s).reshape((-1, 4))
         return coi_closest, trab_idx_closest
 
     def trabecular_cortical_connection(
@@ -527,12 +533,73 @@ class Mesher:
 
         coi_closest, trab_idx_closest = self.query_closest_idx(coi_idx, trab_point_tags)
 
+        trab_cort_line_tags = []
         for i, _ in enumerate(coi_closest):
             for j, _ in enumerate(coi_closest[i]):
                 # print(f"{coi_closest[i][j]}\t{trab_idx_closest[i][j]}")
-                self.factory.addLine(coi_closest[i][j], trab_idx_closest[i][j], tag=-1)
+                line_tag_s = self.factory.addLine(
+                    coi_closest[i][j], trab_idx_closest[i][j], tag=-1
+                )
+                trab_cort_line_tags.append(line_tag_s)
+        return trab_cort_line_tags
 
-        print("testing")
+    def trabecular_slices(
+        self,
+        trab_cort_line_tags: list[int],
+        trab_line_tags_v: list[int],
+        trab_line_tags_h: list[int],
+        cort_int_bspline_tags: list[int],
+    ):
+
+        np.append(trab_line_tags_h, trab_line_tags_h[-1])
+        np.append(trab_line_tags_v, trab_line_tags_v[-1])
+        np.append(cort_int_bspline_tags, cort_int_bspline_tags[-1])
+
+        trab_line_tags_h_np = np.array(trab_line_tags_h, dtype=int).reshape((-1, 4))
+        trab_line_tags_v_np = np.array(trab_line_tags_v, dtype=int).reshape((-1, 4))
+
+        trab_cort_line_tags_np_s = np.array(trab_cort_line_tags, dtype=int).reshape(
+            (-1, 4)
+        )
+        trab_cort_line_tags_np = np.append(
+            trab_cort_line_tags_np_s,
+            trab_cort_line_tags_np_s[:, 0][:, np.newaxis],
+            axis=1,
+        )
+
+        cort_int_bspline_tags_np = np.array(cort_int_bspline_tags, dtype=int).reshape(
+            (-1, 4)
+        )
+
+        # ! workaround I don't like
+        # put column at the end (order now is 1, 2, 3, 0)
+        cort_int_bspline_tags_np_s = np.append(
+            cort_int_bspline_tags_np[:, 1:],
+            cort_int_bspline_tags_np[:, 0][:, np.newaxis],
+            axis=1,
+        )
+
+        trabecular_slice_surf_tags = []
+        for i in range(len(trab_cort_line_tags_np)):
+            for j in range(1, len(trab_cort_line_tags_np[i])):
+                print(
+                    f"{trab_cort_line_tags_np[i][j-1]}\t{trab_line_tags_h_np[i][j-1]}\t{trab_cort_line_tags_np[i][j]}\t{cort_int_bspline_tags_np_s[i][j-1]}"
+                )
+                """
+                curve_loop = self.factory.addCurveLoop(
+                    [
+                        trab_cort_line_tags_np[i][j - 1],
+                        trab_line_tags_h_np[i][j - 1],
+                        trab_cort_line_tags_np[i][j],
+                        cort_int_bspline_tags_np_s[i][j - 1],
+                    ],
+                    tag=-1,
+                )
+                trab_slice = self.factory.addPlaneSurface([curve_loop], tag=-1)
+                trabecular_slice_surf_tags.append(trab_slice)
+                """
+
+        return None
 
     def mesh_generate(self, dim):
         gmsh.option.setNumber("Mesh.RecombineAll", 1)

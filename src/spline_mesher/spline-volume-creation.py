@@ -804,8 +804,8 @@ def main():
         point_tags_r, trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
 
         # connection between inner trabecular and cortical volumes
-        mesher.trabecular_cortical_connection(coi_idx=indices_coi_int, trab_point_tags=point_tags_r)
-
+        trab_cort_line_tags = mesher.trabecular_cortical_connection(coi_idx=indices_coi_int, trab_point_tags=point_tags_r)
+        mesher.trabecular_slices(trab_cort_line_tags=trab_cort_line_tags, trab_line_tags_h=trab_line_tags_h, trab_line_tags_v=trab_line_tags_v, cort_int_bspline_tags=cortical_int_bspline)
         # fmt: on
         # meshing
         trabecular_volume.meshing_transfinite(trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols)
