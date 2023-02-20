@@ -723,7 +723,7 @@ def main():
             ASPECT=30,
             SLICE=1,
             UNDERSAMPLING=5,
-            SLICING_COEFFICIENT=5,
+            SLICING_COEFFICIENT=4,
             INSIDE_VAL=0,
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
@@ -801,9 +801,14 @@ def main():
         # add here trabecular meshing
         trabecular_volume = TrabecularVolume(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=N_TRANSVERSE, n_radial=N_RADIAL)
         trabecular_volume.set_length_factor(0.4)
-        trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
-        trabecular_volume.meshing_transfinite(trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols)
+        point_tags_r, trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
 
+        # connection between inner trabecular and cortical volumes
+        mesher.trabecular_cortical_connection(coi_idx=indices_coi_int, trab_point_tags=point_tags_r)
+
+        # fmt: on
+        # meshing
+        trabecular_volume.meshing_transfinite(trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols)
         mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags)
         mesher.mesh_generate(dim=3)
 
