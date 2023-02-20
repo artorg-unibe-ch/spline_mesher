@@ -2,6 +2,7 @@ import gmsh
 import numpy as np
 import shapely.geometry as shpg
 from scipy import spatial
+from scipy.spatial import KDTree
 
 
 class Mesher:
@@ -483,6 +484,56 @@ class Mesher:
 
         return volume_tag
 
+    def query_closest_idx(self, list_1: list, list_2: list):
+        """# TODO: write docstring
+
+        Args:
+            coi (list): _description_
+            array (list): _description_
+        """ """"""
+        coi_coords = []
+        trab_coords = []
+        for i, idx in enumerate(list_1):
+            coi_coords_s = [self.model.getValue(0, idx, []) for idx in list_1[i]]
+            trab_coords_s = [
+                self.model.getValue(0, idx, []) for idx in list_2[i]
+            ]  # noqa
+            coi_coords.append(coi_coords_s)
+            trab_coords.append(trab_coords_s)
+
+        # coi_points = [self.model.getValue(0, idx, []) for idx in coi_idx]
+        # trab_points = [self.model.getValue(0, idx, []) for idx in trab_point_tags]
+        coi_idx_s = np.array(list_1, dtype=int).flatten()
+        trab_point_tags_s = np.array(list_2, dtype=int).flatten()
+        # for each trab_point_tags, find the closest point in coi_idx with KDTree
+        tree = KDTree(np.array(coi_coords).reshape((-1, 3)))
+        _, ind = tree.query(np.array(trab_coords).reshape((-1, 3)))
+        coi_closest = (coi_idx_s[ind]).reshape((-1, 4))
+        trab_idx_closest = trab_point_tags_s.reshape((-1, 4))
+        return coi_closest, trab_idx_closest
+
+    def trabecular_cortical_connection(
+        self, coi_idx: list[int], trab_point_tags: list[int]
+    ):
+        """
+        # TODO: write docstring
+
+        Args:
+            coi_idx (list[int]): _description_
+            trab_point_tags (list[int]): _description_
+        """
+        coi_idx = np.array(coi_idx, dtype=int).tolist()
+        trab_point_tags = np.array(trab_point_tags, dtype=int).tolist()
+
+        coi_closest, trab_idx_closest = self.query_closest_idx(coi_idx, trab_point_tags)
+
+        for i, _ in enumerate(coi_closest):
+            for j, _ in enumerate(coi_closest[i]):
+                # print(f"{coi_closest[i][j]}\t{trab_idx_closest[i][j]}")
+                self.factory.addLine(coi_closest[i][j], trab_idx_closest[i][j], tag=-1)
+
+        print("testing")
+
     def mesh_generate(self, dim):
         gmsh.option.setNumber("Mesh.RecombineAll", 1)
         gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
@@ -529,6 +580,14 @@ class TrabecularVolume(Mesher):
         array[3] = np.array(_center) - np.array(offset_j)
         return array
 
+    def sort_cw(self, coords):
+        coords = np.asarray(coords)
+        center = np.mean(coords, axis=0)
+        angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
+        sorted_indices = np.argsort(angles)
+        sorted_indices = list(sorted_indices)
+        return sorted_indices
+
     def get_trabecular_position(self):
         coi_idx_r = np.reshape(self.coi_idx, (-1, 3))
         # create subarrays of the coi_idx array for each slice (coi_idx[:, 2])
@@ -554,11 +613,31 @@ class TrabecularVolume(Mesher):
             trabecular_points[i] = trabecular_points[i][[0, 2, 1, 3]]
         return np.array(trabecular_points, dtype=np.float32).reshape((-1, 3))
 
+    def sort_trab_coords(self, point_tags):
+        self.factory.synchronize()
+        start_point = [lst for lst in point_tags]
+        coords = [self.model.getValue(0, point, []) for point in start_point]
+        point_tags = np.split(
+            np.array(point_tags), self.slicing_coefficient
+        )  # split every 4 points
+        coords_split = np.split(
+            np.array(coords), self.slicing_coefficient
+        )  # split every x, y, z coordinate
+
+        # sort the sub-arrays in clockwise order
+        point_tags_sorted0 = self.sort_cw(coords_split[0])
+        # for each sub-array point_tags, sort the points with point_tags_sorted0
+        point_tags_sorted = [
+            point_tags[point_tags_sorted0] for point_tags in point_tags
+        ]
+        return point_tags_sorted
+
     def get_trabecular_vol(self, coi_idx):
         self.coi_idx = coi_idx
         trabecular_points = self.get_trabecular_position()
         point_tags = self.insert_points(trabecular_points)
-        point_tags_r = np.reshape(point_tags, (-1, 4))
+        point_tags_sorted = self.sort_trab_coords(point_tags.tolist())
+        point_tags_r = np.reshape(point_tags_sorted, (-1, 4))
 
         # concatenate first point to the end of each subarray
         points_first_column = point_tags_r[:, 0]
@@ -643,7 +722,13 @@ class TrabecularVolume(Mesher):
         self.surf_tags = list(map(int, self.surf_tags))
         self.vol_tags = list(map(int, trab_vol_tag))
 
-        return self.line_tags_v, self.line_tags_h, self.surf_tags, self.vol_tags
+        return (
+            point_tags_r,
+            self.line_tags_v,
+            self.line_tags_h,
+            self.surf_tags,
+            self.vol_tags,
+        )
 
     def trabecular_transfinite(self, line_tags_v, line_tags_h, surf_tags, vol_tags):
         # make transfinite
