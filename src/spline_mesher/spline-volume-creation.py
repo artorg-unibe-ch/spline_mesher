@@ -760,7 +760,7 @@ def main():
         gmsh.clear()
 
         N_TRANSVERSE = 5
-        N_RADIAL = 15
+        N_RADIAL = 10
         mesher = Mesher(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=N_TRANSVERSE, n_radial=N_RADIAL)
 
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))  # center of mass of each slice (x, y, z)
@@ -798,6 +798,9 @@ def main():
 
         volume_tags = mesher.add_volume(cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags)
 
+        # TODO: check if could be implemented when created (relationship with above functions)
+        intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
+
         # add here trabecular meshing
         trabecular_volume = TrabecularVolume(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=N_TRANSVERSE, n_radial=N_RADIAL)
         trabecular_volume.set_length_factor(0.4)
@@ -805,11 +808,18 @@ def main():
 
         # connection between inner trabecular and cortical volumes
         trab_cort_line_tags = mesher.trabecular_cortical_connection(coi_idx=indices_coi_int, trab_point_tags=point_tags_r)
-        mesher.trabecular_slices(trab_cort_line_tags=trab_cort_line_tags, trab_line_tags_h=trab_line_tags_h, trab_line_tags_v=trab_line_tags_v, cort_int_bspline_tags=cortical_int_bspline)
-        # fmt: on
+        trabecular_slice_surf_tags = mesher.trabecular_slices(trab_cort_line_tags=trab_cort_line_tags,
+                                                              trab_line_tags_h=trab_line_tags_h,
+                                                              cort_int_bspline_tags=cortical_int_bspline)
+        
+        trabecular_volume.trabecular_planes_inertia(trab_cort_line_tags, trab_line_tags_v, intersurface_surface_tags)
+
         # meshing
-        trabecular_volume.meshing_transfinite(trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols)
-        mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags)
+        # append trabecular_slice_surf_tags to trab_surfs --> not a list of lists but a flat list
+        trab_surfs.extend(trabecular_slice_surf_tags)
+        trabecular_volume.meshing_transfinite(trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols, trab_cort_line_tags)
+
+        mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags, test_list=intersurface_line_tags)
         mesher.mesh_generate(dim=3)
 
         gmsh.fltk.run()
