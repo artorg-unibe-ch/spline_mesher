@@ -22,6 +22,7 @@ import logging
 import cortical_sanity as csc
 from gmsh_mesh_builder import Mesher, TrabecularVolume
 import os
+from itertools import chain
 
 
 pio.renderers.default = "browser"
@@ -723,7 +724,7 @@ def main():
             ASPECT=30,
             SLICE=1,
             UNDERSAMPLING=5,
-            SLICING_COEFFICIENT=4,
+            SLICING_COEFFICIENT=10,
             INSIDE_VAL=0,
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
@@ -811,12 +812,12 @@ def main():
         trabecular_slice_surf_tags = mesher.trabecular_slices(trab_cort_line_tags=trab_cort_line_tags,
                                                               trab_line_tags_h=trab_line_tags_h,
                                                               cort_int_bspline_tags=cortical_int_bspline)
-        
-        trabecular_volume.trabecular_planes_inertia(trab_cort_line_tags, trab_line_tags_v, intersurface_surface_tags)
+
+        trab_plane_inertia_tags = trabecular_volume.trabecular_planes_inertia(trab_cort_line_tags, trab_line_tags_v, intersection_line_tags_int)
 
         # meshing
         # append trabecular_slice_surf_tags to trab_surfs --> not a list of lists but a flat list
-        trab_surfs.extend(trabecular_slice_surf_tags)
+        trab_surfs = list(chain(trab_surfs, trabecular_slice_surf_tags, trab_plane_inertia_tags))
         trabecular_volume.meshing_transfinite(trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols, trab_cort_line_tags)
 
         mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags, test_list=intersurface_line_tags)

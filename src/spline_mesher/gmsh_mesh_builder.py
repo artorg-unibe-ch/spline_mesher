@@ -3,6 +3,8 @@ import numpy as np
 import shapely.geometry as shpg
 from scipy import spatial
 from scipy.spatial import KDTree
+import logging
+import os
 
 
 class Mesher:
@@ -21,6 +23,12 @@ class Mesher:
         self.slicing_coefficient = slicing_coefficient
         self.n_transverse = n_transverse
         self.n_radial = n_radial
+
+    logging.basicConfig(
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        level=logging.DEBUG,
+    )
+    logging.getLogger(os.getlogin())
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
         ext_arr = np.vstack((ext_arr, ext_arr[0]))
@@ -344,6 +352,9 @@ class Mesher:
         for i in range(len(inter_a) - 1):
             interslice_i = inter_a[i]
             for j in range(len(interslice_i) - 1):
+                logging.debug(
+                    f"{inter_a[i][j]}\t{ext_r[i][j]}\t{inter_a[i][j + 1]}\t{int_r[i][j]}\t"
+                )
                 ext_int_tags_s = self.factory.addCurveLoop(
                     [
                         inter_a[i][j],
@@ -383,6 +394,9 @@ class Mesher:
         for i in range(len(intersurface_line_tags_r) - 1):
             intersurface_line_tags_r_i = intersurface_line_tags_r[i]
             for j in range(len(intersurface_line_tags_r_i)):
+                logging.debug(
+                    f"{intersurface_line_tags_r[i][j]}\t{intersection_line_tag_int_r[i][j]}\t{intersurface_line_tags_r[i + 1][j]}\t{intersection_line_tag_ext_r[i][j]}\t"
+                )
                 intersurf_tag = self.factory.addCurveLoop(
                     [
                         intersurface_line_tags_r[i][j],
@@ -557,13 +571,41 @@ class Mesher:
         return trab_cort_line_tags
 
     def trabecular_planes_inertia(
-        self, trab_cort_line_tags, trab_line_tags_v, intersurface_surface_tags
+        self, trab_cort_line_tags, trab_line_tags_v, intersection_line_tags_int
     ):
-        print(f"trab_cort_line_tags: {trab_cort_line_tags}")
-        print(f"trab_line_tags_v: {trab_line_tags_v}")
-        print(f"intersurface_surface_tags: {intersurface_surface_tags}")
 
-        return None
+        trab_cort_line_tags_np = np.array(trab_cort_line_tags).reshape(
+            (self.slicing_coefficient, -1)
+        )
+        trab_line_tags_v_np = np.array(trab_line_tags_v, dtype=int).reshape(
+            (-1, self.slicing_coefficient - 1)
+        )
+        trab_line_tags_v_np_r = np.concatenate(
+            (trab_line_tags_v_np[3:, :], trab_line_tags_v_np[:3, :]), axis=0
+        )
+        intersection_line_tags_int_np = np.array(
+            intersection_line_tags_int, dtype=int
+        ).reshape((-1, self.slicing_coefficient - 1))
+
+        trab_plane_inertia_tags = []
+        for j in range(0, len(trab_line_tags_v_np[:, 0])):
+            for i in range(1, len(trab_cort_line_tags_np[:, 0])):
+                logging.debug(
+                    f"{trab_cort_line_tags_np[i-1][j]}\t{intersection_line_tags_int_np[j][i-1]}\t{trab_cort_line_tags_np[i][j]}\t{trab_line_tags_v_np_r[j][i-1]}"
+                )
+                curve_loop = self.factory.addCurveLoop(
+                    [
+                        trab_cort_line_tags_np[i - 1][j],
+                        intersection_line_tags_int_np[j][i - 1],
+                        trab_cort_line_tags_np[i][j],
+                        trab_line_tags_v_np_r[j][i - 1],
+                    ],
+                    tag=-1,
+                )
+                trab_plane_s = self.factory.addSurfaceFilling(curve_loop, tag=-1)
+                trab_plane_inertia_tags.append(trab_plane_s)
+
+        return trab_plane_inertia_tags
 
     def trabecular_slices(
         self,
@@ -598,9 +640,10 @@ class Mesher:
         trabecular_slice_surf_tags = []
         for i in range(len(trab_cort_line_tags_np)):
             for j in range(1, len(trab_cort_line_tags_np[i])):
-                print(
+                logging.debug(
                     f"{trab_cort_line_tags_np[i][j-1]}\t{trab_line_tags_h_np_s[i][j-1]}\t{trab_cort_line_tags_np[i][j]}\t{cort_int_bspline_tags_np[i][j-1]}"
                 )
+
                 curve_loop = self.factory.addCurveLoop(
                     [
                         trab_cort_line_tags_np[i][j - 1],
@@ -758,6 +801,9 @@ class TrabecularVolume(Mesher):
         for j in range(len(line_tags_v) - 1):
             line_tag = line_tags_v[j]
             for i in range(len(line_tag) - 1):
+                logging.debug(
+                    f"{line_tags_h[i][j]}\t{line_tags_v[j][i]}\t{line_tags_h[i + 1][j]}\t{line_tags_v[j + 1][i]}"
+                )
                 trab_curveloop_v = self.factory.addCurveLoop(
                     [
                         line_tags_h[i][j],
