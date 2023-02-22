@@ -657,6 +657,71 @@ class Mesher:
                 trabecular_slice_surf_tags.append(trab_slice)
         return trabecular_slice_surf_tags
 
+    def get_trabecular_cortical_volume_mesh(
+        self,
+        trab_slice_surf_tags,
+        trab_plane_inertia_tags,
+        cortical_int_surfs,
+        trab_surfs_v,
+    ):
+        """
+        # TODO: write docstring
+        """
+        trab_slice_surf_tags_np = np.array(trab_slice_surf_tags, dtype=int).reshape(
+            (-1, 4)  # * mind the 4 (4 surfaces per trabecular slice)
+        )
+
+        trab_surfs_v_np = (
+            np.array(trab_surfs_v, dtype=int)
+            .reshape(-1, self.slicing_coefficient - 1)
+            .T
+        )
+        # start from second row, concatenate first at the end
+        trab_surfs_v_np_s = np.concatenate(
+            (trab_surfs_v_np[:, -1][:, None], trab_surfs_v_np[:, :-1]), axis=1
+        )
+
+        trab_plane_inertia_tags_np = (
+            np.array(trab_plane_inertia_tags, dtype=int)
+            .reshape((-1, self.slicing_coefficient - 1))
+            .T
+        )
+        trab_plane_inertia = np.concatenate(
+            (trab_plane_inertia_tags_np, trab_plane_inertia_tags_np[:, 0][:, None]),
+            axis=1,
+        )
+
+        cortical_int_surfs_np = np.array(cortical_int_surfs, dtype=int).reshape(
+            (self.slicing_coefficient - 1, -1)
+        )
+        cortical_int_surfs_np_2 = np.concatenate(
+            (cortical_int_surfs_np, cortical_int_surfs_np[:, 0][:, None]), axis=1
+        )
+
+        cort_trab_vol_tags = []
+        for j in range(len(trab_plane_inertia[:, 0])):
+            for i in range(1, len(trab_plane_inertia[0, :])):
+                logging.debug(
+                    f"{trab_plane_inertia[j][i-1]}\t{trab_slice_surf_tags_np[j][i-1]}\t"
+                    f"{trab_plane_inertia[j][i]}\t{cortical_int_surfs_np_2[j][i-1]}\t"
+                    f"{trab_slice_surf_tags_np[j+1][i-1]}\t{trab_surfs_v_np_s[j][i-1]}"
+                )
+                surf_loop = self.factory.addSurfaceLoop(
+                    [
+                        trab_plane_inertia[j][i - 1],
+                        trab_slice_surf_tags_np[j][i - 1],
+                        trab_plane_inertia[j][i],
+                        cortical_int_surfs_np_2[j][i - 1],
+                        trab_slice_surf_tags_np[j + 1][i - 1],
+                        trab_surfs_v_np_s[j][i - 1],
+                    ],
+                    tag=-1,
+                )
+                vol_s = self.factory.addVolume([surf_loop], tag=-1)
+                cort_trab_vol_tags.append(vol_s)
+
+        return cort_trab_vol_tags
+
     def mesh_generate(self, dim):
         gmsh.option.setNumber("Mesh.RecombineAll", 1)
         gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
@@ -844,15 +909,16 @@ class TrabecularVolume(Mesher):
 
         self.line_tags_h = list(map(int, np.unique(line_tags_h)))
         self.line_tags_v = list(map(int, np.unique(line_tags_v)))
-        self.surf_tags = np.append(np.unique(surf_tags_h), np.unique(surf_tags_v))
-        self.surf_tags = list(map(int, self.surf_tags))
+        self.surf_tags_h = list(map(int, np.unique(surf_tags_h)))
+        self.surf_tags_v = list(map(int, np.unique(surf_tags_v)))
         self.vol_tags = list(map(int, trab_vol_tag))
 
         return (
             point_tags_r,
             self.line_tags_v,
             self.line_tags_h,
-            self.surf_tags,
+            self.surf_tags_v,
+            self.surf_tags_h,
             self.vol_tags,
         )
 

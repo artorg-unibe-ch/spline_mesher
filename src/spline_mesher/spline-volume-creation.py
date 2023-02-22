@@ -760,7 +760,7 @@ def main():
         gmsh.initialize()
         gmsh.clear()
 
-        N_TRANSVERSE = 5
+        N_TRANSVERSE = 3
         N_RADIAL = 10
         mesher = Mesher(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=N_TRANSVERSE, n_radial=N_RADIAL)
 
@@ -797,7 +797,7 @@ def main():
         cortical_bspline_tags = np.append(cortical_ext_bspline, cortical_int_bspline)
         cortical_surfs = np.concatenate((cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags), axis=None)
 
-        volume_tags = mesher.add_volume(cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags)
+        cort_vol_tags = mesher.add_volume(cortical_ext_surfs, cortical_int_surfs, slices_tags, intersurface_surface_tags)
 
         # TODO: check if could be implemented when created (relationship with above functions)
         intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
@@ -805,20 +805,26 @@ def main():
         # add here trabecular meshing
         trabecular_volume = TrabecularVolume(geo_file_path, mesh_file_path, slicing_coefficient=cortical_v.SLICING_COEFFICIENT, n_transverse=N_TRANSVERSE, n_radial=N_RADIAL)
         trabecular_volume.set_length_factor(0.4)
-        point_tags_r, trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
+        point_tags_r, trab_line_tags_v, trab_line_tags_h, trab_surfs_v, trab_surfs_h, trab_vols = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
 
         # connection between inner trabecular and cortical volumes
         trab_cort_line_tags = mesher.trabecular_cortical_connection(coi_idx=indices_coi_int, trab_point_tags=point_tags_r)
-        trabecular_slice_surf_tags = mesher.trabecular_slices(trab_cort_line_tags=trab_cort_line_tags,
-                                                              trab_line_tags_h=trab_line_tags_h,
-                                                              cort_int_bspline_tags=cortical_int_bspline)
+        trab_slice_surf_tags = mesher.trabecular_slices(trab_cort_line_tags=trab_cort_line_tags, trab_line_tags_h=trab_line_tags_h, cort_int_bspline_tags=cortical_int_bspline)
 
         trab_plane_inertia_tags = trabecular_volume.trabecular_planes_inertia(trab_cort_line_tags, trab_line_tags_v, intersection_line_tags_int)
+        cort_trab_vol_tags = mesher.get_trabecular_cortical_volume_mesh(trab_slice_surf_tags, trab_plane_inertia_tags, cortical_int_surfs, trab_surfs_v)
 
         # meshing
-        # append trabecular_slice_surf_tags to trab_surfs --> not a list of lists but a flat list
-        trab_surfs = list(chain(trab_surfs, trabecular_slice_surf_tags, trab_plane_inertia_tags))
+        trab_surfs = list(chain(trab_surfs_v, trab_surfs_h, trab_slice_surf_tags, trab_plane_inertia_tags))
         trabecular_volume.meshing_transfinite(trab_line_tags_v, trab_line_tags_h, trab_surfs, trab_vols, trab_cort_line_tags)
+
+        volume_tags = np.concatenate((cort_vol_tags, cort_trab_vol_tags), axis=None)
+
+        # * physical groups
+        mesher.factory.synchronize()
+        trab_vol_tags = np.concatenate((trab_vols, cort_trab_vol_tags), axis=None)
+        trab_physical_group = mesher.model.addPhysicalGroup(3, trab_vol_tags)
+        cort_physical_group = mesher.model.addPhysicalGroup(3, cort_vol_tags)
 
         mesher.meshing_transfinite(intersection_line_tags, cortical_bspline_tags, cortical_surfs, volume_tags, test_list=intersurface_line_tags)
         mesher.mesh_generate(dim=3)
