@@ -175,21 +175,25 @@ class OCC_volume:
         """
         https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour
         """
-        # fmt: off
         if loc == "outer":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
             out = np.empty(np.shape(img))
-            contour = cv2.drawContours(out, _contours, -1, 1, 1)  # all contours, in white, with thickness 1
+            contour = cv2.drawContours(
+                out, _contours, -1, 1, 1
+            )  # all contours, in white, with thickness 1
             contour_s.append(contour)
         elif loc == "inner":
-            _contours, hierarchy = cv2.findContours(img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            _contours, hierarchy = cv2.findContours(
+                img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            )
             inn = np.empty(np.shape(img))
             contour = cv2.drawContours(inn, _contours, 2, 1, 1)
         else:
-            raise ValueError("The location of the contour is not valid. Please choose between 'outer' and 'inner'.")
-        # fmt: on
+            raise ValueError(
+                "The location of the contour is not valid. Please choose between 'outer' and 'inner'."
+            )
         return contour
 
     def get_binary_contour(self, image):
@@ -635,13 +639,16 @@ class OCC_volume:
             logging.info(f"Volume_splines\t\tshow_plots:\t{self.show_plots}")
             fig = None
 
-        # fmt: off
         if self.phases >= 1:
             img_contours_ext = sitk.GetImageFromArray(contour_ext_fig, isVector=True)
-            image_data_ext = np.transpose(sitk.GetArrayViewFromImage(img_contours_ext), [2, 1, 0])
+            image_data_ext = np.transpose(
+                sitk.GetArrayViewFromImage(img_contours_ext), [2, 1, 0]
+            )
         if self.phases == 2:
             img_contours_int = sitk.GetImageFromArray(contour_int_fig, isVector=True)
-            image_data_int = np.transpose(sitk.GetArrayViewFromImage(img_contours_int), [2, 1, 0])
+            image_data_int = np.transpose(
+                sitk.GetArrayViewFromImage(img_contours_int), [2, 1, 0]
+            )
 
         contour_ext = []
         contour_int = []
@@ -650,9 +657,13 @@ class OCC_volume:
             if self.phases >= 1:
                 # TODO: check if ::-1 is still needed (minus sign)
                 image_slice_ext = image_data_ext[_slice, :, :][::-1, ::-1]
-                original, cortical_ext_x, cortical_ext_y = self.sort_surface(image_slice_ext)
+                original, cortical_ext_x, cortical_ext_y = self.sort_surface(
+                    image_slice_ext
+                )
                 z = np.ones(len(cortical_ext_x)) * (self.spacing[0] * _slice)
-                contour_ext = np.append(contour_ext, np.c_[cortical_ext_x, cortical_ext_y, z])
+                contour_ext = np.append(
+                    contour_ext, np.c_[cortical_ext_x, cortical_ext_y, z]
+                )
 
                 if self.phases == 1:
                     if self.show_plots is True:
@@ -667,8 +678,12 @@ class OCC_volume:
             if self.phases == 2:
                 # TODO: check if ::-1 is still needed (minus sign)
                 image_slice_int = image_data_int[_slice, :, :][::-1, ::-1]
-                original, cortical_int_x, cortical_int_y = self.sort_surface(image_slice_int)
-                contour_int = np.append(contour_int, np.c_[cortical_int_x, cortical_int_y, z])
+                original, cortical_int_x, cortical_int_y = self.sort_surface(
+                    image_slice_int
+                )
+                contour_int = np.append(
+                    contour_int, np.c_[cortical_int_x, cortical_int_y, z]
+                )
 
                 if self.phases == 2:
                     if self.show_plots is True:
@@ -679,7 +694,6 @@ class OCC_volume:
                         fig = None
             else:
                 logging.warning(f"Phases =/= 2: {self.phases}")
-        # fmt: on
 
         if self.show_plots is True:
             self.plotly_makefig(fig)
