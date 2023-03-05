@@ -70,6 +70,7 @@ class CorticalSanityCheck:
         Returns:
             numpy.ndarray: numpy array with index reset to idx
         """
+
         return np.r_[arr[idx:, :], arr[:idx, :]]
 
     def roll_index(self, arr, idx=1):
@@ -541,6 +542,7 @@ class CorticalSanityCheck:
         Returns:
             np.ndarray: Resampled contour [x, y]
         """
+
         d = np.cumsum(np.r_[0, np.sqrt((np.diff(xy, axis=0) ** 2).sum(axis=1))])
 
         # get linearly spaced points along the cumulative Euclidean distance
@@ -556,8 +558,9 @@ class CorticalSanityCheck:
     def offset_surface(self, line, offset):
         """
         Create artificial internal surface based on an offset
-        Input:
+        Args:
             np.ndarray: 2D array of [x, y] points of the external surface
+            offset (float): offset distance
         Returns:
             np.ndarray: 2D array of [x, y] points of the offset surface
         """
