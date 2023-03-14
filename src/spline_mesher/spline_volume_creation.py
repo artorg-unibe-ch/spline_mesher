@@ -738,7 +738,7 @@ def main():
             ASPECT=30,
             SLICE=1,
             UNDERSAMPLING=5,
-            SLICING_COEFFICIENT=10,
+            SLICING_COEFFICIENT=10, # 5, 10, 20 working on 2234
             INSIDE_VAL=0,
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,

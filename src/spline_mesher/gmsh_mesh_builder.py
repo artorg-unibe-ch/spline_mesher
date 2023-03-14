@@ -51,6 +51,7 @@ class Mesher:
         Returns:
             shapely.geometry.Point: intersection point
         """
+
         shapely_poly = shpg.Polygon(poly)
         shapely_line = shpg.LineString(line_1)
         return list(shapely_poly.intersection(shapely_line).coords)
@@ -77,6 +78,7 @@ class Mesher:
         Returns:
             ndarray: new array with intersection points
         """
+
         dists, closest_idx_2 = spatial.KDTree(arr).query(intersection, k=2)
         if (closest_idx_2 == [0, len(arr) - 1]).all():
             return dists, closest_idx_2[1]
@@ -102,6 +104,7 @@ class Mesher:
         Returns:
             ndarray: new array with intersection points
         """
+
         arr = np.insert(arr, closest_idx, values, axis=0)
         return arr
 
