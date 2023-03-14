@@ -13,7 +13,7 @@
 <h3 align="center">Spline-based structured conformal hexahedral meshing</h3>
 
   <p align="center">
-    project_description
+    Adda a project description here
     <br />
     <a href="https://github.com/simoneponcioni/spline-mesher"><strong>Explore the docs »</strong></a>
     <br />
@@ -58,7 +58,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[<img src="https://github.com/simoneponcioni/spline-mesher/blob/master/src/spline_mesher/docs/img/mesh-example.png" alt="Spline-mesher" width="100" height="100">]
+<img src="https://github.com/simoneponcioni/spline-mesher/blob/master/src/spline_mesher/docs/img/mesh-example.png" alt="Spline-mesher" width="1000" height="1000">
 
 Import a voxel-based model and convert it to a geometrical simplified representation through the use of splines for each slice in the transverse plane.
 
