@@ -58,7 +58,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-<img src="https://github.com/simoneponcioni/spline-mesher/blob/master/src/spline_mesher/docs/img/mesh-example.png" alt="Spline-mesher" width="1000" height="1000">
+<img src="https://github.com/simoneponcioni/spline-mesher/blob/master/src/spline_mesher/docs/img/mesh-example.png" alt="Spline-mesher" width="1000" height="500">
 
 Import a voxel-based model and convert it to a geometrical simplified representation through the use of splines for each slice in the transverse plane.
 
