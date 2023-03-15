@@ -165,10 +165,10 @@ Simone Poncioni - simone.poncioni@unibe.ch
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[issues-shield]: https://img.shields.io/github/issues-raw/simoneponcioni/spline-mesher?style=flat-square
+[issues-shield]: https://img.shields.io/github/issues-raw/simoneponcioni/spline-mesher
 [issues-url]: https://github.com/simoneponcioni/spline-mesher/issues
 
 [Python-url]: https://www.python.org/
 [GMSH-url]: http://gmsh.info/
-[pyapp]: https://github.com/simoneponcioni/spline-mesher/actions/workflows/python-app.yml/badge.svg?style=flat-square
-[todo_to_issue]: https://github.com/simoneponcioni/spline-mesher/actions/workflows/todo_to_issue.yml/badge.svg?style=flat-square
+[pyapp]: https://github.com/simoneponcioni/spline-mesher/actions/workflows/python-app.yml/badge.svg
+[todo_to_issue]: https://github.com/simoneponcioni/spline-mesher/actions/workflows/todo_to_issue.yml/badge.svg
