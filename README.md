@@ -13,7 +13,7 @@
 <h3 align="center">Spline-based structured conformal hexahedral meshing</h3>
 
   <p align="center">
-    Adda a project description here
+    Add a project description here
     <br />
     <a href="https://github.com/simoneponcioni/spline-mesher"><strong>Explore the docs »</strong></a>
     <br />
@@ -25,7 +25,6 @@
     <a href="https://github.com/simoneponcioni/spline-mesher/issues">Request Feature</a>
   </p>
 </div>
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -53,8 +52,6 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
@@ -64,40 +61,46 @@ Import a voxel-based model and convert it to a geometrical simplified representa
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 ### Built With
 
 [<img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="100" height="100">][Python-url]
 [<img src="https://gitlab.onelab.info/uploads/-/system/project/avatar/3/gmsh.png" alt="Python" width="100" height="100">][GMSH-url]
 
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
-
 
 ### Installation
 
 1. Clone the repo
+
    ```sh
    git clone https://github.com/simoneponcioni/spline-mesher.git
    ```
+
 2. Install dependencies
+
    ```sh
    conda create -n meshenv python=3.9 --file requirements.txt
    conda activate meshenv
    ```
 
+3. For developers: install the package in editable mode
+
+   ```sh
+   pip install -e .
+   ```
+
+4. For developers: install requirements for testing
+
+   ```sh
+   pip install -r requirements-dev.txt
+   ```
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- USAGE EXAMPLES -->
 ## Standalone execution
@@ -115,28 +118,24 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- ROADMAP -->
 ## Roadmap
 
 - [x] __v0.0.1-pre-alpha__: single execution of radius and tibia mesher
 - [ ] __v0.0.2__: add phase discrimination in order to mesh single phase models (e.g. vertebrae)
 - [ ] __Performance improvements__:
-    - [ ] Faster implementation of sorting algorithm
-    - [ ] Faster implementation of cortical sanity check
-    - [ ] Implement test robustness over different models
+  - [ ] Faster implementation of sorting algorithm
+  - [ ] Faster implementation of cortical sanity check
+  - [ ] Implement test robustness over different models
 
 See the [open issues](https://github.com/simoneponcioni/spline-mesher/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are __greatly appreciated__.
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
 Don't forget to give the project a star! Thanks again!
@@ -149,8 +148,6 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- LICENSE -->
 ## License
 
@@ -158,31 +155,19 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- CONTACT -->
 ## Contact
 
 Simone Poncioni - simone.poncioni@unibe.ch
 
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/simoneponcioni/spline-mesher.svg?style=for-the-badge
 [issues-url]: https://github.com/simoneponcioni/spline-mesher/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/simoneponcioni/spline-mesher.svg?style=for-the-badge
 [license-url]: https://github.com/simoneponcioni/spline-mesher/blob/master/LICENSE.txt
-[product-screenshot]: docs/img/mesh-example.png
 
 [Python-url]: https://www.python.org/
 [GMSH-url]: http://gmsh.info/
