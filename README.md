@@ -9,6 +9,8 @@
 
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+![Issue creation][todo_to_issue]
+![Python application][pyapp]
 
 <h3 align="center">Spline-based structured conformal hexahedral meshing</h3>
 
@@ -164,10 +166,12 @@ Simone Poncioni - simone.poncioni@unibe.ch
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[issues-shield]: https://img.shields.io/github/issues/simoneponcioni/spline-mesher.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/license/simoneponcioni/spline-mesher?style=flat-square
 [issues-url]: https://github.com/simoneponcioni/spline-mesher/issues
-[license-shield]: https://img.shields.io/github/license/simoneponcioni/spline-mesher.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/simoneponcioni/spline-mesher.svg?style=flat-square
 [license-url]: https://github.com/simoneponcioni/spline-mesher/blob/master/LICENSE.txt
 
 [Python-url]: https://www.python.org/
 [GMSH-url]: http://gmsh.info/
+[pyapp]: https://github.com/simoneponcioni/spline-mesher/actions/workflows/python-app.yml/badge.svg?style=flat-square
+[todo_to_issue]: https://github.com/simoneponcioni/spline-mesher/actions/workflows/todo_to_issue.yml/badge.svg?style=flat-square
