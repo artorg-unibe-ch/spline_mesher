@@ -8,7 +8,6 @@
 -->
 
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 ![Issue creation][todo_to_issue]
 ![Python application][pyapp]
 
@@ -166,10 +165,8 @@ Simone Poncioni - simone.poncioni@unibe.ch
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[issues-shield]: https://img.shields.io/github/license/simoneponcioni/spline-mesher?style=flat-square
+[issues-shield]: https://img.shields.io/github/issues-raw/simoneponcioni/spline-mesher?style=flat-square
 [issues-url]: https://github.com/simoneponcioni/spline-mesher/issues
-[license-shield]: https://img.shields.io/github/license/simoneponcioni/spline-mesher.svg?style=flat-square
-[license-url]: https://github.com/simoneponcioni/spline-mesher/blob/master/LICENSE.txt
 
 [Python-url]: https://www.python.org/
 [GMSH-url]: http://gmsh.info/
