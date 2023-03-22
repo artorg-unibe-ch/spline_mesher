@@ -3,6 +3,7 @@ Geometry representation and meshing through spline reconstruction
 Author: Simone Poncioni, MSB
 Date: 09.2022 - Ongoing
 """
+import logging
 import os
 import time
 from itertools import chain
@@ -12,10 +13,9 @@ import cortical_sanity as csc
 import gmsh
 import numpy as np
 import plotly.io as pio
+from futils.setup_utils import logging_setup
 from gmsh_mesh_builder import Mesher, TrabecularVolume
 from spline_volume import OCC_volume
-from futils.setup_utils import logging_setup
-import logging
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "SIMONE"

@@ -1,3 +1,4 @@
+import logging
 import sys
 
 import cv2
@@ -11,7 +12,6 @@ import scipy.spatial as ss
 import SimpleITK as sitk
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import splev, splprep
-import logging
 
 LOGGING_NAME = "SIMONE"
 # flake8: noqa: E203

@@ -1,10 +1,10 @@
-import numpy as np
 import math
-import matplotlib.pyplot as plt
-from scipy import spatial
 from pathlib import Path
-import shapely.geometry as shpg
 
+import matplotlib.pyplot as plt
+import numpy as np
+import shapely.geometry as shpg
+from scipy import spatial
 
 # plt.style.use('02_CODE/src/spline_mesher/cfgdir/pos_monitor.mplstyle')  # https://github.com/matplotlib/matplotlib/issues/17978
 
