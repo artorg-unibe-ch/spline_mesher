@@ -2,9 +2,7 @@ import gmsh
 import numpy as np
 import shapely.geometry as shpg
 from scipy import spatial
-from scipy.spatial import KDTree
-import logging
-import os
+import math
 
 
 class Mesher:
@@ -15,20 +13,18 @@ class Mesher:
         slicing_coefficient,
         n_transverse,
         n_radial,
+        logger,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
+        self.option = gmsh.option
+        self.plugin = gmsh.plugin
         self.geo_file_path = geo_file_path
         self.mesh_file_path = mesh_file_path
         self.slicing_coefficient = slicing_coefficient
         self.n_transverse = n_transverse
         self.n_radial = n_radial
-
-    logging.basicConfig(
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        level=logging.DEBUG,
-    )
-    logging.getLogger(os.getlogin())
+        self.logger = logger
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
         ext_arr = np.vstack((ext_arr, ext_arr[0]))
@@ -115,7 +111,7 @@ class Mesher:
         3. calculate nearest neighbor of the intersection point
         4. insert the intersection point into the contours
         """
-        radius = 50
+        radius = 100
         intersection_1 = self.shapely_line_polygon_intersection(
             array, self.partition_lines(radius, centroid)[0]
         )
@@ -343,19 +339,21 @@ class Mesher:
         return interslice_seg_tag
 
     def add_slice_surfaces(self, ext_tags, int_tags, interslice_seg_tags):
-        ext_r = ext_tags.reshape((self.slicing_coefficient, -1))
-        int_r = int_tags.reshape((self.slicing_coefficient, -1))
+        ext_r = ext_tags.reshape((self.slicing_coefficient, -1)).astype(int)
+        int_r = int_tags.reshape((self.slicing_coefficient, -1)).astype(int)
         inter_r = interslice_seg_tags.reshape((self.slicing_coefficient, -1))
         inter_c = np.concatenate(
             (inter_r[:, 0:], inter_r[:, 0].reshape(self.slicing_coefficient, 1)), axis=1
         )
-        inter_a = np.concatenate((inter_c, inter_c[-1].reshape(1, -1)), axis=0)
+        inter_a = np.concatenate((inter_c, inter_c[-1].reshape(1, -1)), axis=0).astype(
+            int
+        )
 
         ext_int_tags = []
         for i in range(len(inter_a) - 1):
             interslice_i = inter_a[i]
             for j in range(len(interslice_i) - 1):
-                logging.debug(
+                self.logger.debug(
                     f"{inter_a[i][j]}\t{ext_r[i][j]}\t{inter_a[i][j + 1]}\t{int_r[i][j]}\t"
                 )
                 ext_int_tags_s = self.factory.addCurveLoop(
@@ -397,7 +395,7 @@ class Mesher:
         for i in range(len(intersurface_line_tags_r) - 1):
             intersurface_line_tags_r_i = intersurface_line_tags_r[i]
             for j in range(len(intersurface_line_tags_r_i)):
-                logging.debug(
+                self.logger.debug(
                     f"{intersurface_line_tags_r[i][j]}\t{intersection_line_tag_int_r[i][j]}\t{intersurface_line_tags_r[i + 1][j]}\t{intersection_line_tag_ext_r[i][j]}\t"
                 )
                 intersurf_tag = self.factory.addCurveLoop(
@@ -530,24 +528,14 @@ class Mesher:
         trab_coords = []
         for i, _ in enumerate(list_1):
             coi_coords_s = [self.model.getValue(0, idx, []) for idx in list_1[i]]
-            trab_coords_s = [
-                self.model.getValue(0, idx, []) for idx in list_2[i]
-            ]  # noqa
+            trab_coords_s = [self.model.getValue(0, idx, []) for idx in list_2[i]]
             coi_coords.append(coi_coords_s)
             trab_coords.append(trab_coords_s)
 
-        coi_coords_np = np.array(coi_coords)
-        trab_coords_np = np.array(trab_coords)
-        tree = KDTree(coi_coords_np[0])
-        # query tree for closest trabecular point on 1st slice
-        _, ind = tree.query(trab_coords_np[0])
-
-        trab_idx_closest = []
-        for i in range(len(trab_coords_np[:, 0])):
-            trab_idx_temp = list_2[i]
-            trab_idx_temp_s = self.sort_by_indexes(trab_idx_temp, ind)
-            trab_idx_closest.append(trab_idx_temp_s)
-        return trab_idx_closest
+        trab_idx_closest_ccw = self.sort_ccw(trab_coords[0])
+        list_2_np = np.array(list_2)
+        list_2_sorted = [subarr[trab_idx_closest_ccw] for subarr in list_2_np]
+        return list_2_sorted
 
     def trabecular_cortical_connection(
         self, coi_idx: list[int], trab_point_tags: list[int]
@@ -562,13 +550,17 @@ class Mesher:
         coi_idx = np.array(coi_idx, dtype=int).tolist()
         trab_point_tags = np.array(trab_point_tags, dtype=int).tolist()
 
-        trab_idx_closest = self.query_closest_idx(coi_idx, trab_point_tags)
+        # trab_idx_closest = self.sort_ccw(trab_point_tags[0])  # TODO: check if still needed
+        trab_idx_closest = trab_point_tags
 
         trab_cort_line_tags = []
         for i, _ in enumerate(coi_idx):
             for j, _ in enumerate(coi_idx[i]):
                 line_tag_s = self.factory.addLine(
                     coi_idx[i][j], trab_idx_closest[i][j], tag=-1
+                )
+                self.logger.debug(
+                    f"AddLine {line_tag_s}: {coi_idx[i][j]} {trab_idx_closest[i][j]}"
                 )
                 trab_cort_line_tags.append(line_tag_s)
         return trab_cort_line_tags
@@ -583,17 +575,22 @@ class Mesher:
         trab_line_tags_v_np = np.array(trab_line_tags_v, dtype=int).reshape(
             (-1, self.slicing_coefficient - 1)
         )
-        trab_line_tags_v_np_r = np.concatenate(
-            (trab_line_tags_v_np[3:, :], trab_line_tags_v_np[:3, :]), axis=0
-        )
+
+        # trab_line_tags_v_np_r = np.concatenate(
+        # (trab_line_tags_v_np[3:, :], trab_line_tags_v_np[:3, :]), axis=0
+        # )
+
+        trab_line_tags_v_np_r = trab_line_tags_v_np  # ! debugging this lines
+
         intersection_line_tags_int_np = np.array(
             intersection_line_tags_int, dtype=int
         ).reshape((-1, self.slicing_coefficient - 1))
 
+        self.logger.debug("Trabecular planes of inertia")
         trab_plane_inertia_tags = []
         for j in range(0, len(trab_line_tags_v_np[:, 0])):
             for i in range(1, len(trab_cort_line_tags_np[:, 0])):
-                logging.debug(
+                self.logger.debug(
                     f"{trab_cort_line_tags_np[i-1][j]}\t{intersection_line_tags_int_np[j][i-1]}\t{trab_cort_line_tags_np[i][j]}\t{trab_line_tags_v_np_r[j][i-1]}"
                 )
                 curve_loop = self.factory.addCurveLoop(
@@ -617,9 +614,6 @@ class Mesher:
         cort_int_bspline_tags: list[int],
     ):
 
-        np.append(trab_line_tags_h, trab_line_tags_h[-1])
-        np.append(cort_int_bspline_tags, cort_int_bspline_tags[-1])
-
         trab_line_tags_h_np = np.array(trab_line_tags_h, dtype=int).reshape((-1, 4))
 
         trab_cort_line_tags_np_s = np.array(trab_cort_line_tags, dtype=int).reshape(
@@ -635,22 +629,18 @@ class Mesher:
             (-1, 4)
         )
 
-        # insert last column at the beginning (order: 3, 0, 1, 2)
-        trab_line_tags_h_np_s = np.append(
-            trab_line_tags_h_np[:, 3:], trab_line_tags_h_np[:, :3], axis=1
-        )
-
+        self.logger.debug("Trabecular slices")
         trabecular_slice_surf_tags = []
         for i in range(len(trab_cort_line_tags_np)):
             for j in range(1, len(trab_cort_line_tags_np[i])):
-                logging.debug(
-                    f"{trab_cort_line_tags_np[i][j-1]}\t{trab_line_tags_h_np_s[i][j-1]}\t{trab_cort_line_tags_np[i][j]}\t{cort_int_bspline_tags_np[i][j-1]}"
+                self.logger.debug(
+                    f"{trab_cort_line_tags_np[i][j-1]}\t{trab_line_tags_h_np[i][j-1]}\t{trab_cort_line_tags_np[i][j]}\t{cort_int_bspline_tags_np[i][j-1]}"
                 )
 
                 curve_loop = self.factory.addCurveLoop(
                     [
                         trab_cort_line_tags_np[i][j - 1],
-                        trab_line_tags_h_np_s[i][j - 1],
+                        trab_line_tags_h_np[i][j - 1],
                         trab_cort_line_tags_np[i][j],
                         cort_int_bspline_tags_np[i][j - 1],
                     ],
@@ -680,9 +670,11 @@ class Mesher:
             .T
         )
         # start from second row, concatenate first at the end
-        trab_surfs_v_np_s = np.concatenate(
-            (trab_surfs_v_np[:, -1][:, None], trab_surfs_v_np[:, :-1]), axis=1
-        )
+        # trab_surfs_v_np_s = np.concatenate(
+        #     (trab_surfs_v_np[:, -1][:, None], trab_surfs_v_np[:, :-1]), axis=1
+        # )
+
+        trab_surfs_v_np_s = trab_surfs_v_np  # TODO: debugging this line
 
         trab_plane_inertia_tags_np = (
             np.array(trab_plane_inertia_tags, dtype=int)
@@ -704,7 +696,7 @@ class Mesher:
         cort_trab_vol_tags = []
         for j in range(len(trab_plane_inertia[:, 0])):
             for i in range(1, len(trab_plane_inertia[0, :])):
-                logging.debug(
+                self.logger.debug(
                     f"{trab_plane_inertia[j][i-1]}\t{trab_slice_surf_tags_np[j][i-1]}\t"
                     f"{trab_plane_inertia[j][i]}\t{cortical_int_surfs_np_2[j][i-1]}\t"
                     f"{trab_slice_surf_tags_np[j+1][i-1]}\t{trab_surfs_v_np_s[j][i-1]}"
@@ -725,17 +717,74 @@ class Mesher:
 
         return cort_trab_vol_tags
 
+    def sort_cw_legacy(self, coords):
+        """check if this functions is still needed"""
+        coords = np.asarray(coords)
+        center = np.mean(coords, axis=0)
+        angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
+        sorted_indices = np.argsort(angles)
+        sorted_indices = list(sorted_indices)
+        # guarantee that the first point is always in the first quadrant
+        if angles[sorted_indices[0]] > 0:
+            self.logger.warning("First point is not in 1st quadrant, modifying.")
+            self.logger.warning(f"Coords: {coords[sorted_indices[0]]}")
+            self.logger.warning(f"Angle = {angles[sorted_indices[0]]}")
+            sorted_indices = sorted_indices[1:] + [sorted_indices[0]]
+        return sorted_indices
+
+    def sort_ccw_test(self, coords):
+        coords = np.asarray(coords)
+        center = np.mean(coords, axis=0)
+        angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
+        closest_to_3 = np.argmin(np.abs(angles))
+        angles_idx = np.arange(len(angles))
+        sorted_indices_t = np.argsort(angles, kind="stable")
+        sorted_indices = np.roll(angles_idx[sorted_indices_t], -closest_to_3)
+        return sorted_indices
+
+    def sort_ccw(self, coords):
+        x_coords, y_coords, _ = zip(*coords)
+        centroid = (sum(x_coords) / len(coords), sum(y_coords) / len(coords))
+
+        # Calculate angle of each coordinate relative to negative x-axis and negative y-axis
+        y_axis = (-1, -1)
+        angles = []
+        for coord in coords:
+            vec = (coord[0] - centroid[0], coord[1] - centroid[1])
+            angle = math.atan2(vec[1], vec[0]) - math.atan2(y_axis[1], y_axis[0])
+            if angle < 0:
+                angle += 2 * math.pi
+            angles.append(angle)
+
+        # Sort coordinates by angle and distance to centroid
+        sorted_angles = np.argsort(angles)
+        angles_idx = np.arange(len(angles))
+        sorted_indices = angles_idx[sorted_angles]
+        return sorted_indices
+
     def mesh_generate(self, dim):
-        gmsh.option.setNumber("Mesh.RecombineAll", 1)
-        gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
-        gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
-        gmsh.option.setNumber("Mesh.ElementOrder", 1)
+        self.option.setNumber("Mesh.RecombineAll", 1)
+        self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
+        self.option.setNumber("Mesh.Recombine3DLevel", 2)
+        self.option.setNumber("Mesh.ElementOrder", 1)
         self.model.mesh.generate(dim)
+
+    def analyse_mesh_quality(self):
+        self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)
+        self.plugin.setNumber("AnalyseMeshQuality", "CreateView", 1)
+        self.plugin.setNumber("AnalyseMeshQuality", "DimensionOfElements", -1)
+        self.plugin.run("AnalyseMeshQuality")
 
 
 class TrabecularVolume(Mesher):
     def __init__(
-        self, geo_file_path, mesh_file_path, slicing_coefficient, n_transverse, n_radial
+        self,
+        geo_file_path,
+        mesh_file_path,
+        slicing_coefficient,
+        n_transverse,
+        n_radial,
+        logger,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
@@ -744,6 +793,7 @@ class TrabecularVolume(Mesher):
         self.slicing_coefficient = slicing_coefficient
         self.n_transverse = n_transverse
         self.n_radial = n_radial
+        self.logger = logger
         self.coi_idx = []
         self.line_tags_v = []
         self.line_tags_h = []
@@ -751,7 +801,12 @@ class TrabecularVolume(Mesher):
         self.vol_tags = []
         self.LENGTH_FACTOR = float(1.0)
         super().__init__(
-            geo_file_path, mesh_file_path, slicing_coefficient, n_transverse, n_radial
+            geo_file_path,
+            mesh_file_path,
+            slicing_coefficient,
+            n_transverse,
+            n_radial,
+            logger,
         )
 
     def principal_axes_length(self, array):
@@ -770,14 +825,6 @@ class TrabecularVolume(Mesher):
         array[2] = np.array(_center) + np.array(offset_j)
         array[3] = np.array(_center) - np.array(offset_j)
         return array
-
-    def sort_cw(self, coords):
-        coords = np.asarray(coords)
-        center = np.mean(coords, axis=0)
-        angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
-        sorted_indices = np.argsort(angles)
-        sorted_indices = list(sorted_indices)
-        return sorted_indices
 
     def get_trabecular_position(self):
         coi_idx_r = np.reshape(self.coi_idx, (-1, 3))
@@ -801,7 +848,7 @@ class TrabecularVolume(Mesher):
             )
 
             # sort points in cw direction
-            trabecular_points[i] = trabecular_points[i][[0, 2, 1, 3]]
+            # trabecular_points[i] = trabecular_points[i][[0, 2, 1, 3]]  # ? is this necessary?
         return np.array(trabecular_points, dtype=np.float32).reshape((-1, 3))
 
     def sort_trab_coords(self, point_tags):
@@ -815,8 +862,8 @@ class TrabecularVolume(Mesher):
             np.array(coords), self.slicing_coefficient
         )  # split every x, y, z coordinate
 
-        # sort the sub-arrays in clockwise order
-        point_tags_sorted0 = self.sort_cw(coords_split[0])
+        # sort the sub-arrays in counterclockwise order
+        point_tags_sorted0 = self.sort_ccw(coords_split[0])  # ! HERE
         # for each sub-array point_tags, sort the points with point_tags_sorted0
         point_tags_sorted = [
             point_tags[point_tags_sorted0] for point_tags in point_tags
@@ -869,7 +916,7 @@ class TrabecularVolume(Mesher):
         for j in range(len(line_tags_v) - 1):
             line_tag = line_tags_v[j]
             for i in range(len(line_tag) - 1):
-                logging.debug(
+                self.logger.debug(
                     f"{line_tags_h[i][j]}\t{line_tags_v[j][i]}\t{line_tags_h[i + 1][j]}\t{line_tags_v[j + 1][i]}"
                 )
                 trab_curveloop_v = self.factory.addCurveLoop(
@@ -910,10 +957,10 @@ class TrabecularVolume(Mesher):
             volume_t = self.factory.addVolume([surf_tag], tag=-1)
             trab_vol_tag.append(volume_t)
 
-        self.line_tags_h = list(map(int, np.unique(line_tags_h)))
         self.line_tags_v = list(map(int, np.unique(line_tags_v)))
-        self.surf_tags_h = list(map(int, np.unique(surf_tags_h)))
+        self.line_tags_h = list(map(int, np.unique(line_tags_h)))
         self.surf_tags_v = list(map(int, np.unique(surf_tags_v)))
+        self.surf_tags_h = list(map(int, np.unique(surf_tags_h)))
         self.vol_tags = list(map(int, trab_vol_tag))
 
         return (
