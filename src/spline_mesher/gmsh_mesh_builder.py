@@ -1,8 +1,13 @@
+import logging
+import math
+
 import gmsh
 import numpy as np
 import shapely.geometry as shpg
 from scipy import spatial
-import math
+
+# flake8: noqa: E203
+LOGGING_NAME = "SIMONE"
 
 
 class Mesher:
@@ -13,7 +18,6 @@ class Mesher:
         slicing_coefficient,
         n_transverse,
         n_radial,
-        logger,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
@@ -24,7 +28,7 @@ class Mesher:
         self.slicing_coefficient = slicing_coefficient
         self.n_transverse = n_transverse
         self.n_radial = n_radial
-        self.logger = logger
+        self.logger = logging.getLogger(LOGGING_NAME)
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
         ext_arr = np.vstack((ext_arr, ext_arr[0]))
@@ -350,11 +354,13 @@ class Mesher:
         )
 
         ext_int_tags = []
+        self.logger.debug("Surface slices")
+        self.logger.debug("j, i")
         for i in range(len(inter_a) - 1):
             interslice_i = inter_a[i]
             for j in range(len(interslice_i) - 1):
                 self.logger.debug(
-                    f"{inter_a[i][j]}\t{ext_r[i][j]}\t{inter_a[i][j + 1]}\t{int_r[i][j]}\t"
+                    f"{j}, {i}:\t{inter_a[i][j]} {ext_r[i][j]} {inter_a[i][j + 1]} {int_r[i][j]}"
                 )
                 ext_int_tags_s = self.factory.addCurveLoop(
                     [
@@ -392,11 +398,13 @@ class Mesher:
         )
 
         intersurface_curveloop_tag = []
+        self.logger.debug("Intersurface planes:")
+        self.logger.debug("j, i")
         for i in range(len(intersurface_line_tags_r) - 1):
             intersurface_line_tags_r_i = intersurface_line_tags_r[i]
             for j in range(len(intersurface_line_tags_r_i)):
                 self.logger.debug(
-                    f"{intersurface_line_tags_r[i][j]}\t{intersection_line_tag_int_r[i][j]}\t{intersurface_line_tags_r[i + 1][j]}\t{intersection_line_tag_ext_r[i][j]}\t"
+                    f"{j}, {i}:\t{intersurface_line_tags_r[i][j]} {intersection_line_tag_int_r[i][j]} {intersurface_line_tags_r[i + 1][j]} {intersection_line_tag_ext_r[i][j]}"
                 )
                 intersurf_tag = self.factory.addCurveLoop(
                     [
@@ -587,11 +595,12 @@ class Mesher:
         ).reshape((-1, self.slicing_coefficient - 1))
 
         self.logger.debug("Trabecular planes of inertia")
+        self.logger.debug("j, i")
         trab_plane_inertia_tags = []
         for j in range(0, len(trab_line_tags_v_np[:, 0])):
             for i in range(1, len(trab_cort_line_tags_np[:, 0])):
                 self.logger.debug(
-                    f"{trab_cort_line_tags_np[i-1][j]}\t{intersection_line_tags_int_np[j][i-1]}\t{trab_cort_line_tags_np[i][j]}\t{trab_line_tags_v_np_r[j][i-1]}"
+                    f"{j}, {i}:\t{trab_cort_line_tags_np[i-1][j]} {intersection_line_tags_int_np[j][i-1]} {trab_cort_line_tags_np[i][j]} {trab_line_tags_v_np_r[j][i-1]}"
                 )
                 curve_loop = self.factory.addCurveLoop(
                     [
@@ -630,11 +639,12 @@ class Mesher:
         )
 
         self.logger.debug("Trabecular slices")
+        self.logger.debug("j, i")
         trabecular_slice_surf_tags = []
         for i in range(len(trab_cort_line_tags_np)):
             for j in range(1, len(trab_cort_line_tags_np[i])):
                 self.logger.debug(
-                    f"{trab_cort_line_tags_np[i][j-1]}\t{trab_line_tags_h_np[i][j-1]}\t{trab_cort_line_tags_np[i][j]}\t{cort_int_bspline_tags_np[i][j-1]}"
+                    f"{j}, {i}:\t{trab_cort_line_tags_np[i][j-1]} {trab_line_tags_h_np[i][j-1]} {trab_cort_line_tags_np[i][j]} {cort_int_bspline_tags_np[i][j-1]}"
                 )
 
                 curve_loop = self.factory.addCurveLoop(
@@ -674,7 +684,7 @@ class Mesher:
         #     (trab_surfs_v_np[:, -1][:, None], trab_surfs_v_np[:, :-1]), axis=1
         # )
 
-        trab_surfs_v_np_s = trab_surfs_v_np  # TODO: debugging this line
+        trab_surfs_v_np_s = trab_surfs_v_np  # ! debugging this line
 
         trab_plane_inertia_tags_np = (
             np.array(trab_plane_inertia_tags, dtype=int)
@@ -694,12 +704,14 @@ class Mesher:
         )
 
         cort_trab_vol_tags = []
+        self.logger.debug("Cortical-Trabecular volume mesh")
+        self.logger.debug("j, i")
         for j in range(len(trab_plane_inertia[:, 0])):
             for i in range(1, len(trab_plane_inertia[0, :])):
                 self.logger.debug(
-                    f"{trab_plane_inertia[j][i-1]}\t{trab_slice_surf_tags_np[j][i-1]}\t"
-                    f"{trab_plane_inertia[j][i]}\t{cortical_int_surfs_np_2[j][i-1]}\t"
-                    f"{trab_slice_surf_tags_np[j+1][i-1]}\t{trab_surfs_v_np_s[j][i-1]}"
+                    f"{j}, {i}:\t{trab_plane_inertia[j][i-1]} {trab_slice_surf_tags_np[j][i-1]} "
+                    f"{trab_plane_inertia[j][i]} {cortical_int_surfs_np_2[j][i-1]} "
+                    f"{trab_slice_surf_tags_np[j+1][i-1]} {trab_surfs_v_np_s[j][i-1]}"
                 )
                 surf_loop = self.factory.addSurfaceLoop(
                     [
@@ -762,20 +774,21 @@ class Mesher:
         sorted_indices = angles_idx[sorted_angles]
         return sorted_indices
 
-    def mesh_generate(self, dim: int, optimise: bool = True):
+    def mesh_generate(self, dim: int, element_order: int, optimise: bool = True):
         self.option.setNumber("Mesh.RecombineAll", 1)
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         self.option.setNumber("Mesh.Recombine3DLevel", 2)
-        self.option.setNumber("Mesh.ElementOrder", 1)
+        self.option.setNumber("Mesh.ElementOrder", element_order)
         self.model.mesh.generate(dim)
         if optimise:
             self.model.mesh.optimize(method="Netgen", niter=3)
 
-    def analyse_mesh_quality(self):
+    def analyse_mesh_quality(self) -> None:
         self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)
         self.plugin.setNumber("AnalyseMeshQuality", "CreateView", 1)
         self.plugin.setNumber("AnalyseMeshQuality", "DimensionOfElements", -1)
         self.plugin.run("AnalyseMeshQuality")
+        return None
 
 
 class TrabecularVolume(Mesher):
@@ -786,7 +799,6 @@ class TrabecularVolume(Mesher):
         slicing_coefficient,
         n_transverse,
         n_radial,
-        logger,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
@@ -795,7 +807,7 @@ class TrabecularVolume(Mesher):
         self.slicing_coefficient = slicing_coefficient
         self.n_transverse = n_transverse
         self.n_radial = n_radial
-        self.logger = logger
+        self.logger = logging.getLogger(LOGGING_NAME)
         self.coi_idx = []
         self.line_tags_v = []
         self.line_tags_h = []
@@ -808,7 +820,6 @@ class TrabecularVolume(Mesher):
             slicing_coefficient,
             n_transverse,
             n_radial,
-            logger,
         )
 
     def principal_axes_length(self, array):
@@ -915,11 +926,13 @@ class TrabecularVolume(Mesher):
         ).tolist()
 
         surf_tags_v = []
+        self.logger.debug("Inner trabecular surface")
+        self.logger.debug("j, i")
         for j in range(len(line_tags_v) - 1):
             line_tag = line_tags_v[j]
             for i in range(len(line_tag) - 1):
                 self.logger.debug(
-                    f"{line_tags_h[i][j]}\t{line_tags_v[j][i]}\t{line_tags_h[i + 1][j]}\t{line_tags_v[j + 1][i]}"
+                    f"{j}, {i}:\t{line_tags_h[i][j]} {line_tags_v[j][i]} {line_tags_h[i + 1][j]} {line_tags_v[j + 1][i]}"
                 )
                 trab_curveloop_v = self.factory.addCurveLoop(
                     [

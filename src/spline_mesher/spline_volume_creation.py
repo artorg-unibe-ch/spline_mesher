@@ -3,37 +3,26 @@ Geometry representation and meshing through spline reconstruction
 Author: Simone Poncioni, MSB
 Date: 09.2022 - Ongoing
 """
-import logging
 import os
 import time
 from itertools import chain
 from pathlib import Path
 
-import coloredlogs
 import cortical_sanity as csc
 import gmsh
 import numpy as np
 import plotly.io as pio
 from gmsh_mesh_builder import Mesher, TrabecularVolume
 from spline_volume import OCC_volume
+from futils.setup_utils import logging_setup
+import logging
 
 pio.renderers.default = "browser"
-coloredlogs.install()
+LOGGING_NAME = "SIMONE"
 
 
 def main():
-    logging.basicConfig(
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        level=logging.DEBUG,
-    )
-
-    logger = logging.getLogger(os.getlogin())
-    logger.setLevel(logging.DEBUG)
-    console_handler = logging.StreamHandler()
-    log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    console_handler.setFormatter(logging.Formatter(log_format))
-    logger.addHandler(console_handler)
-
+    logger = logging.getLogger(LOGGING_NAME)
     logger.info("Starting meshing script...")
     start = time.time()
 
@@ -115,7 +104,6 @@ def main():
             slicing_coefficient=cortical_v.SLICING_COEFFICIENT,
             n_transverse=N_TRANSVERSE,
             n_radial=N_RADIAL,
-            logger=logger,
         )
 
         cortex_centroid = np.zeros(
@@ -232,7 +220,6 @@ def main():
             slicing_coefficient=cortical_v.SLICING_COEFFICIENT,
             n_transverse=N_TRANSVERSE,
             n_radial=N_RADIAL,
-            logger=logger,
         )
         trabecular_volume.set_length_factor(0.4)
         (
@@ -306,8 +293,8 @@ def main():
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=3)
-        logging.info(f"Elapsed time:  {elapsed} (s)")
-        logging.info("Meshing script finished.")
+        logger.info(f"Elapsed time:  {elapsed} (s)")
+        logger.info("Meshing script finished.")
 
 
 if __name__ == "__main__":
