@@ -1,7 +1,7 @@
 """
 Geometry representation and meshing through spline reconstruction
 Author: Simone Poncioni, MSB
-Date: 07-09.2022
+Date: 09.2022 - Ongoing
 """
 import time
 import cv2
@@ -761,7 +761,7 @@ def main():
     start = time.time()
 
     # fmt: off
-    img_basefilename = ["C0002233"]
+    img_basefilename = ["C0002214"]
     cwd = os.getcwd()
     img_basepath = f"{cwd}/01_AIM"
     img_outputpath = f"{cwd}/04_OUTPUT"
@@ -784,7 +784,7 @@ def main():
             ASPECT=30,
             SLICE=1,
             UNDERSAMPLING=1,
-            SLICING_COEFFICIENT=10,  # 5, 10, 20 working on 2234
+            SLICING_COEFFICIENT=5,  # 5, 10, 20 working on 2234
             INSIDE_VAL=0,
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
@@ -1022,7 +1022,7 @@ def main():
             volume_tags,
             test_list=intersurface_line_tags,
         )
-        mesher.mesh_generate(dim=3)
+        mesher.mesh_generate(dim=3, optimise=True)
         mesher.analyse_mesh_quality()
 
         gmsh.fltk.run()

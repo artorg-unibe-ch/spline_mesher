@@ -762,12 +762,14 @@ class Mesher:
         sorted_indices = angles_idx[sorted_angles]
         return sorted_indices
 
-    def mesh_generate(self, dim):
+    def mesh_generate(self, dim: int, optimise: bool = True):
         self.option.setNumber("Mesh.RecombineAll", 1)
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         self.option.setNumber("Mesh.Recombine3DLevel", 2)
         self.option.setNumber("Mesh.ElementOrder", 1)
         self.model.mesh.generate(dim)
+        if optimise:
+            self.model.mesh.optimize(method="Netgen", niter=3)
 
     def analyse_mesh_quality(self):
         self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)
