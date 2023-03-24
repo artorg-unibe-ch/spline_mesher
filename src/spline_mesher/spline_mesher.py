@@ -3,8 +3,11 @@ Geometry representation and meshing through spline reconstruction
 Author: Simone Poncioni, MSB
 Date: 09.2022 - Ongoing
 """
-import logging
 import os
+
+os.environ["NUMEXPR_MAX_THREADS"] = "16"
+
+import logging
 import time
 from itertools import chain
 from pathlib import Path
@@ -19,6 +22,7 @@ from spline_volume import OCC_volume
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "SIMONE"
+# flake8: noqa: E402
 
 
 def main():
@@ -27,7 +31,7 @@ def main():
     start = time.time()
 
     # fmt: off
-    img_basefilename = ["C0002237"]
+    img_basefilename = ["C0002234"]
     cwd = os.getcwd()
     img_basepath = f"{cwd}/01_AIM"
     img_outputpath = f"{cwd}/04_OUTPUT"
@@ -97,7 +101,7 @@ def main():
         gmsh.clear()
 
         N_TRANSVERSE = 3
-        N_RADIAL = 15
+        N_RADIAL = 10
         mesher = Mesher(
             geo_file_path,
             mesh_file_path,
@@ -106,9 +110,7 @@ def main():
             n_radial=N_RADIAL,
         )
 
-        cortex_centroid = np.zeros(
-            (len(cortical_ext_split), 3)
-        )  # center of mass of each slice (x, y, z)
+        cortex_centroid = np.zeros((len(cortical_ext_split), 3))
         cortical_int_sanity_split = np.array_split(
             cortical_int_sanity, len(np.unique(cortical_int_sanity[:, 2]))
         )
@@ -286,7 +288,7 @@ def main():
             volume_tags,
             test_list=intersurface_line_tags,
         )
-        mesher.mesh_generate(dim=3, element_order=2, optimise=True)
+        # mesher.mesh_generate(dim=3, element_order=2, optimise=True)
         # mesher.analyse_mesh_quality()
 
         gmsh.fltk.run()

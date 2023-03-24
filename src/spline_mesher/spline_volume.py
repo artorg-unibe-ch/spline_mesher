@@ -510,15 +510,20 @@ class OCC_volume:
         x_mahalanobis = np.append(x_mahalanobis, x_mahalanobis[0])
         y_mahalanobis = np.append(y_mahalanobis, y_mahalanobis[0])
 
+        x_copy = x_mahalanobis.copy()
+        y_copy = y_mahalanobis.copy()
+
         BNDS = 5
+        x_bnds, y_bnds = x_copy[BNDS:-BNDS], y_copy[BNDS:-BNDS]
         # find the knot points
         tckp, u = splprep(
-            [x_mahalanobis[BNDS:-BNDS], y_mahalanobis[BNDS:-BNDS]],
+            [x_bnds, y_bnds],
             s=self.S,
             k=self.K,
-            per=True,
-            ub=[x_mahalanobis, y_mahalanobis][0],
-            ue=[x_mahalanobis, y_mahalanobis][0],
+            per=1,
+            ub=[x_copy, y_copy][0],
+            ue=[x_copy, y_copy][0],
+            quiet=1,
         )
 
         # evaluate spline, including interpolated points
@@ -528,11 +533,6 @@ class OCC_volume:
 
         # Sanity check to ensure directionality of sorting in cw- or ccw-direction
         xnew, ynew = self.check_orient(xnew, ynew, direction=1)
-        # return (
-        # xy_sorted_closed,
-        # xnew[1:],
-        # ynew[1:],
-        # )
 
         return (
             xy_sorted_closed,

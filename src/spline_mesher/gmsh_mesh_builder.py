@@ -83,10 +83,10 @@ class Mesher:
         if (closest_idx_2 == [0, len(arr) - 1]).all():
             return dists, closest_idx_2[1]
         else:
-            # print(
-            #     f"closest index where to insert the intersection point: \
-            # {np.min(closest_idx_2)} (indices: {closest_idx_2})"
-            # )
+            self.logger.debug(
+                f"closest index where to insert the intersection point: \
+            {np.min(closest_idx_2)} (indices: {closest_idx_2})"
+            )
             pass
             return dists, np.min(closest_idx_2)
 
@@ -170,6 +170,19 @@ class Mesher:
             angles_subarray = np.arctan2(dists[:, 1], dists[:, 0])
             idx = np.argsort(angles_subarray)
             array_sorted.append(array[i][idx])
+        return np.array(array_sorted, dtype=int)
+
+    def sort_intersection_points_wip(self, array):
+        """
+        Sort the intersection points in ccw direction
+        """
+        self.factory.synchronize()
+        points = []
+        for _, subarray in enumerate(array):
+            points_subarr = [self.model.getValue(0, point, []) for point in subarray]
+            points.append(points_subarr)
+        points_sorted = self.sort_ccw(points[0])
+        array_sorted = [subarr[points_sorted] for subarr in array]
         return np.array(array_sorted, dtype=int)
 
     def insert_intersection_line(self, point_tags, idx_list: list):
@@ -558,7 +571,6 @@ class Mesher:
         coi_idx = np.array(coi_idx, dtype=int).tolist()
         trab_point_tags = np.array(trab_point_tags, dtype=int).tolist()
 
-        # trab_idx_closest = self.sort_ccw(trab_point_tags[0])  # TODO: check if still needed
         trab_idx_closest = trab_point_tags
 
         trab_cort_line_tags = []
@@ -754,16 +766,17 @@ class Mesher:
         sorted_indices = np.roll(angles_idx[sorted_indices_t], -closest_to_3)
         return sorted_indices
 
-    def sort_ccw(self, coords):
+    def sort_ccw(self, coords: np.ndarray) -> np.ndarray:
         x_coords, y_coords, _ = zip(*coords)
         centroid = (sum(x_coords) / len(coords), sum(y_coords) / len(coords))
 
         # Calculate angle of each coordinate relative to negative x-axis and negative y-axis
-        y_axis = (-1, -1)
+        axis_s = (-1, -1)
+        axis = (axis_s[0] - centroid[0], axis_s[1] - centroid[1])
         angles = []
         for coord in coords:
             vec = (coord[0] - centroid[0], coord[1] - centroid[1])
-            angle = math.atan2(vec[1], vec[0]) - math.atan2(y_axis[1], y_axis[0])
+            angle = math.atan2(vec[1], vec[0]) - math.atan2(axis[1], axis[0])
             if angle < 0:
                 angle += 2 * math.pi
             angles.append(angle)
