@@ -31,7 +31,7 @@ def main():
     start = time.time()
 
     # fmt: off
-    img_basefilename = ["C0002234"]
+    img_basefilename = ["C0002237"]
     cwd = os.getcwd()
     img_basepath = f"{cwd}/01_AIM"
     img_outputpath = f"{cwd}/04_OUTPUT"
@@ -215,7 +215,7 @@ def main():
         # TODO: check if could be implemented when created (relationship with above functions)
         intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
 
-        # add here trabecular meshing
+        # Trabecular meshing
         trabecular_volume = TrabecularVolume(
             geo_file_path,
             mesh_file_path,

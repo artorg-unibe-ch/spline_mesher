@@ -156,8 +156,10 @@ class Mesher:
             array_lines_tags.append(array_tag)
         return array_lines_tags
 
-    def sort_intersection_points(self, array):
+    def sort_intersection_points_legacy(self, array):
         """
+        Legacy function to sort the intersection points in cw direction
+        Kept for reference, but now using self.sort_intersection_points()
         Sort the intersection points in cw direction
         """
         self.factory.synchronize()
@@ -172,7 +174,7 @@ class Mesher:
             array_sorted.append(array[i][idx])
         return np.array(array_sorted, dtype=int)
 
-    def sort_intersection_points_wip(self, array):
+    def sort_intersection_points(self, array):
         """
         Sort the intersection points in ccw direction
         """
@@ -222,11 +224,12 @@ class Mesher:
             point_tags[i : i + 4] for i in range(0, len(point_tags), 4)
         ]
 
-        # sort the sub-arrays in clockwise order
-        point_tags_sliced_sorted = []
+        point_tags_sliced = np.array(point_tags_sliced)
+        # sort the sub-arrays in c-clockwise order
+        point_tags_sliced_sorted = np.copy(point_tags_sliced)
         for i, coord_slice in enumerate(coords_sliced):
-            point_tags_sorted = self.sort_bspline_cw(coord_slice, point_tags_sliced[i])
-            point_tags_sliced_sorted.append(point_tags_sorted)
+            point_tags_sorted = self.sort_ccw(coord_slice)
+            point_tags_sliced_sorted[i] = point_tags_sliced[i][point_tags_sorted]
         return point_tags_sliced_sorted
 
     def gmsh_insert_bspline(self, points):
