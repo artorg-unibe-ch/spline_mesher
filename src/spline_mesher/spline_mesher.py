@@ -31,7 +31,7 @@ def main():
     start = time.time()
 
     # fmt: off
-    img_basefilename = ["C0002237"]
+    img_basefilename = ["C0002234"]
     cwd = os.getcwd()
     img_basepath = f"{cwd}/01_AIM"
     img_outputpath = f"{cwd}/04_OUTPUT"
@@ -100,8 +100,8 @@ def main():
         gmsh.initialize()
         gmsh.clear()
 
-        N_TRANSVERSE = 3
-        N_RADIAL = 10
+        N_TRANSVERSE = 6
+        N_RADIAL = 15
         mesher = Mesher(
             geo_file_path,
             mesh_file_path,
@@ -288,8 +288,8 @@ def main():
             volume_tags,
             test_list=intersurface_line_tags,
         )
-        # mesher.mesh_generate(dim=3, element_order=2, optimise=True)
-        # mesher.analyse_mesh_quality()
+        mesher.mesh_generate(dim=3, element_order=1, optimise=True)
+        mesher.analyse_mesh_quality(hiding_thresh=999.9)  # 999.9 if you want to see all
 
         gmsh.fltk.run()
         gmsh.finalize()

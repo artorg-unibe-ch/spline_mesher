@@ -799,10 +799,11 @@ class Mesher:
         if optimise:
             self.model.mesh.optimize(method="Netgen", niter=3)
 
-    def analyse_mesh_quality(self) -> None:
+    def analyse_mesh_quality(self, hiding_thresh: float) -> None:
         self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)
         self.plugin.setNumber("AnalyseMeshQuality", "CreateView", 1)
         self.plugin.setNumber("AnalyseMeshQuality", "DimensionOfElements", -1)
+        self.plugin.setNumber("AnalyseMeshQuality", "HidingThreshold", hiding_thresh)
         self.plugin.run("AnalyseMeshQuality")
         return None
 
