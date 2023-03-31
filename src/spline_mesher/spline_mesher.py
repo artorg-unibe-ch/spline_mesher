@@ -289,7 +289,10 @@ def main():
             test_list=intersurface_line_tags,
         )
         mesher.mesh_generate(dim=3, element_order=1, optimise=True)
-        mesher.analyse_mesh_quality(hiding_thresh=999.9)  # 999.9 if you want to see all
+
+        JAC_FULL = 999.9  # 999.9 if you want to see all the elements
+        JAC_NEG = -0.01
+        mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
 
         gmsh.fltk.run()
         gmsh.finalize()
