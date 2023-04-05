@@ -45,8 +45,8 @@ class QuadRefinement:
         small_square_size = big_square_size / squares_per_side
 
         vertices = []
-        for i in range(squares_per_side + 1):
-            for j in range(squares_per_side + 1):
+        for i in range(squares_per_side):
+            for j in range(squares_per_side):
                 # Calculate the coordinates of the square's top-left corner
                 x_s_1 = float(i * small_square_size)
                 y_s_1 = float(j * small_square_size)
@@ -167,15 +167,27 @@ class QuadRefinement:
         for subs in range(1, MAX_SUBDIVISIONS):
             square = self.create_subvertices(center_of_mass, subs, SQUARE_SIZE_0)
             vertices = np.concatenate((vertices, square), axis=0)
-        vertices_unique = np.unique(vertices, axis=0)  # ! remove after testing
         if self.SHOW_PLOT:
-            self.plot_vertices(vertices_unique)
+            self.plot_vertices(vertices)
+
+        ###################################### !
+        # ! SOLVE THIS HERE
+        vertices_unique_s, unique_counts = np.unique(
+            vertices, axis=0, return_counts=True
+        )
+        vertices_unique = vertices_unique_s[unique_counts == 1]
+        vertices_sorted = np.array(
+            sorted(vertices_unique, key=lambda k: [k[1], k[0]]), dtype=np.float32
+        )
+        ###################################### !
+
+        if self.SHOW_PLOT:
+            self.plot_vertices(vertices_sorted)
         # * 4. Calculate transformation matrix
-        M = self.get_affine_transformation_matrix(vertices_coords, vertices_unique)
-        transformed_coords = self.set_transformation_matrix(M, vertices_unique)
+        M = self.get_affine_transformation_matrix(vertices_coords, vertices_sorted)
+        transformed_coords = self.set_transformation_matrix(M, vertices_sorted)
         # * 5. Create GMSH points
-        transformed_coords_unique = np.unique(transformed_coords, axis=0)
-        point_tags = self.add_gmsh_points(transformed_coords_unique)
+        point_tags = self.add_gmsh_points(transformed_coords)
 
         self.factory.synchronize()
         gmsh.fltk.run()
