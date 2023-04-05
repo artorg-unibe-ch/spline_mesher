@@ -28,7 +28,7 @@ class QuadRefinement:
         self.model = gmsh.model
         self.factory = gmsh.model.occ
         self.EDGE_LENGTH = float(1)
-        self.SHOW_PLOT = bool(False)
+        self.SHOW_PLOT = bool(True)
 
     def center_of_mass(self, vertices_coords):
         return np.mean(vertices_coords, axis=0)
