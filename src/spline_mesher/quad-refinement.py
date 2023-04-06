@@ -365,6 +365,7 @@ class QuadRefinement:
             line_tags_2nd_lvl.append(line_tag_s)
         line_tags = (
             center_square,
+            border_squares,
             *trapezoids,
             *center_squares_first_lvl,
             *line_tags_2nd_lvl,
