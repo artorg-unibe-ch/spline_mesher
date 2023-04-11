@@ -186,6 +186,12 @@ class QuadRefinement:
                 line_tags.append((line_s1, line_s2, line_s3, line_s4))
         return line_tags
 
+    def gmsh_add_plane_surface(self, line_tags):
+        # create surface from the center square
+        center_cloop = self.factory.addCurveLoop(line_tags)
+        center_surf = self.factory.addPlaneSurface([center_cloop])
+        return center_surf
+
     def gmsh_add_custom_lines(self, point_tags):
         # insert 5 tags at the beginning of the list (4 of the vertices and 1 for starting the count at 1 and not 0)
         pt = [None] * 5 + point_tags
@@ -194,13 +200,16 @@ class QuadRefinement:
         l2 = self.factory.addLine(pt[41], pt[71])
         l3 = self.factory.addLine(pt[71], pt[68])
         l4 = self.factory.addLine(pt[68], pt[38])
-        center_square = (l1, l2, l3, l4)
+        center_square = [l1, l2, l3, l4]
+
+        center_surf = self.gmsh_add_plane_surface(center_square)
 
         # add diagonal lines
         ld1 = self.factory.addLine(pt[38], pt[27])
         ld2 = self.factory.addLine(pt[41], pt[32])
         ld3 = self.factory.addLine(pt[71], pt[82])
         ld4 = self.factory.addLine(pt[68], pt[77])
+        diagonal_lines = [ld1, ld2, ld3, ld4]
 
         # add 4 squares connecting to the diagonal lines
         l10 = self.factory.addLine(pt[27], pt[26])
@@ -208,38 +217,44 @@ class QuadRefinement:
         l12 = self.factory.addLine(pt[16], pt[17])
         l13 = self.factory.addLine(pt[17], pt[27])
 
-        l21 = self.factory.addLine(pt[32], pt[33])
-        l22 = self.factory.addLine(pt[33], pt[23])
-        l23 = self.factory.addLine(pt[23], pt[22])
-        l24 = self.factory.addLine(pt[22], pt[32])
+        l20 = self.factory.addLine(pt[32], pt[33])
+        l21 = self.factory.addLine(pt[33], pt[23])
+        l22 = self.factory.addLine(pt[23], pt[22])
+        l23 = self.factory.addLine(pt[22], pt[32])
 
-        l31 = self.factory.addLine(pt[82], pt[83])
-        l32 = self.factory.addLine(pt[83], pt[93])
-        l33 = self.factory.addLine(pt[93], pt[92])
-        l34 = self.factory.addLine(pt[92], pt[82])
+        l30 = self.factory.addLine(pt[82], pt[83])
+        l31 = self.factory.addLine(pt[83], pt[93])
+        l32 = self.factory.addLine(pt[93], pt[92])
+        l33 = self.factory.addLine(pt[92], pt[82])
 
-        l41 = self.factory.addLine(pt[77], pt[76])
-        l42 = self.factory.addLine(pt[76], pt[86])
-        l43 = self.factory.addLine(pt[86], pt[87])
-        l44 = self.factory.addLine(pt[87], pt[77])
-        border_squares = (
+        l40 = self.factory.addLine(pt[77], pt[76])
+        l41 = self.factory.addLine(pt[76], pt[86])
+        l42 = self.factory.addLine(pt[86], pt[87])
+        l43 = self.factory.addLine(pt[87], pt[77])
+        border_squares = [
             l10,
             l11,
             l12,
             l13,
+            l20,
             l21,
             l22,
             l23,
-            l24,
+            l30,
             l31,
             l32,
             l33,
-            l34,
+            l40,
             l41,
             l42,
             l43,
-            l44,
-        )
+        ]
+        border_squares_split = np.array_split(border_squares, 4)
+
+        border_surfs = []
+        for border_tags in border_squares_split:
+            _surf = self.gmsh_add_plane_surface(border_tags)
+            border_surfs.append(_surf)
 
         # center trapezoids
         l51 = self.factory.addLine(pt[38], pt[29])
@@ -257,7 +272,18 @@ class QuadRefinement:
         l81 = self.factory.addLine(pt[68], pt[57])
         l82 = self.factory.addLine(pt[57], pt[47])
         l83 = self.factory.addLine(pt[47], pt[38])
-        center_trapezoids = (l51, l52, l53, l61, l62, l63, l71, l72, l73, l81, l82, l83)
+        center_trapezoids = [l51, l52, l53, l61, l62, l63, l71, l72, l73, l81, l82, l83]
+
+        center_trapezoids_split = np.array_split(center_trapezoids, 4)
+        # add center_square to center_trapezoids_split
+        for i, center_line_tag in enumerate(center_square):
+            center_trapezoids_split[i] = np.append(
+                center_trapezoids_split[i], center_line_tag
+            )
+
+        for trapezoid in center_trapezoids_split:
+            _surf = self.gmsh_add_plane_surface(trapezoid)
+            border_surfs.append(_surf)
 
         # diagonal trapezoids
         l911 = self.factory.addLine(pt[38], pt[18])
@@ -285,21 +311,21 @@ class QuadRefinement:
         l953 = self.factory.addLine(pt[91], pt[90])
         l954 = self.factory.addLine(pt[90], pt[80])
 
-        l951 = self.factory.addLine(pt[68], pt[88])
-        l952 = self.factory.addLine(pt[88], pt[87])
-        l953 = self.factory.addLine(pt[88], pt[89])
-        l954 = self.factory.addLine(pt[89], pt[79])
+        l961 = self.factory.addLine(pt[68], pt[88])
+        l962 = self.factory.addLine(pt[88], pt[87])
+        l963 = self.factory.addLine(pt[88], pt[89])
+        l964 = self.factory.addLine(pt[89], pt[79])
 
-        l961 = self.factory.addLine(pt[68], pt[66])
-        l962 = self.factory.addLine(pt[66], pt[56])
-        l963 = self.factory.addLine(pt[56], pt[57])
-        l964 = self.factory.addLine(pt[66], pt[76])
+        l971 = self.factory.addLine(pt[68], pt[66])
+        l972 = self.factory.addLine(pt[66], pt[56])
+        l973 = self.factory.addLine(pt[56], pt[57])
+        l974 = self.factory.addLine(pt[66], pt[76])
 
-        l971 = self.factory.addLine(pt[38], pt[36])
-        l972 = self.factory.addLine(pt[36], pt[46])
-        l973 = self.factory.addLine(pt[46], pt[47])
-        l974 = self.factory.addLine(pt[36], pt[26])
-        trapezoids = (
+        l981 = self.factory.addLine(pt[38], pt[36])
+        l982 = self.factory.addLine(pt[36], pt[46])
+        l983 = self.factory.addLine(pt[46], pt[47])
+        l984 = self.factory.addLine(pt[36], pt[26])
+        trapezoids = [
             l911,
             l912,
             l913,
@@ -328,14 +354,18 @@ class QuadRefinement:
             l972,
             l973,
             l974,
-        )
+            l981,
+            l982,
+            l983,
+            l984,
+        ]
 
         # close squares of 1st level
         l975 = self.factory.addLine(pt[19], pt[20])
         l976 = self.factory.addLine(pt[53], pt[63])
         l977 = self.factory.addLine(pt[90], pt[89])
         l978 = self.factory.addLine(pt[56], pt[46])
-        center_squares_first_lvl = (l975, l976, l977, l978)
+        center_squares_first_lvl = [l975, l976, l977, l978]
 
         # square of 2nd level
         line_tags_2nd_lvl = []
@@ -365,10 +395,12 @@ class QuadRefinement:
             line_tags_2nd_lvl.append(line_tag_s)
         line_tags = (
             center_square,
+            diagonal_lines,
             border_squares,
-            *trapezoids,
-            *center_squares_first_lvl,
-            *line_tags_2nd_lvl,
+            center_trapezoids,
+            trapezoids,
+            center_squares_first_lvl,
+            line_tags_2nd_lvl,
         )
         return line_tags
 
@@ -381,15 +413,37 @@ class QuadRefinement:
         )
         return windows
 
+    def gmsh_add_trap_surfs(self, l_tags):
+        """l_tags: list of line tags"""
+        print(l_tags)
+        cl_1 = np.array([l_tags[1][0], l_tags[2][3], l_tags[4][0], l_tags[4][1]])
+        cl_2 = np.array([l_tags[1][1], l_tags[2][4], l_tags[4][11], l_tags[4][8]])
+        cl_3 = np.array([l_tags[1][2], l_tags[2][8], l_tags[4][12], l_tags[4][15]])
+        cl_4 = np.array([l_tags[1][3], l_tags[2][12], l_tags[4][24], l_tags[4][27]])
+
+        cl_5 = np.array([l_tags[1][0], l_tags[2][0], l_tags[4][31], l_tags[4][28]])
+        cl_6 = np.array([l_tags[1][1], l_tags[2][7], l_tags[4][5], l_tags[4][4]])
+        cl_7 = np.array([l_tags[1][2], l_tags[2][11], l_tags[4][17], l_tags[4][16]])
+        cl_8 = np.array([l_tags[1][3], l_tags[2][15], l_tags[4][21], l_tags[4][20]])
+
+        loops = [cl_1, cl_2, cl_3, cl_4, cl_5, cl_6, cl_7, cl_8]
+        surf_tags = []
+        for curve_loop in loops:
+            print(curve_loop)
+            _surf = self.gmsh_add_plane_surface(curve_loop)
+            surf_tags.append(_surf)
+        return surf_tags
+
     def main(self):
         # TODO: remove after testing
+        # ? make sure of the point order (has to be clockwise)
         ###############################
         gmsh.initialize()
         a = 10
-        self.factory.addPoint(a, 0, 0, -1)
-        self.factory.addPoint(0, a, 0, -1)
-        self.factory.addPoint(-a, 0, 0, -1)
-        self.factory.addPoint(0, -a, 0, -1)
+        self.factory.addPoint(a, a, 0, -1)
+        self.factory.addPoint(a, -a, 0, -1)
+        self.factory.addPoint(-a, -a, 0, -1)
+        self.factory.addPoint(-a, a, 0, -1)
         self.factory.synchronize()
         ###############################
 
@@ -419,9 +473,10 @@ class QuadRefinement:
         # * 7. Create GMSH lines
         line_tags = self.gmsh_add_custom_lines(point_tags)
 
-        # TODO: CONTINUE HERE
         # * 8. Create GMSH surfaces
-        # surf_tags = self.gmsh_add_surfaces(line_tags)
+        trap_diag_tags = self.gmsh_add_trap_surfs(line_tags)
+        # self.gmsh_add_plane_surface(trap_diag_tags)
+        # surf_tags = self.gmsh_add_surfaces(trap_diag_tags)
         self.factory.synchronize()
         gmsh.fltk.run()
         gmsh.finalize()
