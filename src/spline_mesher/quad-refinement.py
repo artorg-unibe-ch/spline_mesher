@@ -20,7 +20,14 @@ LOGGING_NAME = "SIMONE"
 
 
 class QuadRefinement:
-    def __init__(self, vertices_tags: list[int], nb_layers: int, DIM: int = 2):
+    def __init__(
+        self,
+        vertices_tags: list[int],
+        nb_layers: int,
+        DIM: int = 2,
+        SQUARE_SIZE_0_MM: int = 1,
+        MAX_SUBDIVISIONS: int = 3,
+    ):
         self.vertices_tags = np.array(vertices_tags)
         self.nb_layers = int(nb_layers)
         self.DIM = int(DIM)
@@ -29,6 +36,8 @@ class QuadRefinement:
         self.EDGE_LENGTH = float(1)
         self.SHOW_PLOT = bool(False)
         self.logger = logging.getLogger(LOGGING_NAME)
+        self.SQUARE_SIZE_0_MM = SQUARE_SIZE_0_MM
+        self.MAX_SUBDIVISIONS = MAX_SUBDIVISIONS
 
     def center_of_mass(self, vertices_coords):
         return np.mean(vertices_coords, axis=0)
@@ -580,22 +589,9 @@ class QuadRefinement:
             )
         return line_tags_new, surf_tags
 
-    def main(self):
-        # TODO: remove after testing
-        # ? make sure of the point order (has to be clockwise)
-        ###############################
-        gmsh.initialize()
-        a = 10
-        point_01 = self.factory.addPoint(a, a, 0, -1)
-        point_02 = self.factory.addPoint(a, -a, 0, -1)
-        point_03 = self.factory.addPoint(-a, -a, 0, -1)
-        point_04 = self.factory.addPoint(-a, a, 0, -1)
-        initial_point_tags = [point_01, point_02, point_03, point_04]
-        self.factory.synchronize()
-        ###############################
-
-        SQUARE_SIZE_0 = int(1)
-        MAX_SUBDIVISIONS = int(3)
+    def quad_refinement(self):
+        SQUARE_SIZE_0_MM = self.SQUARE_SIZE_0_MM
+        MAX_SUBDIVISIONS = self.MAX_SUBDIVISIONS
 
         # * 1. get the vertices coordinates from self.vertices_tags
         vertices_coords = self.get_vertices_coords()
@@ -604,7 +600,7 @@ class QuadRefinement:
         # * 3. create the vertices of the squares
         vertices = np.empty((0, 3))
         for subs in range(1, MAX_SUBDIVISIONS):
-            square = self.create_subvertices(center_of_mass, subs, SQUARE_SIZE_0)
+            square = self.create_subvertices(center_of_mass, subs, SQUARE_SIZE_0_MM)
             vertices = np.concatenate((vertices, square), axis=0)
         if self.SHOW_PLOT:
             self.plot_vertices(vertices)
@@ -622,10 +618,9 @@ class QuadRefinement:
         # * 8. Create GMSH surfaces
         surf_tags = self.gmsh_add_surfs(line_tags)
         self.gmsh_make_transfinite(line_tags, surf_tags, 1)
-
         # * 9. Add outer connectivity
         line_tags, surf_tags = self.gmsh_add_outer_connectivity(
-            line_tags, initial_point_tags, point_tags
+            line_tags, self.vertices_tags, point_tags
         )
         # * 10. Create 2D mesh
         self.factory.synchronize()
@@ -635,5 +630,23 @@ class QuadRefinement:
 
 
 if "__main__" == __name__:
-    trab_refinement = QuadRefinement(vertices_tags=[1, 2, 3, 4], nb_layers=1, DIM=2)
-    trab_refinement.main()
+    ###############################
+    gmsh.initialize()
+    a = 10
+    c1 = 1
+    c2 = 1
+    # ? make sure of the point order (has to be clockwise)
+    point_01 = gmsh.model.occ.addPoint(c1 * a, 0, 0, -1)
+    point_02 = gmsh.model.occ.addPoint(0, -c2 * a, 0, -1)
+    point_03 = gmsh.model.occ.addPoint(-c1 * a, 0, 0, -1)
+    point_04 = gmsh.model.occ.addPoint(0, c2 * a, 0, -1)
+    initial_point_tags = [point_01, point_02, point_03, point_04]
+    ###############################
+    trab_refinement = QuadRefinement(
+        vertices_tags=initial_point_tags,
+        nb_layers=1,
+        DIM=2,
+        SQUARE_SIZE_0_MM=1,
+        MAX_SUBDIVISIONS=3,
+    )
+    trab_refinement.quad_refinement()
