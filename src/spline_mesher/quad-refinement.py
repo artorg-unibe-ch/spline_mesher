@@ -472,7 +472,6 @@ class QuadRefinement:
                 initial_point_tags[i], initial_point_tags[i - 1]
             )
             ext_lines.append(_line)
-        # line_tags_temp = line_tags + (ext_lines,)
 
         # connecting lines
         connecting_lines = [
@@ -587,7 +586,7 @@ class QuadRefinement:
                 arrangement="Left",
                 cornerTags=corners,
             )
-        return line_tags_new, surf_tags
+        return line_tags_new, ext_surf_tags
 
     def quad_refinement(self):
         SQUARE_SIZE_0_MM = self.SQUARE_SIZE_0_MM
@@ -619,14 +618,36 @@ class QuadRefinement:
         surf_tags = self.gmsh_add_surfs(line_tags)
         self.gmsh_make_transfinite(line_tags, surf_tags, 1)
         # * 9. Add outer connectivity
-        line_tags, surf_tags = self.gmsh_add_outer_connectivity(
+        line_tags, ext_surf_tags = self.gmsh_add_outer_connectivity(
             line_tags, self.vertices_tags, point_tags
         )
-        # * 10. Create 2D mesh
-        self.factory.synchronize()
-        self.model.mesh.generate(2)
-        gmsh.fltk.run()
-        gmsh.finalize()
+        [surf_tags.append(ext_surf_tag) for ext_surf_tag in ext_surf_tags]
+        return point_tags, line_tags, surf_tags
+
+    def get_adjacent_points(self, surf_tag: str) -> list:
+        _, adjacecies_down = gmsh.model.getAdjacencies(self.DIM, surf_tag)
+        adj_points = []
+        for line in adjacecies_down:
+            _, pt_tags_adj_down = gmsh.model.getAdjacencies(self.DIM - 1, line)
+            adj_points.append(pt_tags_adj_down[0])
+        return adj_points
+
+    def create_intersurface_connection(self, point_tags):
+        line_tags_intersurf = []
+        # create addLine counter
+        z = 0
+        for i in range(1, len(point_tags)):
+            arr = point_tags[i]
+            for j in range(len(arr)):
+                subarr = arr[j]
+                for m in range(len(subarr)):
+                    start_point = point_tags[i - 1][j][m]
+                    end_point = point_tags[i][j][m]
+                    _line = self.factory.addLine(start_point, end_point, tag=-1)
+                    line_tags_intersurf.append(_line)
+                    z += 1
+                    print(z)
+        return line_tags_intersurf
 
 
 if "__main__" == __name__:
@@ -636,17 +657,50 @@ if "__main__" == __name__:
     c1 = 1
     c2 = 1
     # ? make sure of the point order (has to be clockwise)
-    point_01 = gmsh.model.occ.addPoint(c1 * a, 0, 0, -1)
-    point_02 = gmsh.model.occ.addPoint(0, -c2 * a, 0, -1)
-    point_03 = gmsh.model.occ.addPoint(-c1 * a, 0, 0, -1)
-    point_04 = gmsh.model.occ.addPoint(0, c2 * a, 0, -1)
-    initial_point_tags = [point_01, point_02, point_03, point_04]
+
+    outer_point_tags = []
+    for i in range(0, 5, 3):
+        d1 = c1 - (0.1 * i * c1)
+        d2 = c2 - (0.1 * i * c2)
+        point_01 = gmsh.model.occ.addPoint(d1 * a, 0, i, -1)
+        point_02 = gmsh.model.occ.addPoint(0, -d2 * a, i, -1)
+        point_03 = gmsh.model.occ.addPoint(-d1 * a, 0, i, -1)
+        point_04 = gmsh.model.occ.addPoint(0, d2 * a, i, -1)
+        initial_point_tags = [point_01, point_02, point_03, point_04]
+        outer_point_tags.append(initial_point_tags)
     ###############################
-    trab_refinement = QuadRefinement(
-        vertices_tags=initial_point_tags,
-        nb_layers=1,
-        DIM=2,
-        SQUARE_SIZE_0_MM=1,
-        MAX_SUBDIVISIONS=3,
-    )
-    trab_refinement.quad_refinement()
+
+    point_tags = []
+    line_tags = []
+    surf_tags = []
+    for initial_point_tags in outer_point_tags:
+        trab_refinement = QuadRefinement(
+            vertices_tags=initial_point_tags,
+            nb_layers=1,
+            DIM=2,
+            SQUARE_SIZE_0_MM=1,
+            MAX_SUBDIVISIONS=3,
+        )
+        (
+            trab_refinement_point_tags,
+            trab_refinement_line_tags,
+            trab_refinement_surf_tags,
+        ) = trab_refinement.quad_refinement()
+
+        point_tags.append(trab_refinement_point_tags)
+        line_tags.append(trab_refinement_line_tags)
+        # surf_tags.append(trab_refinement_surf_tags)
+
+        surface_points_layer = []
+        for surf in trab_refinement_surf_tags:
+            tag = trab_refinement.get_adjacent_points(surf)
+            surface_points_layer.append(tag)
+        surf_tags.append(surface_points_layer)
+
+    line_tags_intersurf = trab_refinement.create_intersurface_connection(surf_tags)
+
+    # * 10. Create 2D mesh
+    gmsh.model.occ.synchronize()
+    gmsh.model.mesh.generate(2)
+    gmsh.fltk.run()
+    gmsh.finalize()

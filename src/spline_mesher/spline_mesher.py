@@ -17,11 +17,13 @@ import gmsh
 import numpy as np
 import plotly.io as pio
 from futils.setup_utils import logging_setup
-from gmsh_mesh_builder import Mesher, TrabecularVolume
+from gmsh_mesh_builder import Mesher, TrabecularVolume, QuadRefinement
 from spline_volume import OCC_volume
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "SIMONE"
+QUAD_REFINEMENT = bool(True)
+MESH_ANALYSIS = bool(False)
 # flake8: noqa: E402
 
 
@@ -100,8 +102,8 @@ def main():
         gmsh.initialize()
         gmsh.clear()
 
-        N_TRANSVERSE = 6
-        N_RADIAL = 15
+        N_TRANSVERSE = 5
+        N_RADIAL = 8
         mesher = Mesher(
             geo_file_path,
             mesh_file_path,
@@ -224,6 +226,15 @@ def main():
             n_radial=N_RADIAL,
         )
         trabecular_volume.set_length_factor(0.4)
+
+        if QUAD_REFINEMENT:
+            trab_refinement = QuadRefinement(
+                nb_layers=1,
+                DIM=2,
+                SQUARE_SIZE_0_MM=1,
+                MAX_SUBDIVISIONS=3,
+            )
+
         (
             trab_point_tags,
             trab_line_tags_v,
@@ -253,6 +264,14 @@ def main():
             trab_surfs_v,
         )
         volume_tags = np.concatenate((cort_vol_tags, cort_trab_vol_tags), axis=None)
+
+        # * quad refinement
+        for _, trab_verts in enumerate(trab_point_tags):
+            quadref_line_tags, quadref_surf_tags = trab_refinement.quad_refinement(
+                vertices_tags=trab_verts
+            )
+            print(f"Quad refinement, line tags:\n{quadref_line_tags}")
+            print(f"Quad refinement, surf tags:\n{quadref_surf_tags}")
 
         # * meshing
         trab_surfs = list(
@@ -290,9 +309,10 @@ def main():
         )
         mesher.mesh_generate(dim=3, element_order=1, optimise=True)
 
-        JAC_FULL = 999.9  # 999.9 if you want to see all the elements
-        JAC_NEG = -0.01
-        mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
+        if MESH_ANALYSIS:
+            JAC_FULL = 999.9  # 999.9 if you want to see all the elements
+            JAC_NEG = -0.01
+            mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
 
         gmsh.fltk.run()
         gmsh.finalize()
