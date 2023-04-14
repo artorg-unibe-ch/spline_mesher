@@ -7,6 +7,8 @@ https://stackoverflow.com/questions/31527755/extract-blocks-or-patches-from-nump
 https://blender.stackexchange.com/questions/230534/fastest-way-to-skin-a-grid
 
 """
+import time
+import itertools
 import logging
 
 import cv2
@@ -14,6 +16,7 @@ import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.util import view_as_windows
+import numba
 
 LOGGING_NAME = "SIMONE"
 # flake8: noqa: E402
@@ -649,9 +652,7 @@ class QuadRefinement:
         lines_common = self.common(lines_flatten)
         return lines_common
 
-    def create_intersurface_connection(self, point_tags):
-        # remove duplicates and outer surface tags
-        # internal_point_tags = [point_tags[i][:-4] for i in range(len(point_tags))]
+    def create_intersurface_connection(self, point_tags: list[int]) -> list[int]:
         start_stop = []
         for i in range(1, len(point_tags)):
             for j in range(len(point_tags[i])):
@@ -685,6 +686,63 @@ class QuadRefinement:
         self.factory.synchronize()
         return line_tags_intersurf
 
+    def create_line_dict(self, lines_lower_surf, lines_upper_surf, lines_intersurf):
+        # Step 1: Create a dictionary of all lines and their corresponding points
+        lines_lower_dict = {}
+        lines_upper_dict = {}
+        lines_intersurf_dict = {}
+        for subset in lines_lower_surf:
+            for line in subset:
+                _, line_points = gmsh.model.getAdjacencies(1, line)
+                lines_lower_dict[line] = line_points
+        for subset in lines_upper_surf:
+            for line in subset:
+                _, line_points = gmsh.model.getAdjacencies(1, line)
+                lines_upper_dict[line] = line_points
+        for line in lines_intersurf:
+            _, line_points = gmsh.model.getAdjacencies(1, line)
+            lines_intersurf_dict[line] = line_points
+        return lines_lower_dict, lines_upper_dict, lines_intersurf_dict
+
+    def find_closed_curve_loops(
+        self,
+        lines_lower_dict,
+        lines_upper_dict,
+        lines_intersurf_dict,
+    ):
+        # Step 2: Find curve loops by checking all possible combinations of lines
+        closed_curve_loops = []
+        for l1 in lines_lower_dict.keys():
+            for l2 in lines_upper_dict.keys():
+                for l3, l4 in itertools.combinations(lines_intersurf_dict.keys(), 2):
+                    for l1_start_end, l3_start_end in itertools.product(
+                        [(0, 1), (1, 0)], repeat=2
+                    ):
+                        for l2_start_end, l4_start_end in itertools.product(
+                            [(0, 1), (1, 0)], repeat=2
+                        ):
+                            # Check if l1 and l3 have a common point and l2 and l4 have a common point
+                            if (
+                                lines_lower_dict[l1][l1_start_end[0]]
+                                == lines_intersurf_dict[l3][l3_start_end[1]]
+                                or lines_lower_dict[l1][l1_start_end[1]]
+                                == lines_intersurf_dict[l3][l3_start_end[0]]
+                            ) and (
+                                lines_upper_dict[l2][l2_start_end[1]]
+                                == lines_intersurf_dict[l4][l4_start_end[0]]
+                                or lines_upper_dict[l2][l2_start_end[0]]
+                                == lines_intersurf_dict[l4][l4_start_end[1]]
+                            ):
+                                # Check if l3 and l4 have a common point
+                                if (
+                                    lines_intersurf_dict[l3][l3_start_end[0]]
+                                    == lines_intersurf_dict[l4][l4_start_end[1]]
+                                    or lines_intersurf_dict[l3][l3_start_end[1]]
+                                    == lines_intersurf_dict[l4][l4_start_end[0]]
+                                ):
+                                    closed_curve_loops.append([l1, l3, l2, l4])
+        return closed_curve_loops
+
 
 if "__main__" == __name__:
     gmsh.initialize()
@@ -694,7 +752,7 @@ if "__main__" == __name__:
     # ? make sure of the point order (has to be clockwise)
 
     outer_point_tags = []
-    for i in range(0, 10, 9):
+    for i in range(0, 6, 5):
         d1 = c1 - (0.1 * i * c1)
         d2 = c2 - (0.1 * i * c2)
         point_01 = gmsh.model.occ.addPoint(d1 * a, 0, i, -1)
@@ -738,6 +796,26 @@ if "__main__" == __name__:
         points_in_surf.append(connected_points)
 
     line_tags_intersurf = trab_refinement.create_intersurface_connection(points_in_surf)
+
+    (
+        lines_lower_dict,
+        lines_upper_dict,
+        lines_intersurf_dict,
+    ) = trab_refinement.create_line_dict(
+        lines_lower_surf=line_tags[0],
+        lines_upper_surf=line_tags[1],
+        lines_intersurf=line_tags_intersurf,
+    )
+
+    start_time = time.time()
+    curve_loops = trab_refinement.find_closed_curve_loops(
+        lines_lower_dict, lines_upper_dict, lines_intersurf_dict
+    )
+    end_time = time.time()
+    exec_time = end_time - start_time
+    print(f"Time to find closed curve loops: {exec_time:.2f} seconds")
+    print(curve_loops)
+    print("---------------------")
 
     # * 10. Create 2D mesh
     gmsh.model.occ.synchronize()

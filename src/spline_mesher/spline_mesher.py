@@ -225,7 +225,7 @@ def main():
             n_transverse=N_TRANSVERSE,
             n_radial=N_RADIAL,
         )
-        trabecular_volume.set_length_factor(0.4)
+        trabecular_volume.set_length_factor(0.5)
 
         if QUAD_REFINEMENT:
             trab_refinement = QuadRefinement(
