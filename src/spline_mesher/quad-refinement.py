@@ -10,6 +10,7 @@ https://blender.stackexchange.com/questions/230534/fastest-way-to-skin-a-grid
 import time
 import itertools
 import logging
+import types
 
 import cv2
 import gmsh
@@ -705,7 +706,6 @@ class QuadRefinement:
             lines_intersurf_dict[line] = line_points
         return lines_lower_dict, lines_upper_dict, lines_intersurf_dict
 
-    @numba.jit
     def find_closed_curve_loops(
         self,
         lines_lower_dict,
@@ -713,37 +713,61 @@ class QuadRefinement:
         lines_intersurf_dict,
     ):
         # Step 2: Find curve loops by checking all possible combinations of lines
-        closed_curve_loops = List()
+        closed_curve_loops = []
         for l1 in lines_lower_dict.keys():
             for l2 in lines_upper_dict.keys():
                 for l3, l4 in itertools.combinations(lines_intersurf_dict.keys(), 2):
                     for l1_start_end, l3_start_end in itertools.product(
-                        [(0, 1), (1, 0)], repeat=2
+                        [
+                            (lines_lower_dict[l1][0], lines_lower_dict[l1][1]),
+                            (lines_lower_dict[l3][1], lines_lower_dict[l3][0]),
+                        ],
+                        repeat=2,
                     ):
                         for l2_start_end, l4_start_end in itertools.product(
-                            [(0, 1), (1, 0)], repeat=2
+                            [
+                                (lines_upper_dict[l2][0], lines_upper_dict[l2][1]),
+                                (lines_upper_dict[l2][1], lines_upper_dict[l2][0]),
+                            ],
+                            repeat=2,
                         ):
-                            # Check if l1 and l3 have a common point and l2 and l4 have a common point
-                            if (
-                                lines_lower_dict[l1][l1_start_end[0]]
-                                == lines_intersurf_dict[l3][l3_start_end[1]]
-                                or lines_lower_dict[l1][l1_start_end[1]]
-                                == lines_intersurf_dict[l3][l3_start_end[0]]
-                            ) and (
-                                lines_upper_dict[l2][l2_start_end[1]]
-                                == lines_intersurf_dict[l4][l4_start_end[0]]
-                                or lines_upper_dict[l2][l2_start_end[0]]
-                                == lines_intersurf_dict[l4][l4_start_end[1]]
+                            for l4_start_end, l3_start_end in itertools.product(
+                                [
+                                    (
+                                        lines_intersurf_dict[l4][0],
+                                        lines_intersurf_dict[l4][1],
+                                    ),
+                                    (
+                                        lines_intersurf_dict[l4][1],
+                                        lines_intersurf_dict[l4][0],
+                                    ),
+                                ],
+                                [
+                                    (
+                                        lines_intersurf_dict[l3][0],
+                                        lines_intersurf_dict[l3][1],
+                                    ),
+                                    (
+                                        lines_intersurf_dict[l3][1],
+                                        lines_intersurf_dict[l3][0],
+                                    ),
+                                ],
                             ):
-                                # Check if l3 and l4 have a common point
+                                # Check if l1 and l3 have a common point and l2 and l4 have a common point
                                 if (
-                                    lines_intersurf_dict[l3][l3_start_end[0]]
-                                    == lines_intersurf_dict[l4][l4_start_end[1]]
-                                    or lines_intersurf_dict[l3][l3_start_end[1]]
-                                    == lines_intersurf_dict[l4][l4_start_end[0]]
+                                    l1_start_end[0] == l3_start_end[1]
+                                    or l1_start_end[1] == l3_start_end[0]
+                                ) and (
+                                    l2_start_end[1] == l4_start_end[0]
+                                    or l2_start_end[0] == l4_start_end[1]
                                 ):
-                                    closed_curve_loops.append(List(l1, l3, l2, l4))
-        return [closed_curve_loops]
+                                    # Check if l3 and l4 have a common point
+                                    if (
+                                        l3_start_end[0] == l4_start_end[1]
+                                        or l3_start_end[1] == l4_start_end[0]
+                                    ):
+                                        closed_curve_loops.extend([l1, l3, l2, l4])
+        return closed_curve_loops
 
 
 if "__main__" == __name__:
