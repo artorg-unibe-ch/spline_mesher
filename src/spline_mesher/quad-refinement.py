@@ -7,10 +7,13 @@ https://stackoverflow.com/questions/31527755/extract-blocks-or-patches-from-nump
 https://blender.stackexchange.com/questions/230534/fastest-way-to-skin-a-grid
 
 """
+import sys
+
+sys.path.insert(0, "")
+
 import time
 import itertools
 import logging
-import types
 
 import cv2
 import gmsh
@@ -18,7 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skimage.util import view_as_windows
 import numba
-from numba.typed import List
+from find_closed_curve import find_closed_curve
 
 LOGGING_NAME = "SIMONE"
 # flake8: noqa: E402
