@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skimage.util import view_as_windows
 import numba
+from numba.typed import List
 
 LOGGING_NAME = "SIMONE"
 # flake8: noqa: E402
@@ -704,6 +705,7 @@ class QuadRefinement:
             lines_intersurf_dict[line] = line_points
         return lines_lower_dict, lines_upper_dict, lines_intersurf_dict
 
+    @numba.jit
     def find_closed_curve_loops(
         self,
         lines_lower_dict,
@@ -711,7 +713,7 @@ class QuadRefinement:
         lines_intersurf_dict,
     ):
         # Step 2: Find curve loops by checking all possible combinations of lines
-        closed_curve_loops = []
+        closed_curve_loops = List()
         for l1 in lines_lower_dict.keys():
             for l2 in lines_upper_dict.keys():
                 for l3, l4 in itertools.combinations(lines_intersurf_dict.keys(), 2):
@@ -740,8 +742,8 @@ class QuadRefinement:
                                     or lines_intersurf_dict[l3][l3_start_end[1]]
                                     == lines_intersurf_dict[l4][l4_start_end[0]]
                                 ):
-                                    closed_curve_loops.append([l1, l3, l2, l4])
-        return closed_curve_loops
+                                    closed_curve_loops.append(List(l1, l3, l2, l4))
+        return [closed_curve_loops]
 
 
 if "__main__" == __name__:
