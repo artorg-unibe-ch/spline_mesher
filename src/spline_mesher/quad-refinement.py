@@ -658,8 +658,9 @@ class QuadRefinement:
         return lines_common
 
     def create_intersurface_connection(self, point_tags: list[int]) -> list[int]:
-        start_stop = []
+        line_tags_intersurf = []
         for i in range(1, len(point_tags)):
+            start_stop = []
             for j in range(len(point_tags[i])):
                 for m in range(1, len(point_tags[i][j]) + 1):
                     start_point_0 = point_tags[i - 1][j][m - 1]
@@ -678,16 +679,17 @@ class QuadRefinement:
                             end_point_1,
                         ]
                     )
-        st = np.array(start_stop).reshape((-1, 4))
-        points_0 = st[:, :2]
-        _, idx_0 = np.unique(points_0, return_index=True, axis=0)
-        unique_st = st[idx_0]
+            st = np.array(start_stop).reshape((-1, 4))
+            points_0 = st[:, :2]
+            _, idx_0 = np.unique(points_0, return_index=True, axis=0)
+            unique_st = st[idx_0]
 
-        line_tags_intersurf = []
-        for _, point in enumerate(unique_st):
-            _line = self.factory.addLine(point[0], point[1], tag=-1)
-            line_tags_intersurf.append(_line)
-        self.factory.synchronize()
+            line_tags_intersurf_a = []
+            for _, point in enumerate(unique_st):
+                _line = self.factory.addLine(point[0], point[1], tag=-1)
+                line_tags_intersurf_a.append(_line)
+            line_tags_intersurf.append(line_tags_intersurf_a)
+            self.factory.synchronize()
         return line_tags_intersurf
 
     def create_line_dict(self, lines_lower_surf, lines_upper_surf, lines_intersurf):
@@ -742,7 +744,7 @@ if "__main__" == __name__:
     # ? make sure of the point order (has to be clockwise)
 
     outer_point_tags = []
-    for i in range(0, 10, 3):
+    for i in range(0, 10, 2):
         d1 = c1 - (0.1 * i * c1)
         d2 = c2 - (0.1 * i * c2)
         point_01 = gmsh.model.occ.addPoint(d1 * a, 0, i, -1)
@@ -785,34 +787,46 @@ if "__main__" == __name__:
             connected_points.append(tag_unique)
         points_in_surf.append(connected_points)
 
-    for _iter, points in enumerate(points_in_surf):
-        line_tags_intersurf = trab_refinement.create_intersurface_connection(
-            points_in_surf
-        )
+    line_tags_intersurf = trab_refinement.create_intersurface_connection(points_in_surf)
 
+    for _iter in range(1, len(points_in_surf)):
         (
             lines_lower_dict,
             lines_upper_dict,
             lines_intersurf_dict,
         ) = trab_refinement.create_line_dict(
-            lines_lower_surf=line_tags[0],
-            lines_upper_surf=line_tags[1],
-            lines_intersurf=line_tags_intersurf,
+            lines_lower_surf=line_tags[_iter - 1],
+            lines_upper_surf=line_tags[_iter],
+            lines_intersurf=line_tags_intersurf[_iter - 1],
         )
 
         # fmt: off
         start_time = time.time()
-        # curve_loops = trab_refinement.find_closed_curve_loops(lines_lower_dict, lines_upper_dict, lines_intersurf_dict)
+        print("Finding closed curve loops...")
         curve_loops_tags = fcc.find_closed_curve_loops(lines_lower_dict, lines_upper_dict, lines_intersurf_dict)
         end_time = time.time()
         exec_time = end_time - start_time
-        print(f"Time to find closed curve loops (iteration {_iter + 1}): {exec_time:.2f} seconds")
+        print(f"Time to find closed curve loops: {exec_time:.2f} seconds")
         # fmt: on
+        gmsh.model.occ.synchronize()
         intersurface_surfaces = []
         for cl in curve_loops_tags:
             curve_loop = trab_refinement.add_curve_loop(cl)
             surf = trab_refinement.gmsh_add_surface([curve_loop])
             intersurface_surfaces.append(surf)
+
+    # TODO: move to upper scope when testing is done
+    gmsh.model.occ.synchronize()
+    for intersurf_tags in line_tags_intersurf:
+        for line in intersurf_tags:
+            gmsh.model.mesh.setTransfiniteCurve(line, 2, "Progression", 1.0)
+    for surf in intersurface_surfaces:
+        gmsh.model.mesh.setTransfiniteSurface(surf)
+
+    gmsh.option.setNumber("Mesh.RecombineAll", 1)
+    gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
+    gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
+    gmsh.option.setNumber("Mesh.ElementOrder", 2)
 
     # * 10. Create 2D mesh
     gmsh.model.occ.synchronize()
