@@ -3,12 +3,12 @@
 /* BEGIN: Cython Metadata
 {
     "distutils": {
-        "name": "spline_mesher.find_closed_curve",
+        "name": "spline_mesher.cython_functions.find_closed_curve",
         "sources": [
-            "src/spline_mesher/find_closed_curve.pyx"
+            "src/spline_mesher/cython_functions/find_closed_curve.pyx"
         ]
     },
-    "module_name": "spline_mesher.find_closed_curve"
+    "module_name": "spline_mesher.cython_functions.find_closed_curve"
 }
 END: Cython Metadata */
 
@@ -750,8 +750,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__spline_mesher__find_closed_curve
-#define __PYX_HAVE_API__spline_mesher__find_closed_curve
+#define __PYX_HAVE__spline_mesher__cython_functions__find_closed_curve
+#define __PYX_HAVE_API__spline_mesher__cython_functions__find_closed_curve
 /* Early includes */
 #ifdef _OPENMP
 #include <omp.h>
@@ -962,7 +962,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "src/spline_mesher/find_closed_curve.pyx",
+  "src/spline_mesher/cython_functions/find_closed_curve.pyx",
 };
 
 /*--- Type declarations ---*/
@@ -1350,17 +1350,19 @@ static int __Pyx_check_binary_version(void);
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 
-/* Module declarations from 'spline_mesher.find_closed_curve' */
-static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_loops(PyObject *, PyObject *, PyObject *, int __pyx_skip_dispatch); /*proto*/
-#define __Pyx_MODULE_NAME "spline_mesher.find_closed_curve"
-extern int __pyx_module_is_main_spline_mesher__find_closed_curve;
-int __pyx_module_is_main_spline_mesher__find_closed_curve = 0;
+/* Module declarations from 'spline_mesher.cython_functions.find_closed_curve' */
+static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(PyObject *, PyObject *, PyObject *, int __pyx_skip_dispatch); /*proto*/
+#define __Pyx_MODULE_NAME "spline_mesher.cython_functions.find_closed_curve"
+extern int __pyx_module_is_main_spline_mesher__cython_functions__find_closed_curve;
+int __pyx_module_is_main_spline_mesher__cython_functions__find_closed_curve = 0;
 
-/* Implementation of 'spline_mesher.find_closed_curve' */
+/* Implementation of 'spline_mesher.cython_functions.find_closed_curve' */
+static const char __pyx_k_np[] = "np";
 static const char __pyx_k_keys[] = "keys";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_name[] = "__name__";
 static const char __pyx_k_test[] = "__test__";
+static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_import[] = "__import__";
 static const char __pyx_k_repeat[] = "repeat";
 static const char __pyx_k_product[] = "product";
@@ -1378,15 +1380,17 @@ static PyObject *__pyx_n_s_lines_lower_dict;
 static PyObject *__pyx_n_s_lines_upper_dict;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_name;
+static PyObject *__pyx_n_s_np;
+static PyObject *__pyx_n_s_numpy;
 static PyObject *__pyx_n_s_product;
 static PyObject *__pyx_n_s_repeat;
 static PyObject *__pyx_n_s_test;
-static PyObject *__pyx_pf_13spline_mesher_17find_closed_curve_find_closed_curve_loops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict); /* proto */
+static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict); /* proto */
 static __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_keys = {0, &__pyx_n_s_keys, 0, 0, 0};
 static PyObject *__pyx_int_2;
 /* Late includes */
 
-/* "spline_mesher/find_closed_curve.pyx":3
+/* "spline_mesher/cython_functions/find_closed_curve.pyx":4
  * from itertools import product
  * 
  * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):             # <<<<<<<<<<<<<<
@@ -1394,8 +1398,8 @@ static PyObject *__pyx_int_2;
  *     cdef int l1, l3, l4, l2
  */
 
-static PyObject *__pyx_pw_13spline_mesher_17find_closed_curve_1find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_loops(PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_1find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict, CYTHON_UNUSED int __pyx_skip_dispatch) {
   PyObject *__pyx_v_closed_curve_loops = 0;
   int __pyx_v_l1;
   int __pyx_v_l3;
@@ -1430,38 +1434,38 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("find_closed_curve_loops", 0);
 
-  /* "spline_mesher/find_closed_curve.pyx":4
+  /* "spline_mesher/cython_functions/find_closed_curve.pyx":5
  * 
  * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):
  *     cdef list closed_curve_loops = []             # <<<<<<<<<<<<<<
  *     cdef int l1, l3, l4, l2
  *     cdef tuple l1_tuple, l3_tuple, l2_tuple, l4_tuple
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 4, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 5, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_closed_curve_loops = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "spline_mesher/find_closed_curve.pyx":8
+  /* "spline_mesher/cython_functions/find_closed_curve.pyx":9
  *     cdef tuple l1_tuple, l3_tuple, l2_tuple, l4_tuple
  * 
  *     for l1, l3 in product(lines_lower_dict.keys(), lines_upper_dict.keys()):             # <<<<<<<<<<<<<<
- *         l1_tuple = lines_lower_dict[l1]
- *         l3_tuple = lines_upper_dict[l3]
+ *         l1_tuple = tuple(lines_lower_dict[l1])
+ *         l3_tuple = tuple(lines_upper_dict[l3])
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_product); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 8, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_product); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 9, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (unlikely(__pyx_v_lines_lower_dict == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "keys");
-    __PYX_ERR(0, 8, __pyx_L1_error)
+    __PYX_ERR(0, 9, __pyx_L1_error)
   }
-  __pyx_t_3 = __Pyx_PyDict_Keys(__pyx_v_lines_lower_dict); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 8, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_Keys(__pyx_v_lines_lower_dict); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 9, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   if (unlikely(__pyx_v_lines_upper_dict == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "keys");
-    __PYX_ERR(0, 8, __pyx_L1_error)
+    __PYX_ERR(0, 9, __pyx_L1_error)
   }
-  __pyx_t_4 = __Pyx_PyDict_Keys(__pyx_v_lines_upper_dict); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 8, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyDict_Keys(__pyx_v_lines_upper_dict); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 9, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_5 = NULL;
   __pyx_t_6 = 0;
@@ -1478,7 +1482,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_3, __pyx_t_4};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 8, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 9, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -1488,7 +1492,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_3, __pyx_t_4};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 8, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 9, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -1496,7 +1500,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 8, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 9, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_5) {
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -1507,7 +1511,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
     PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_t_4);
     __pyx_t_3 = 0;
     __pyx_t_4 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 8, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 9, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
@@ -1516,9 +1520,9 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
     __pyx_t_2 = __pyx_t_1; __Pyx_INCREF(__pyx_t_2); __pyx_t_8 = 0;
     __pyx_t_9 = NULL;
   } else {
-    __pyx_t_8 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 8, __pyx_L1_error)
+    __pyx_t_8 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 9, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_9 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 8, __pyx_L1_error)
+    __pyx_t_9 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 9, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   for (;;) {
@@ -1526,17 +1530,17 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
       if (likely(PyList_CheckExact(__pyx_t_2))) {
         if (__pyx_t_8 >= PyList_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_8); __Pyx_INCREF(__pyx_t_1); __pyx_t_8++; if (unlikely(0 < 0)) __PYX_ERR(0, 8, __pyx_L1_error)
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_8); __Pyx_INCREF(__pyx_t_1); __pyx_t_8++; if (unlikely(0 < 0)) __PYX_ERR(0, 9, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 8, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 9, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
         if (__pyx_t_8 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_8); __Pyx_INCREF(__pyx_t_1); __pyx_t_8++; if (unlikely(0 < 0)) __PYX_ERR(0, 8, __pyx_L1_error)
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_8); __Pyx_INCREF(__pyx_t_1); __pyx_t_8++; if (unlikely(0 < 0)) __PYX_ERR(0, 9, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 8, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 9, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
@@ -1546,7 +1550,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 8, __pyx_L1_error)
+          else __PYX_ERR(0, 9, __pyx_L1_error)
         }
         break;
       }
@@ -1558,7 +1562,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
       if (unlikely(size != 2)) {
         if (size > 2) __Pyx_RaiseTooManyValuesError(2);
         else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-        __PYX_ERR(0, 8, __pyx_L1_error)
+        __PYX_ERR(0, 9, __pyx_L1_error)
       }
       #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
       if (likely(PyTuple_CheckExact(sequence))) {
@@ -1571,15 +1575,15 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
       __Pyx_INCREF(__pyx_t_7);
       __Pyx_INCREF(__pyx_t_4);
       #else
-      __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 8, __pyx_L1_error)
+      __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 9, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 8, __pyx_L1_error)
+      __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 9, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       #endif
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     } else {
       Py_ssize_t index = -1;
-      __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 8, __pyx_L1_error)
+      __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 9, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_t_10 = Py_TYPE(__pyx_t_3)->tp_iternext;
@@ -1587,7 +1591,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
       __Pyx_GOTREF(__pyx_t_7);
       index = 1; __pyx_t_4 = __pyx_t_10(__pyx_t_3); if (unlikely(!__pyx_t_4)) goto __pyx_L5_unpacking_failed;
       __Pyx_GOTREF(__pyx_t_4);
-      if (__Pyx_IternextUnpackEndCheck(__pyx_t_10(__pyx_t_3), 2) < 0) __PYX_ERR(0, 8, __pyx_L1_error)
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_10(__pyx_t_3), 2) < 0) __PYX_ERR(0, 9, __pyx_L1_error)
       __pyx_t_10 = NULL;
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       goto __pyx_L6_unpacking_done;
@@ -1595,80 +1599,84 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __pyx_t_10 = NULL;
       if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-      __PYX_ERR(0, 8, __pyx_L1_error)
+      __PYX_ERR(0, 9, __pyx_L1_error)
       __pyx_L6_unpacking_done:;
     }
-    __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_7); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 8, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_7); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 9, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_11 = __Pyx_PyInt_As_int(__pyx_t_4); if (unlikely((__pyx_t_11 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 8, __pyx_L1_error)
+    __pyx_t_11 = __Pyx_PyInt_As_int(__pyx_t_4); if (unlikely((__pyx_t_11 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 9, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_l1 = __pyx_t_6;
     __pyx_v_l3 = __pyx_t_11;
 
-    /* "spline_mesher/find_closed_curve.pyx":9
+    /* "spline_mesher/cython_functions/find_closed_curve.pyx":10
  * 
  *     for l1, l3 in product(lines_lower_dict.keys(), lines_upper_dict.keys()):
- *         l1_tuple = lines_lower_dict[l1]             # <<<<<<<<<<<<<<
- *         l3_tuple = lines_upper_dict[l3]
+ *         l1_tuple = tuple(lines_lower_dict[l1])             # <<<<<<<<<<<<<<
+ *         l3_tuple = tuple(lines_upper_dict[l3])
  *         for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):
  */
     if (unlikely(__pyx_v_lines_lower_dict == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 9, __pyx_L1_error)
+      __PYX_ERR(0, 10, __pyx_L1_error)
     }
-    __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_l1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 9, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_l1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 10, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_lines_lower_dict, __pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 9, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_lines_lower_dict, __pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 10, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (!(likely(PyTuple_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_4)->tp_name), 0))) __PYX_ERR(0, 9, __pyx_L1_error)
-    __Pyx_XDECREF_SET(__pyx_v_l1_tuple, ((PyObject*)__pyx_t_4));
-    __pyx_t_4 = 0;
+    __pyx_t_1 = __Pyx_PySequence_Tuple(__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 10, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_XDECREF_SET(__pyx_v_l1_tuple, ((PyObject*)__pyx_t_1));
+    __pyx_t_1 = 0;
 
-    /* "spline_mesher/find_closed_curve.pyx":10
+    /* "spline_mesher/cython_functions/find_closed_curve.pyx":11
  *     for l1, l3 in product(lines_lower_dict.keys(), lines_upper_dict.keys()):
- *         l1_tuple = lines_lower_dict[l1]
- *         l3_tuple = lines_upper_dict[l3]             # <<<<<<<<<<<<<<
+ *         l1_tuple = tuple(lines_lower_dict[l1])
+ *         l3_tuple = tuple(lines_upper_dict[l3])             # <<<<<<<<<<<<<<
  *         for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):
  *             if l4 == l2:
  */
     if (unlikely(__pyx_v_lines_upper_dict == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 10, __pyx_L1_error)
+      __PYX_ERR(0, 11, __pyx_L1_error)
     }
-    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_l3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 10, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_l3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 11, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_lines_upper_dict, __pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 11, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_lines_upper_dict, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 10, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_t_1 = __Pyx_PySequence_Tuple(__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 11, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (!(likely(PyTuple_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 10, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_l3_tuple, ((PyObject*)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "spline_mesher/find_closed_curve.pyx":11
- *         l1_tuple = lines_lower_dict[l1]
- *         l3_tuple = lines_upper_dict[l3]
+    /* "spline_mesher/cython_functions/find_closed_curve.pyx":12
+ *         l1_tuple = tuple(lines_lower_dict[l1])
+ *         l3_tuple = tuple(lines_upper_dict[l3])
  *         for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):             # <<<<<<<<<<<<<<
  *             if l4 == l2:
  *                 continue
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_product); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 11, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_product); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 12, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     if (unlikely(__pyx_v_lines_intersurf_dict == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "keys");
-      __PYX_ERR(0, 11, __pyx_L1_error)
+      __PYX_ERR(0, 12, __pyx_L1_error)
     }
-    __pyx_t_4 = __Pyx_PyDict_Keys(__pyx_v_lines_intersurf_dict); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 11, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyDict_Keys(__pyx_v_lines_intersurf_dict); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 12, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 11, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 12, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_GIVEREF(__pyx_t_4);
     PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_4);
     __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 11, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 12, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_repeat, __pyx_int_2) < 0) __PYX_ERR(0, 11, __pyx_L1_error)
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_7, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 11, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_repeat, __pyx_int_2) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_7, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 12, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -1677,9 +1685,9 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
       __pyx_t_4 = __pyx_t_3; __Pyx_INCREF(__pyx_t_4); __pyx_t_12 = 0;
       __pyx_t_13 = NULL;
     } else {
-      __pyx_t_12 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 11, __pyx_L1_error)
+      __pyx_t_12 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 12, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_13 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 11, __pyx_L1_error)
+      __pyx_t_13 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 12, __pyx_L1_error)
     }
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     for (;;) {
@@ -1687,17 +1695,17 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
         if (likely(PyList_CheckExact(__pyx_t_4))) {
           if (__pyx_t_12 >= PyList_GET_SIZE(__pyx_t_4)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_12); __Pyx_INCREF(__pyx_t_3); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 11, __pyx_L1_error)
+          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_12); __Pyx_INCREF(__pyx_t_3); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 12, __pyx_L1_error)
           #else
-          __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 11, __pyx_L1_error)
+          __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 12, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         } else {
           if (__pyx_t_12 >= PyTuple_GET_SIZE(__pyx_t_4)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_12); __Pyx_INCREF(__pyx_t_3); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 11, __pyx_L1_error)
+          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_12); __Pyx_INCREF(__pyx_t_3); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 12, __pyx_L1_error)
           #else
-          __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 11, __pyx_L1_error)
+          __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 12, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         }
@@ -1707,7 +1715,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 11, __pyx_L1_error)
+            else __PYX_ERR(0, 12, __pyx_L1_error)
           }
           break;
         }
@@ -1719,7 +1727,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
         if (unlikely(size != 2)) {
           if (size > 2) __Pyx_RaiseTooManyValuesError(2);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          __PYX_ERR(0, 11, __pyx_L1_error)
+          __PYX_ERR(0, 12, __pyx_L1_error)
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -1732,15 +1740,15 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
         __Pyx_INCREF(__pyx_t_7);
         __Pyx_INCREF(__pyx_t_1);
         #else
-        __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 11, __pyx_L1_error)
+        __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 12, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
-        __pyx_t_1 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 11, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 12, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_5 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 11, __pyx_L1_error)
+        __pyx_t_5 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 12, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __pyx_t_10 = Py_TYPE(__pyx_t_5)->tp_iternext;
@@ -1748,7 +1756,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
         __Pyx_GOTREF(__pyx_t_7);
         index = 1; __pyx_t_1 = __pyx_t_10(__pyx_t_5); if (unlikely(!__pyx_t_1)) goto __pyx_L9_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_1);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_10(__pyx_t_5), 2) < 0) __PYX_ERR(0, 11, __pyx_L1_error)
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_10(__pyx_t_5), 2) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
         __pyx_t_10 = NULL;
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         goto __pyx_L10_unpacking_done;
@@ -1756,128 +1764,116 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __pyx_t_10 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        __PYX_ERR(0, 11, __pyx_L1_error)
+        __PYX_ERR(0, 12, __pyx_L1_error)
         __pyx_L10_unpacking_done:;
       }
-      __pyx_t_11 = __Pyx_PyInt_As_int(__pyx_t_7); if (unlikely((__pyx_t_11 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 11, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyInt_As_int(__pyx_t_7); if (unlikely((__pyx_t_11 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 12, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 11, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 12, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_v_l4 = __pyx_t_11;
       __pyx_v_l2 = __pyx_t_6;
 
-      /* "spline_mesher/find_closed_curve.pyx":12
- *         l3_tuple = lines_upper_dict[l3]
+      /* "spline_mesher/cython_functions/find_closed_curve.pyx":13
+ *         l3_tuple = tuple(lines_upper_dict[l3])
  *         for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):
  *             if l4 == l2:             # <<<<<<<<<<<<<<
  *                 continue
- *             l2_tuple = lines_intersurf_dict[l2]
+ *             l2_tuple = tuple(lines_intersurf_dict[l2])
  */
       __pyx_t_14 = ((__pyx_v_l4 == __pyx_v_l2) != 0);
       if (__pyx_t_14) {
 
-        /* "spline_mesher/find_closed_curve.pyx":13
+        /* "spline_mesher/cython_functions/find_closed_curve.pyx":14
  *         for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):
  *             if l4 == l2:
  *                 continue             # <<<<<<<<<<<<<<
- *             l2_tuple = lines_intersurf_dict[l2]
- *             l4_tuple = lines_intersurf_dict[l4]
+ *             l2_tuple = tuple(lines_intersurf_dict[l2])
+ *             l4_tuple = tuple(lines_intersurf_dict[l4])
  */
         goto __pyx_L7_continue;
 
-        /* "spline_mesher/find_closed_curve.pyx":12
- *         l3_tuple = lines_upper_dict[l3]
+        /* "spline_mesher/cython_functions/find_closed_curve.pyx":13
+ *         l3_tuple = tuple(lines_upper_dict[l3])
  *         for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):
  *             if l4 == l2:             # <<<<<<<<<<<<<<
  *                 continue
- *             l2_tuple = lines_intersurf_dict[l2]
+ *             l2_tuple = tuple(lines_intersurf_dict[l2])
  */
       }
 
-      /* "spline_mesher/find_closed_curve.pyx":14
+      /* "spline_mesher/cython_functions/find_closed_curve.pyx":15
  *             if l4 == l2:
  *                 continue
- *             l2_tuple = lines_intersurf_dict[l2]             # <<<<<<<<<<<<<<
- *             l4_tuple = lines_intersurf_dict[l4]
+ *             l2_tuple = tuple(lines_intersurf_dict[l2])             # <<<<<<<<<<<<<<
+ *             l4_tuple = tuple(lines_intersurf_dict[l4])
  *             if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
- */
-      if (unlikely(__pyx_v_lines_intersurf_dict == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 14, __pyx_L1_error)
-      }
-      __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_l2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 14, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_lines_intersurf_dict, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 14, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyTuple_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 14, __pyx_L1_error)
-      __Pyx_XDECREF_SET(__pyx_v_l2_tuple, ((PyObject*)__pyx_t_1));
-      __pyx_t_1 = 0;
-
-      /* "spline_mesher/find_closed_curve.pyx":15
- *                 continue
- *             l2_tuple = lines_intersurf_dict[l2]
- *             l4_tuple = lines_intersurf_dict[l4]             # <<<<<<<<<<<<<<
- *             if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
- *                 if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
  */
       if (unlikely(__pyx_v_lines_intersurf_dict == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
         __PYX_ERR(0, 15, __pyx_L1_error)
       }
-      __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_l4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 15, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_l2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 15, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_lines_intersurf_dict, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 15, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_3 = __Pyx_PyDict_GetItem(__pyx_v_lines_intersurf_dict, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 15, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = __Pyx_PySequence_Tuple(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 15, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      if (!(likely(PyTuple_CheckExact(__pyx_t_3))||((__pyx_t_3) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_3)->tp_name), 0))) __PYX_ERR(0, 15, __pyx_L1_error)
+      __Pyx_XDECREF_SET(__pyx_v_l2_tuple, ((PyObject*)__pyx_t_3));
+      __pyx_t_3 = 0;
+
+      /* "spline_mesher/cython_functions/find_closed_curve.pyx":16
+ *                 continue
+ *             l2_tuple = tuple(lines_intersurf_dict[l2])
+ *             l4_tuple = tuple(lines_intersurf_dict[l4])             # <<<<<<<<<<<<<<
+ *             if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
+ *                 if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
+ */
+      if (unlikely(__pyx_v_lines_intersurf_dict == Py_None)) {
+        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
+        __PYX_ERR(0, 16, __pyx_L1_error)
+      }
+      __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_l4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_lines_intersurf_dict, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = __Pyx_PySequence_Tuple(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_XDECREF_SET(__pyx_v_l4_tuple, ((PyObject*)__pyx_t_3));
       __pyx_t_3 = 0;
 
-      /* "spline_mesher/find_closed_curve.pyx":16
- *             l2_tuple = lines_intersurf_dict[l2]
- *             l4_tuple = lines_intersurf_dict[l4]
+      /* "spline_mesher/cython_functions/find_closed_curve.pyx":17
+ *             l2_tuple = tuple(lines_intersurf_dict[l2])
+ *             l4_tuple = tuple(lines_intersurf_dict[l4])
  *             if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):             # <<<<<<<<<<<<<<
  *                 if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
  *                     cl_s = [l1, l2, l3, l4]
  */
-      if (unlikely(__pyx_v_l1_tuple == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 16, __pyx_L1_error)
-      }
-      __pyx_t_3 = __Pyx_GetItemInt_Tuple(__pyx_v_l1_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_GetItemInt_Tuple(__pyx_v_l1_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      if (unlikely(__pyx_v_l2_tuple == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 16, __pyx_L1_error)
-      }
-      __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l2_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l2_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       if (!__pyx_t_15) {
       } else {
         goto __pyx_L14_next_and;
       }
-      if (unlikely(__pyx_v_l1_tuple == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 16, __pyx_L1_error)
-      }
-      __pyx_t_7 = __Pyx_GetItemInt_Tuple(__pyx_v_l1_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_GetItemInt_Tuple(__pyx_v_l1_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      if (unlikely(__pyx_v_l2_tuple == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 16, __pyx_L1_error)
-      }
-      __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l2_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l2_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_3 = PyObject_RichCompare(__pyx_t_7, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_3 = PyObject_RichCompare(__pyx_t_7, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       if (__pyx_t_15) {
       } else {
@@ -1885,93 +1881,61 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
         goto __pyx_L13_bool_binop_done;
       }
       __pyx_L14_next_and:;
-      if (unlikely(__pyx_v_l1_tuple == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 16, __pyx_L1_error)
-      }
-      __pyx_t_3 = __Pyx_GetItemInt_Tuple(__pyx_v_l1_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_GetItemInt_Tuple(__pyx_v_l1_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      if (unlikely(__pyx_v_l4_tuple == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 16, __pyx_L1_error)
-      }
-      __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l4_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l4_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       if (!__pyx_t_15) {
       } else {
         __pyx_t_14 = __pyx_t_15;
         goto __pyx_L13_bool_binop_done;
       }
-      if (unlikely(__pyx_v_l1_tuple == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 16, __pyx_L1_error)
-      }
-      __pyx_t_7 = __Pyx_GetItemInt_Tuple(__pyx_v_l1_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_GetItemInt_Tuple(__pyx_v_l1_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      if (unlikely(__pyx_v_l4_tuple == Py_None)) {
-        PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 16, __pyx_L1_error)
-      }
-      __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l4_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l4_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_3 = PyObject_RichCompare(__pyx_t_7, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_3 = PyObject_RichCompare(__pyx_t_7, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 16, __pyx_L1_error)
+      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 17, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __pyx_t_14 = __pyx_t_15;
       __pyx_L13_bool_binop_done:;
       if (__pyx_t_14) {
 
-        /* "spline_mesher/find_closed_curve.pyx":17
- *             l4_tuple = lines_intersurf_dict[l4]
+        /* "spline_mesher/cython_functions/find_closed_curve.pyx":18
+ *             l4_tuple = tuple(lines_intersurf_dict[l4])
  *             if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
  *                 if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):             # <<<<<<<<<<<<<<
  *                     cl_s = [l1, l2, l3, l4]
  *                     closed_curve_loops.append(cl_s)
  */
-        if (unlikely(__pyx_v_l3_tuple == Py_None)) {
-          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 17, __pyx_L1_error)
-        }
-        __pyx_t_3 = __Pyx_GetItemInt_Tuple(__pyx_v_l3_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_GetItemInt_Tuple(__pyx_v_l3_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        if (unlikely(__pyx_v_l2_tuple == Py_None)) {
-          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 17, __pyx_L1_error)
-        }
-        __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l2_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l2_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         if (!__pyx_t_15) {
         } else {
           goto __pyx_L19_next_and;
         }
-        if (unlikely(__pyx_v_l3_tuple == Py_None)) {
-          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 17, __pyx_L1_error)
-        }
-        __pyx_t_7 = __Pyx_GetItemInt_Tuple(__pyx_v_l3_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_GetItemInt_Tuple(__pyx_v_l3_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
-        if (unlikely(__pyx_v_l2_tuple == Py_None)) {
-          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 17, __pyx_L1_error)
-        }
-        __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l2_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l2_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_3 = PyObject_RichCompare(__pyx_t_7, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_3 = PyObject_RichCompare(__pyx_t_7, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         if (__pyx_t_15) {
         } else {
@@ -1979,65 +1943,49 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
           goto __pyx_L18_bool_binop_done;
         }
         __pyx_L19_next_and:;
-        if (unlikely(__pyx_v_l3_tuple == Py_None)) {
-          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 17, __pyx_L1_error)
-        }
-        __pyx_t_3 = __Pyx_GetItemInt_Tuple(__pyx_v_l3_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_GetItemInt_Tuple(__pyx_v_l3_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        if (unlikely(__pyx_v_l4_tuple == Py_None)) {
-          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 17, __pyx_L1_error)
-        }
-        __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l4_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l4_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         if (!__pyx_t_15) {
         } else {
           __pyx_t_14 = __pyx_t_15;
           goto __pyx_L18_bool_binop_done;
         }
-        if (unlikely(__pyx_v_l3_tuple == Py_None)) {
-          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 17, __pyx_L1_error)
-        }
-        __pyx_t_7 = __Pyx_GetItemInt_Tuple(__pyx_v_l3_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_GetItemInt_Tuple(__pyx_v_l3_tuple, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
-        if (unlikely(__pyx_v_l4_tuple == Py_None)) {
-          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 17, __pyx_L1_error)
-        }
-        __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l4_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v_l4_tuple, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_3 = PyObject_RichCompare(__pyx_t_7, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_3 = PyObject_RichCompare(__pyx_t_7, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 17, __pyx_L1_error)
+        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 18, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __pyx_t_14 = __pyx_t_15;
         __pyx_L18_bool_binop_done:;
         if (__pyx_t_14) {
 
-          /* "spline_mesher/find_closed_curve.pyx":18
+          /* "spline_mesher/cython_functions/find_closed_curve.pyx":19
  *             if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
  *                 if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
  *                     cl_s = [l1, l2, l3, l4]             # <<<<<<<<<<<<<<
  *                     closed_curve_loops.append(cl_s)
  *     return closed_curve_loops
  */
-          __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_l1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 18, __pyx_L1_error)
+          __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_l1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 19, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
-          __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_l2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
+          __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_l2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 19, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_1);
-          __pyx_t_7 = __Pyx_PyInt_From_int(__pyx_v_l3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 18, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyInt_From_int(__pyx_v_l3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 19, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
-          __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_l4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 18, __pyx_L1_error)
+          __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_l4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 19, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
-          __pyx_t_16 = PyList_New(4); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 18, __pyx_L1_error)
+          __pyx_t_16 = PyList_New(4); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 19, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_GIVEREF(__pyx_t_3);
           PyList_SET_ITEM(__pyx_t_16, 0, __pyx_t_3);
@@ -2054,16 +2002,17 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
           __Pyx_XDECREF_SET(__pyx_v_cl_s, ((PyObject*)__pyx_t_16));
           __pyx_t_16 = 0;
 
-          /* "spline_mesher/find_closed_curve.pyx":19
+          /* "spline_mesher/cython_functions/find_closed_curve.pyx":20
  *                 if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
  *                     cl_s = [l1, l2, l3, l4]
  *                     closed_curve_loops.append(cl_s)             # <<<<<<<<<<<<<<
  *     return closed_curve_loops
+ * 
  */
-          __pyx_t_17 = __Pyx_PyList_Append(__pyx_v_closed_curve_loops, __pyx_v_cl_s); if (unlikely(__pyx_t_17 == ((int)-1))) __PYX_ERR(0, 19, __pyx_L1_error)
+          __pyx_t_17 = __Pyx_PyList_Append(__pyx_v_closed_curve_loops, __pyx_v_cl_s); if (unlikely(__pyx_t_17 == ((int)-1))) __PYX_ERR(0, 20, __pyx_L1_error)
 
-          /* "spline_mesher/find_closed_curve.pyx":17
- *             l4_tuple = lines_intersurf_dict[l4]
+          /* "spline_mesher/cython_functions/find_closed_curve.pyx":18
+ *             l4_tuple = tuple(lines_intersurf_dict[l4])
  *             if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
  *                 if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):             # <<<<<<<<<<<<<<
  *                     cl_s = [l1, l2, l3, l4]
@@ -2071,18 +2020,18 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
  */
         }
 
-        /* "spline_mesher/find_closed_curve.pyx":16
- *             l2_tuple = lines_intersurf_dict[l2]
- *             l4_tuple = lines_intersurf_dict[l4]
+        /* "spline_mesher/cython_functions/find_closed_curve.pyx":17
+ *             l2_tuple = tuple(lines_intersurf_dict[l2])
+ *             l4_tuple = tuple(lines_intersurf_dict[l4])
  *             if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):             # <<<<<<<<<<<<<<
  *                 if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
  *                     cl_s = [l1, l2, l3, l4]
  */
       }
 
-      /* "spline_mesher/find_closed_curve.pyx":11
- *         l1_tuple = lines_lower_dict[l1]
- *         l3_tuple = lines_upper_dict[l3]
+      /* "spline_mesher/cython_functions/find_closed_curve.pyx":12
+ *         l1_tuple = tuple(lines_lower_dict[l1])
+ *         l3_tuple = tuple(lines_upper_dict[l3])
  *         for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):             # <<<<<<<<<<<<<<
  *             if l4 == l2:
  *                 continue
@@ -2091,27 +2040,29 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "spline_mesher/find_closed_curve.pyx":8
+    /* "spline_mesher/cython_functions/find_closed_curve.pyx":9
  *     cdef tuple l1_tuple, l3_tuple, l2_tuple, l4_tuple
  * 
  *     for l1, l3 in product(lines_lower_dict.keys(), lines_upper_dict.keys()):             # <<<<<<<<<<<<<<
- *         l1_tuple = lines_lower_dict[l1]
- *         l3_tuple = lines_upper_dict[l3]
+ *         l1_tuple = tuple(lines_lower_dict[l1])
+ *         l3_tuple = tuple(lines_upper_dict[l3])
  */
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "spline_mesher/find_closed_curve.pyx":20
+  /* "spline_mesher/cython_functions/find_closed_curve.pyx":21
  *                     cl_s = [l1, l2, l3, l4]
  *                     closed_curve_loops.append(cl_s)
  *     return closed_curve_loops             # <<<<<<<<<<<<<<
+ * 
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_closed_curve_loops);
   __pyx_r = __pyx_v_closed_curve_loops;
   goto __pyx_L0;
 
-  /* "spline_mesher/find_closed_curve.pyx":3
+  /* "spline_mesher/cython_functions/find_closed_curve.pyx":4
  * from itertools import product
  * 
  * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):             # <<<<<<<<<<<<<<
@@ -2128,7 +2079,7 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_16);
-  __Pyx_AddTraceback("spline_mesher.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_closed_curve_loops);
@@ -2143,8 +2094,8 @@ static PyObject *__pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_l
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_13spline_mesher_17find_closed_curve_1find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_13spline_mesher_17find_closed_curve_1find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_1find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_1find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_lines_lower_dict = 0;
   PyObject *__pyx_v_lines_upper_dict = 0;
   PyObject *__pyx_v_lines_intersurf_dict = 0;
@@ -2179,17 +2130,17 @@ static PyObject *__pyx_pw_13spline_mesher_17find_closed_curve_1find_closed_curve
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_lines_upper_dict)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("find_closed_curve_loops", 1, 3, 3, 1); __PYX_ERR(0, 3, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("find_closed_curve_loops", 1, 3, 3, 1); __PYX_ERR(0, 4, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_lines_intersurf_dict)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("find_closed_curve_loops", 1, 3, 3, 2); __PYX_ERR(0, 3, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("find_closed_curve_loops", 1, 3, 3, 2); __PYX_ERR(0, 4, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "find_closed_curve_loops") < 0)) __PYX_ERR(0, 3, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "find_closed_curve_loops") < 0)) __PYX_ERR(0, 4, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -2204,16 +2155,16 @@ static PyObject *__pyx_pw_13spline_mesher_17find_closed_curve_1find_closed_curve
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("find_closed_curve_loops", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 3, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("find_closed_curve_loops", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 4, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("spline_mesher.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_lower_dict), (&PyDict_Type), 1, "lines_lower_dict", 1))) __PYX_ERR(0, 3, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_upper_dict), (&PyDict_Type), 1, "lines_upper_dict", 1))) __PYX_ERR(0, 3, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_intersurf_dict), (&PyDict_Type), 1, "lines_intersurf_dict", 1))) __PYX_ERR(0, 3, __pyx_L1_error)
-  __pyx_r = __pyx_pf_13spline_mesher_17find_closed_curve_find_closed_curve_loops(__pyx_self, __pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_lower_dict), (&PyDict_Type), 1, "lines_lower_dict", 1))) __PYX_ERR(0, 4, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_upper_dict), (&PyDict_Type), 1, "lines_upper_dict", 1))) __PYX_ERR(0, 4, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_intersurf_dict), (&PyDict_Type), 1, "lines_intersurf_dict", 1))) __PYX_ERR(0, 4, __pyx_L1_error)
+  __pyx_r = __pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(__pyx_self, __pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2224,7 +2175,7 @@ static PyObject *__pyx_pw_13spline_mesher_17find_closed_curve_1find_closed_curve
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_13spline_mesher_17find_closed_curve_find_closed_curve_loops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict) {
+static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2233,7 +2184,7 @@ static PyObject *__pyx_pf_13spline_mesher_17find_closed_curve_find_closed_curve_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("find_closed_curve_loops", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_13spline_mesher_17find_closed_curve_find_closed_curve_loops(__pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 3, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(__pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 4, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2242,7 +2193,7 @@ static PyObject *__pyx_pf_13spline_mesher_17find_closed_curve_find_closed_curve_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("spline_mesher.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2251,7 +2202,7 @@ static PyObject *__pyx_pf_13spline_mesher_17find_closed_curve_find_closed_curve_
 }
 
 static PyMethodDef __pyx_methods[] = {
-  {"find_closed_curve_loops", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13spline_mesher_17find_closed_curve_1find_closed_curve_loops, METH_VARARGS|METH_KEYWORDS, 0},
+  {"find_closed_curve_loops", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_1find_closed_curve_loops, METH_VARARGS|METH_KEYWORDS, 0},
   {0, 0, 0, 0}
 };
 
@@ -2306,6 +2257,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_lines_upper_dict, __pyx_k_lines_upper_dict, sizeof(__pyx_k_lines_upper_dict), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
+  {&__pyx_n_s_np, __pyx_k_np, sizeof(__pyx_k_np), 0, 0, 1, 1},
+  {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
   {&__pyx_n_s_product, __pyx_k_product, sizeof(__pyx_k_product), 0, 0, 1, 1},
   {&__pyx_n_s_repeat, __pyx_k_repeat, sizeof(__pyx_k_repeat), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
@@ -2568,14 +2521,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_spline_mesher__find_closed_curve) {
+  if (__pyx_module_is_main_spline_mesher__cython_functions__find_closed_curve) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name, __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "spline_mesher.find_closed_curve")) {
-      if (unlikely(PyDict_SetItemString(modules, "spline_mesher.find_closed_curve", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "spline_mesher.cython_functions.find_closed_curve")) {
+      if (unlikely(PyDict_SetItemString(modules, "spline_mesher.cython_functions.find_closed_curve", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -2596,31 +2549,40 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "spline_mesher/find_closed_curve.pyx":1
+  /* "spline_mesher/cython_functions/find_closed_curve.pyx":1
+ * import numpy as np             # <<<<<<<<<<<<<<
+ * from itertools import product
+ * 
+ */
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "spline_mesher/cython_functions/find_closed_curve.pyx":2
+ * import numpy as np
  * from itertools import product             # <<<<<<<<<<<<<<
  * 
  * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):
  */
-  __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 2, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_n_s_product);
   __Pyx_GIVEREF(__pyx_n_s_product);
   PyList_SET_ITEM(__pyx_t_1, 0, __pyx_n_s_product);
-  __pyx_t_2 = __Pyx_Import(__pyx_n_s_itertools, __pyx_t_1, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_Import(__pyx_n_s_itertools, __pyx_t_1, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 2, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_product); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_product); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 2, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_product, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_product, __pyx_t_1) < 0) __PYX_ERR(0, 2, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "spline_mesher/find_closed_curve.pyx":3
+  /* "spline_mesher/cython_functions/find_closed_curve.pyx":1
+ * import numpy as np             # <<<<<<<<<<<<<<
  * from itertools import product
  * 
- * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):             # <<<<<<<<<<<<<<
- *     cdef list closed_curve_loops = []
- *     cdef int l1, l3, l4, l2
  */
   __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -2635,11 +2597,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init spline_mesher.find_closed_curve", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init spline_mesher.cython_functions.find_closed_curve", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_CLEAR(__pyx_m);
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init spline_mesher.find_closed_curve");
+    PyErr_SetString(PyExc_ImportError, "init spline_mesher.cython_functions.find_closed_curve");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

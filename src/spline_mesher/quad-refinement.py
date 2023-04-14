@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skimage.util import view_as_windows
 import numba
-from find_closed_curve import find_closed_curve
+from cython_functions import find_closed_curve as fcc
 
 LOGGING_NAME = "SIMONE"
 # flake8: noqa: E402
@@ -727,9 +727,11 @@ class QuadRefinement:
         return closed_curve_loops
     # fmt: on
 
+    def add_curve_loop(self, curve_loop_tags):
+        return self.factory.addCurveLoop(curve_loop_tags, tag=-1)
+
     def gmsh_add_surface(self, curve_loop):
-        surf_tag = self.factory.addPlaneSurface([curve_loop], tag=-1)
-        return surf_tag
+        return self.factory.addPlaneSurface(curve_loop, tag=-1)
 
 
 if "__main__" == __name__:
@@ -740,7 +742,7 @@ if "__main__" == __name__:
     # ? make sure of the point order (has to be clockwise)
 
     outer_point_tags = []
-    for i in range(0, 6, 5):
+    for i in range(0, 10, 3):
         d1 = c1 - (0.1 * i * c1)
         d2 = c2 - (0.1 * i * c2)
         point_01 = gmsh.model.occ.addPoint(d1 * a, 0, i, -1)
@@ -783,33 +785,37 @@ if "__main__" == __name__:
             connected_points.append(tag_unique)
         points_in_surf.append(connected_points)
 
-    line_tags_intersurf = trab_refinement.create_intersurface_connection(points_in_surf)
+    for _iter, points in enumerate(points_in_surf):
+        line_tags_intersurf = trab_refinement.create_intersurface_connection(
+            points_in_surf
+        )
 
-    (
-        lines_lower_dict,
-        lines_upper_dict,
-        lines_intersurf_dict,
-    ) = trab_refinement.create_line_dict(
-        lines_lower_surf=line_tags[0],
-        lines_upper_surf=line_tags[1],
-        lines_intersurf=line_tags_intersurf,
-    )
+        (
+            lines_lower_dict,
+            lines_upper_dict,
+            lines_intersurf_dict,
+        ) = trab_refinement.create_line_dict(
+            lines_lower_surf=line_tags[0],
+            lines_upper_surf=line_tags[1],
+            lines_intersurf=line_tags_intersurf,
+        )
 
-    start_time = time.time()
-    curve_loops = trab_refinement.find_closed_curve_loops(
-        lines_lower_dict, lines_upper_dict, lines_intersurf_dict
-    )
-    end_time = time.time()
-    exec_time = end_time - start_time
-    print(f"Time to find closed curve loops: {exec_time:.2f} seconds")
-
-    intersurface_surfaces = []
-    for cl in curve_loops:
-        surf = trab_refinement.gmsh_add_surface(cl)
-        intersurface_surfaces.append(surf)
+        # fmt: off
+        start_time = time.time()
+        # curve_loops = trab_refinement.find_closed_curve_loops(lines_lower_dict, lines_upper_dict, lines_intersurf_dict)
+        curve_loops_tags = fcc.find_closed_curve_loops(lines_lower_dict, lines_upper_dict, lines_intersurf_dict)
+        end_time = time.time()
+        exec_time = end_time - start_time
+        print(f"Time to find closed curve loops (iteration {_iter + 1}): {exec_time:.2f} seconds")
+        # fmt: on
+        intersurface_surfaces = []
+        for cl in curve_loops_tags:
+            curve_loop = trab_refinement.add_curve_loop(cl)
+            surf = trab_refinement.gmsh_add_surface([curve_loop])
+            intersurface_surfaces.append(surf)
 
     # * 10. Create 2D mesh
     gmsh.model.occ.synchronize()
-    # gmsh.model.mesh.generate(2)
+    gmsh.model.mesh.generate(2)
     gmsh.fltk.run()
     gmsh.finalize()
