@@ -658,16 +658,15 @@ class QuadRefinement:
         start_stop = []
         for i in range(1, len(point_tags)):
             for j in range(len(point_tags[i])):
-                for m in range(1, len(point_tags[i][j])):
+                for m in range(1, len(point_tags[i][j]) + 1):
                     start_point_0 = point_tags[i - 1][j][m - 1]
                     end_point_0 = point_tags[i][j][m - 1]
                     if m == len(point_tags[i][j]):
-                        start_point_1 = start_point_0
-                        end_point_1 = end_point_0
+                        start_point_1 = point_tags[i - 1][j][0]
+                        end_point_1 = point_tags[i][j][0]
                     else:
                         start_point_1 = point_tags[i - 1][j][m]
                         end_point_1 = point_tags[i][j][m]
-
                     start_stop.append(
                         [
                             start_point_0,
@@ -706,68 +705,28 @@ class QuadRefinement:
             lines_intersurf_dict[line] = line_points
         return lines_lower_dict, lines_upper_dict, lines_intersurf_dict
 
-    def find_closed_curve_loops(
-        self,
-        lines_lower_dict,
-        lines_upper_dict,
-        lines_intersurf_dict,
-    ):
-        # Step 2: Find curve loops by checking all possible combinations of lines
+    # fmt: off
+    @numba.jit(forceobj=True, parallel=True)
+    def find_closed_curve_loops(self, lines_lower_dict: dict, lines_upper_dict: dict, lines_intersurf_dict: dict)-> list:
         closed_curve_loops = []
-        for l1 in lines_lower_dict.keys():
-            for l2 in lines_upper_dict.keys():
-                for l3, l4 in itertools.combinations(lines_intersurf_dict.keys(), 2):
-                    for l1_start_end, l3_start_end in itertools.product(
-                        [
-                            (lines_lower_dict[l1][0], lines_lower_dict[l1][1]),
-                            (lines_lower_dict[l3][1], lines_lower_dict[l3][0]),
-                        ],
-                        repeat=2,
-                    ):
-                        for l2_start_end, l4_start_end in itertools.product(
-                            [
-                                (lines_upper_dict[l2][0], lines_upper_dict[l2][1]),
-                                (lines_upper_dict[l2][1], lines_upper_dict[l2][0]),
-                            ],
-                            repeat=2,
-                        ):
-                            for l4_start_end, l3_start_end in itertools.product(
-                                [
-                                    (
-                                        lines_intersurf_dict[l4][0],
-                                        lines_intersurf_dict[l4][1],
-                                    ),
-                                    (
-                                        lines_intersurf_dict[l4][1],
-                                        lines_intersurf_dict[l4][0],
-                                    ),
-                                ],
-                                [
-                                    (
-                                        lines_intersurf_dict[l3][0],
-                                        lines_intersurf_dict[l3][1],
-                                    ),
-                                    (
-                                        lines_intersurf_dict[l3][1],
-                                        lines_intersurf_dict[l3][0],
-                                    ),
-                                ],
-                            ):
-                                # Check if l1 and l3 have a common point and l2 and l4 have a common point
-                                if (
-                                    l1_start_end[0] == l3_start_end[1]
-                                    or l1_start_end[1] == l3_start_end[0]
-                                ) and (
-                                    l2_start_end[1] == l4_start_end[0]
-                                    or l2_start_end[0] == l4_start_end[1]
-                                ):
-                                    # Check if l3 and l4 have a common point
-                                    if (
-                                        l3_start_end[0] == l4_start_end[1]
-                                        or l3_start_end[1] == l4_start_end[0]
-                                    ):
-                                        closed_curve_loops.extend([l1, l3, l2, l4])
+        for l1, l3 in itertools.product(lines_lower_dict.keys(), lines_upper_dict.keys()):
+            l1_start, l1_end = lines_lower_dict[l1]
+            l3_start, l3_end = lines_upper_dict[l3]
+            for l4, l2 in itertools.product(lines_intersurf_dict.keys(), repeat=2):
+                if l4 == l2:
+                    continue
+                l2_start, l2_end = lines_intersurf_dict[l2]
+                l4_start, l4_end = lines_intersurf_dict[l4]
+                if (l1_start == l2_end or l1_end == l2_start) and (l1_start == l4_start or l1_end == l4_end):
+                    if (l3_start == l2_start or l3_end == l2_end) and (l3_start == l4_end or l3_end == l4_start):
+                        cl_s = gmsh.model.occ.addCurveLoop([l1, l2, l3, l4], tag=-1)
+                        closed_curve_loops.append(cl_s)
         return closed_curve_loops
+    # fmt: on
+
+    def gmsh_add_surface(self, curve_loop):
+        surf_tag = self.factory.addPlaneSurface([curve_loop], tag=-1)
+        return surf_tag
 
 
 if "__main__" == __name__:
@@ -840,8 +799,11 @@ if "__main__" == __name__:
     end_time = time.time()
     exec_time = end_time - start_time
     print(f"Time to find closed curve loops: {exec_time:.2f} seconds")
-    print(curve_loops)
-    print("---------------------")
+
+    intersurface_surfaces = []
+    for cl in curve_loops:
+        surf = trab_refinement.gmsh_add_surface(cl)
+        intersurface_surfaces.append(surf)
 
     # * 10. Create 2D mesh
     gmsh.model.occ.synchronize()
