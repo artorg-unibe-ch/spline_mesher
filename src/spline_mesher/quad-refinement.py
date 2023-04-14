@@ -775,13 +775,13 @@ if "__main__" == __name__:
             lines_intersurf=line_tags_intersurf[_iter - 1],
         )
 
-        # fmt: off
         start_time = time.time()
-        curve_loops_tags = fcc.find_closed_curve_loops(lines_lower_dict, lines_upper_dict, lines_intersurf_dict)
+        curve_loops_tags = fcc.find_closed_curve_loops(
+            lines_lower_dict, lines_upper_dict, lines_intersurf_dict
+        )
         end_time = time.time()
         exec_time = end_time - start_time
         print(f"Time to find closed curve loops: {exec_time:.2f} seconds")
-        # fmt: on
         gmsh.model.occ.synchronize()
         intersurface_surfaces = []
         for cl in curve_loops_tags:
