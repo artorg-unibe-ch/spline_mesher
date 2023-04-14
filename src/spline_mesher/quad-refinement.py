@@ -5,12 +5,7 @@ Date: 04.2023
 
 https://stackoverflow.com/questions/31527755/extract-blocks-or-patches-from-numpy-array
 https://blender.stackexchange.com/questions/230534/fastest-way-to-skin-a-grid
-
 """
-import sys
-
-sys.path.insert(0, "")
-
 import time
 import itertools
 import logging
@@ -20,7 +15,6 @@ import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.util import view_as_windows
-import numba
 from cython_functions import find_closed_curve as fcc
 
 LOGGING_NAME = "SIMONE"
@@ -710,25 +704,6 @@ class QuadRefinement:
             lines_intersurf_dict[line] = line_points
         return lines_lower_dict, lines_upper_dict, lines_intersurf_dict
 
-    # fmt: off
-    @numba.jit(forceobj=True, parallel=True)
-    def find_closed_curve_loops(self, lines_lower_dict: dict, lines_upper_dict: dict, lines_intersurf_dict: dict)-> list:
-        closed_curve_loops = []
-        for l1, l3 in itertools.product(lines_lower_dict.keys(), lines_upper_dict.keys()):
-            l1_start, l1_end = lines_lower_dict[l1]
-            l3_start, l3_end = lines_upper_dict[l3]
-            for l4, l2 in itertools.product(lines_intersurf_dict.keys(), repeat=2):
-                if l4 == l2:
-                    continue
-                l2_start, l2_end = lines_intersurf_dict[l2]
-                l4_start, l4_end = lines_intersurf_dict[l4]
-                if (l1_start == l2_end or l1_end == l2_start) and (l1_start == l4_start or l1_end == l4_end):
-                    if (l3_start == l2_start or l3_end == l2_end) and (l3_start == l4_end or l3_end == l4_start):
-                        cl_s = gmsh.model.occ.addCurveLoop([l1, l2, l3, l4], tag=-1)
-                        closed_curve_loops.append(cl_s)
-        return closed_curve_loops
-    # fmt: on
-
     def add_curve_loop(self, curve_loop_tags):
         return self.factory.addCurveLoop(curve_loop_tags, tag=-1)
 
@@ -802,7 +777,6 @@ if "__main__" == __name__:
 
         # fmt: off
         start_time = time.time()
-        print("Finding closed curve loops...")
         curve_loops_tags = fcc.find_closed_curve_loops(lines_lower_dict, lines_upper_dict, lines_intersurf_dict)
         end_time = time.time()
         exec_time = end_time - start_time
