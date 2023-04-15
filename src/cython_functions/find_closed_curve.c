@@ -3,12 +3,12 @@
 /* BEGIN: Cython Metadata
 {
     "distutils": {
-        "name": "spline_mesher.cython_functions.find_closed_curve",
+        "name": "cython_functions.find_closed_curve",
         "sources": [
-            "src/spline_mesher/cython_functions/find_closed_curve.pyx"
+            "src/cython_functions/find_closed_curve.pyx"
         ]
     },
-    "module_name": "spline_mesher.cython_functions.find_closed_curve"
+    "module_name": "cython_functions.find_closed_curve"
 }
 END: Cython Metadata */
 
@@ -750,8 +750,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__spline_mesher__cython_functions__find_closed_curve
-#define __PYX_HAVE_API__spline_mesher__cython_functions__find_closed_curve
+#define __PYX_HAVE__cython_functions__find_closed_curve
+#define __PYX_HAVE_API__cython_functions__find_closed_curve
 /* Early includes */
 #ifdef _OPENMP
 #include <omp.h>
@@ -962,7 +962,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "src/spline_mesher/cython_functions/find_closed_curve.pyx",
+  "src/cython_functions/find_closed_curve.pyx",
 };
 
 /*--- Type declarations ---*/
@@ -1437,14 +1437,14 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 /* Module declarations from 'cython' */
 
-/* Module declarations from 'spline_mesher.cython_functions.find_closed_curve' */
-static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_check_closed_curve_loop(int, int, PyObject *, PyObject *, PyObject *, int __pyx_skip_dispatch); /*proto*/
-static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(PyObject *, PyObject *, PyObject *, int __pyx_skip_dispatch); /*proto*/
-#define __Pyx_MODULE_NAME "spline_mesher.cython_functions.find_closed_curve"
-extern int __pyx_module_is_main_spline_mesher__cython_functions__find_closed_curve;
-int __pyx_module_is_main_spline_mesher__cython_functions__find_closed_curve = 0;
+/* Module declarations from 'cython_functions.find_closed_curve' */
+static PyObject *__pyx_f_16cython_functions_17find_closed_curve_check_closed_curve_loop(int, int, PyObject *, PyObject *, PyObject *, int __pyx_skip_dispatch); /*proto*/
+static PyObject *__pyx_f_16cython_functions_17find_closed_curve_find_closed_curve_loops(PyObject *, PyObject *, PyObject *, int __pyx_skip_dispatch); /*proto*/
+#define __Pyx_MODULE_NAME "cython_functions.find_closed_curve"
+extern int __pyx_module_is_main_cython_functions__find_closed_curve;
+int __pyx_module_is_main_cython_functions__find_closed_curve = 0;
 
-/* Implementation of 'spline_mesher.cython_functions.find_closed_curve' */
+/* Implementation of 'cython_functions.find_closed_curve' */
 static const char __pyx_k_l1[] = "l1";
 static const char __pyx_k_l3[] = "l3";
 static const char __pyx_k_np[] = "np";
@@ -1491,14 +1491,14 @@ static PyObject *__pyx_n_s_product;
 static PyObject *__pyx_n_s_repeat;
 static PyObject *__pyx_n_s_starmap;
 static PyObject *__pyx_n_s_test;
-static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_check_closed_curve_loop(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_l1, int __pyx_v_l3, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict); /* proto */
-static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_2find_closed_curve_loops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict); /* proto */
+static PyObject *__pyx_pf_16cython_functions_17find_closed_curve_check_closed_curve_loop(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_l1, int __pyx_v_l3, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict); /* proto */
+static PyObject *__pyx_pf_16cython_functions_17find_closed_curve_2find_closed_curve_loops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict); /* proto */
 static __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_keys = {0, &__pyx_n_s_keys, 0, 0, 0};
 static PyObject *__pyx_int_2;
 static PyObject *__pyx_tuple_;
 /* Late includes */
 
-/* "spline_mesher/cython_functions/find_closed_curve.pyx":6
+/* "cython_functions/find_closed_curve.pyx":6
  * cimport cython
  * 
  * cpdef list check_closed_curve_loop(int l1, int l3, dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):             # <<<<<<<<<<<<<<
@@ -1506,8 +1506,8 @@ static PyObject *__pyx_tuple_;
  *     cdef int l4, l2
  */
 
-static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_1check_closed_curve_loop(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_check_closed_curve_loop(int __pyx_v_l1, int __pyx_v_l3, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_16cython_functions_17find_closed_curve_1check_closed_curve_loop(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_f_16cython_functions_17find_closed_curve_check_closed_curve_loop(int __pyx_v_l1, int __pyx_v_l3, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict, CYTHON_UNUSED int __pyx_skip_dispatch) {
   PyObject *__pyx_v_l1_tuple = 0;
   PyObject *__pyx_v_l3_tuple = 0;
   PyObject *__pyx_v_l2_tuple = 0;
@@ -1535,7 +1535,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("check_closed_curve_loop", 0);
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":9
+  /* "cython_functions/find_closed_curve.pyx":9
  *     cdef tuple l1_tuple, l3_tuple, l2_tuple, l4_tuple
  *     cdef int l4, l2
  *     l1_tuple = tuple(lines_lower_dict[l1])             # <<<<<<<<<<<<<<
@@ -1557,7 +1557,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   __pyx_v_l1_tuple = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":10
+  /* "cython_functions/find_closed_curve.pyx":10
  *     cdef int l4, l2
  *     l1_tuple = tuple(lines_lower_dict[l1])
  *     l3_tuple = tuple(lines_upper_dict[l3])             # <<<<<<<<<<<<<<
@@ -1579,7 +1579,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   __pyx_v_l3_tuple = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":11
+  /* "cython_functions/find_closed_curve.pyx":11
  *     l1_tuple = tuple(lines_lower_dict[l1])
  *     l3_tuple = tuple(lines_upper_dict[l3])
  *     for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):             # <<<<<<<<<<<<<<
@@ -1700,7 +1700,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
     __pyx_v_l4 = __pyx_t_9;
     __pyx_v_l2 = __pyx_t_10;
 
-    /* "spline_mesher/cython_functions/find_closed_curve.pyx":12
+    /* "cython_functions/find_closed_curve.pyx":12
  *     l3_tuple = tuple(lines_upper_dict[l3])
  *     for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):
  *         if l4 == l2:             # <<<<<<<<<<<<<<
@@ -1710,7 +1710,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
     __pyx_t_11 = ((__pyx_v_l4 == __pyx_v_l2) != 0);
     if (__pyx_t_11) {
 
-      /* "spline_mesher/cython_functions/find_closed_curve.pyx":13
+      /* "cython_functions/find_closed_curve.pyx":13
  *     for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):
  *         if l4 == l2:
  *             continue             # <<<<<<<<<<<<<<
@@ -1719,7 +1719,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
  */
       goto __pyx_L3_continue;
 
-      /* "spline_mesher/cython_functions/find_closed_curve.pyx":12
+      /* "cython_functions/find_closed_curve.pyx":12
  *     l3_tuple = tuple(lines_upper_dict[l3])
  *     for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):
  *         if l4 == l2:             # <<<<<<<<<<<<<<
@@ -1728,7 +1728,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
  */
     }
 
-    /* "spline_mesher/cython_functions/find_closed_curve.pyx":14
+    /* "cython_functions/find_closed_curve.pyx":14
  *         if l4 == l2:
  *             continue
  *         l2_tuple = tuple(lines_intersurf_dict[l2])             # <<<<<<<<<<<<<<
@@ -1750,7 +1750,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
     __Pyx_XDECREF_SET(__pyx_v_l2_tuple, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "spline_mesher/cython_functions/find_closed_curve.pyx":15
+    /* "cython_functions/find_closed_curve.pyx":15
  *             continue
  *         l2_tuple = tuple(lines_intersurf_dict[l2])
  *         l4_tuple = tuple(lines_intersurf_dict[l4])             # <<<<<<<<<<<<<<
@@ -1772,7 +1772,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
     __Pyx_XDECREF_SET(__pyx_v_l4_tuple, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "spline_mesher/cython_functions/find_closed_curve.pyx":16
+    /* "cython_functions/find_closed_curve.pyx":16
  *         l2_tuple = tuple(lines_intersurf_dict[l2])
  *         l4_tuple = tuple(lines_intersurf_dict[l4])
  *         if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):             # <<<<<<<<<<<<<<
@@ -1834,7 +1834,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
     __pyx_L9_bool_binop_done:;
     if (__pyx_t_11) {
 
-      /* "spline_mesher/cython_functions/find_closed_curve.pyx":17
+      /* "cython_functions/find_closed_curve.pyx":17
  *         l4_tuple = tuple(lines_intersurf_dict[l4])
  *         if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
  *             if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):             # <<<<<<<<<<<<<<
@@ -1896,7 +1896,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
       __pyx_L14_bool_binop_done:;
       if (__pyx_t_11) {
 
-        /* "spline_mesher/cython_functions/find_closed_curve.pyx":18
+        /* "cython_functions/find_closed_curve.pyx":18
  *         if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
  *             if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
  *                 cl_s = [l1, l2, l3, l4]             # <<<<<<<<<<<<<<
@@ -1928,7 +1928,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
         __pyx_v_cl_s = ((PyObject*)__pyx_t_13);
         __pyx_t_13 = 0;
 
-        /* "spline_mesher/cython_functions/find_closed_curve.pyx":19
+        /* "cython_functions/find_closed_curve.pyx":19
  *             if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
  *                 cl_s = [l1, l2, l3, l4]
  *                 return cl_s             # <<<<<<<<<<<<<<
@@ -1941,7 +1941,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         goto __pyx_L0;
 
-        /* "spline_mesher/cython_functions/find_closed_curve.pyx":17
+        /* "cython_functions/find_closed_curve.pyx":17
  *         l4_tuple = tuple(lines_intersurf_dict[l4])
  *         if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
  *             if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):             # <<<<<<<<<<<<<<
@@ -1950,7 +1950,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
  */
       }
 
-      /* "spline_mesher/cython_functions/find_closed_curve.pyx":16
+      /* "cython_functions/find_closed_curve.pyx":16
  *         l2_tuple = tuple(lines_intersurf_dict[l2])
  *         l4_tuple = tuple(lines_intersurf_dict[l4])
  *         if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):             # <<<<<<<<<<<<<<
@@ -1959,7 +1959,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
  */
     }
 
-    /* "spline_mesher/cython_functions/find_closed_curve.pyx":11
+    /* "cython_functions/find_closed_curve.pyx":11
  *     l1_tuple = tuple(lines_lower_dict[l1])
  *     l3_tuple = tuple(lines_upper_dict[l3])
  *     for l4, l2 in product(lines_intersurf_dict.keys(), repeat=2):             # <<<<<<<<<<<<<<
@@ -1970,7 +1970,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":20
+  /* "cython_functions/find_closed_curve.pyx":20
  *                 cl_s = [l1, l2, l3, l4]
  *                 return cl_s
  *     return None             # <<<<<<<<<<<<<<
@@ -1981,7 +1981,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   __pyx_r = ((PyObject*)Py_None); __Pyx_INCREF(Py_None);
   goto __pyx_L0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":6
+  /* "cython_functions/find_closed_curve.pyx":6
  * cimport cython
  * 
  * cpdef list check_closed_curve_loop(int l1, int l3, dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):             # <<<<<<<<<<<<<<
@@ -1997,7 +1997,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_13);
-  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.check_closed_curve_loop", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("cython_functions.find_closed_curve.check_closed_curve_loop", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_l1_tuple);
@@ -2011,8 +2011,8 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_1check_closed_curve_loop(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_1check_closed_curve_loop(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_16cython_functions_17find_closed_curve_1check_closed_curve_loop(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_16cython_functions_17find_closed_curve_1check_closed_curve_loop(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_l1;
   int __pyx_v_l3;
   PyObject *__pyx_v_lines_lower_dict = 0;
@@ -2096,14 +2096,14 @@ static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("check_closed_curve_loop", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 6, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.check_closed_curve_loop", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("cython_functions.find_closed_curve.check_closed_curve_loop", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_lower_dict), (&PyDict_Type), 1, "lines_lower_dict", 1))) __PYX_ERR(0, 6, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_upper_dict), (&PyDict_Type), 1, "lines_upper_dict", 1))) __PYX_ERR(0, 6, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_intersurf_dict), (&PyDict_Type), 1, "lines_intersurf_dict", 1))) __PYX_ERR(0, 6, __pyx_L1_error)
-  __pyx_r = __pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_check_closed_curve_loop(__pyx_self, __pyx_v_l1, __pyx_v_l3, __pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict);
+  __pyx_r = __pyx_pf_16cython_functions_17find_closed_curve_check_closed_curve_loop(__pyx_self, __pyx_v_l1, __pyx_v_l3, __pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2114,7 +2114,7 @@ static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_check_closed_curve_loop(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_l1, int __pyx_v_l3, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict) {
+static PyObject *__pyx_pf_16cython_functions_17find_closed_curve_check_closed_curve_loop(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_l1, int __pyx_v_l3, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2123,7 +2123,7 @@ static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("check_closed_curve_loop", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_check_closed_curve_loop(__pyx_v_l1, __pyx_v_l3, __pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 6, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_16cython_functions_17find_closed_curve_check_closed_curve_loop(__pyx_v_l1, __pyx_v_l3, __pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 6, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2132,7 +2132,7 @@ static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.check_closed_curve_loop", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("cython_functions.find_closed_curve.check_closed_curve_loop", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2140,7 +2140,7 @@ static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve
   return __pyx_r;
 }
 
-/* "spline_mesher/cython_functions/find_closed_curve.pyx":22
+/* "cython_functions/find_closed_curve.pyx":22
  *     return None
  * 
  * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):             # <<<<<<<<<<<<<<
@@ -2148,8 +2148,8 @@ static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve
  *     cdef list args_list = [(l1, l3, lines_lower_dict, lines_upper_dict, lines_intersurf_dict) for l1, l3 in product(list(lines_lower_dict.keys()), list(lines_upper_dict.keys()))]
  */
 
-static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_3find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_16cython_functions_17find_closed_curve_3find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_f_16cython_functions_17find_closed_curve_find_closed_curve_loops(PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict, CYTHON_UNUSED int __pyx_skip_dispatch) {
   PyObject *__pyx_v_closed_curve_loops = NULL;
   PyObject *__pyx_v_args_list = 0;
   PyObject *__pyx_v_p = NULL;
@@ -2182,7 +2182,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("find_closed_curve_loops", 0);
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":23
+  /* "cython_functions/find_closed_curve.pyx":23
  * 
  * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):
  *     closed_curve_loops = []             # <<<<<<<<<<<<<<
@@ -2194,7 +2194,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   __pyx_v_closed_curve_loops = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":24
+  /* "cython_functions/find_closed_curve.pyx":24
  * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):
  *     closed_curve_loops = []
  *     cdef list args_list = [(l1, l3, lines_lower_dict, lines_upper_dict, lines_intersurf_dict) for l1, l3 in product(list(lines_lower_dict.keys()), list(lines_upper_dict.keys()))]             # <<<<<<<<<<<<<<
@@ -2386,7 +2386,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   __pyx_v_args_list = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":26
+  /* "cython_functions/find_closed_curve.pyx":26
  *     cdef list args_list = [(l1, l3, lines_lower_dict, lines_upper_dict, lines_intersurf_dict) for l1, l3 in product(list(lines_lower_dict.keys()), list(lines_upper_dict.keys()))]
  *     cdef int i
  *     with Pool(cpu_count()) as p:             # <<<<<<<<<<<<<<
@@ -2463,7 +2463,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
           __pyx_v_p = __pyx_t_2;
           __pyx_t_2 = 0;
 
-          /* "spline_mesher/cython_functions/find_closed_curve.pyx":27
+          /* "cython_functions/find_closed_curve.pyx":27
  *     cdef int i
  *     with Pool(cpu_count()) as p:
  *         for result in p.starmap(check_closed_curve_loop, args_list):             # <<<<<<<<<<<<<<
@@ -2564,7 +2564,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
             __Pyx_XDECREF_SET(__pyx_v_result, __pyx_t_2);
             __pyx_t_2 = 0;
 
-            /* "spline_mesher/cython_functions/find_closed_curve.pyx":28
+            /* "cython_functions/find_closed_curve.pyx":28
  *     with Pool(cpu_count()) as p:
  *         for result in p.starmap(check_closed_curve_loop, args_list):
  *             if result is not None:             # <<<<<<<<<<<<<<
@@ -2575,16 +2575,15 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
             __pyx_t_17 = (__pyx_t_16 != 0);
             if (__pyx_t_17) {
 
-              /* "spline_mesher/cython_functions/find_closed_curve.pyx":29
+              /* "cython_functions/find_closed_curve.pyx":29
  *         for result in p.starmap(check_closed_curve_loop, args_list):
  *             if result is not None:
  *                 closed_curve_loops.append(result)             # <<<<<<<<<<<<<<
  *     return closed_curve_loops
- * 
  */
               __pyx_t_18 = __Pyx_PyList_Append(__pyx_v_closed_curve_loops, __pyx_v_result); if (unlikely(__pyx_t_18 == ((int)-1))) __PYX_ERR(0, 29, __pyx_L11_error)
 
-              /* "spline_mesher/cython_functions/find_closed_curve.pyx":28
+              /* "cython_functions/find_closed_curve.pyx":28
  *     with Pool(cpu_count()) as p:
  *         for result in p.starmap(check_closed_curve_loop, args_list):
  *             if result is not None:             # <<<<<<<<<<<<<<
@@ -2593,7 +2592,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
  */
             }
 
-            /* "spline_mesher/cython_functions/find_closed_curve.pyx":27
+            /* "cython_functions/find_closed_curve.pyx":27
  *     cdef int i
  *     with Pool(cpu_count()) as p:
  *         for result in p.starmap(check_closed_curve_loop, args_list):             # <<<<<<<<<<<<<<
@@ -2603,7 +2602,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
           }
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-          /* "spline_mesher/cython_functions/find_closed_curve.pyx":26
+          /* "cython_functions/find_closed_curve.pyx":26
  *     cdef list args_list = [(l1, l3, lines_lower_dict, lines_upper_dict, lines_intersurf_dict) for l1, l3 in product(list(lines_lower_dict.keys()), list(lines_upper_dict.keys()))]
  *     cdef int i
  *     with Pool(cpu_count()) as p:             # <<<<<<<<<<<<<<
@@ -2624,7 +2623,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
         __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
         /*except:*/ {
-          __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+          __Pyx_AddTraceback("cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
           if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_8) < 0) __PYX_ERR(0, 26, __pyx_L13_except_error)
           __Pyx_GOTREF(__pyx_t_1);
           __Pyx_GOTREF(__pyx_t_2);
@@ -2687,19 +2686,17 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
     __pyx_L23:;
   }
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":30
+  /* "cython_functions/find_closed_curve.pyx":30
  *             if result is not None:
  *                 closed_curve_loops.append(result)
  *     return closed_curve_loops             # <<<<<<<<<<<<<<
- * 
- * 
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_closed_curve_loops);
   __pyx_r = __pyx_v_closed_curve_loops;
   goto __pyx_L0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":22
+  /* "cython_functions/find_closed_curve.pyx":22
  *     return None
  * 
  * cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):             # <<<<<<<<<<<<<<
@@ -2716,7 +2713,7 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_closed_curve_loops);
@@ -2731,8 +2728,8 @@ static PyObject *__pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_3find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_3find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_16cython_functions_17find_closed_curve_3find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_16cython_functions_17find_closed_curve_3find_closed_curve_loops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_lines_lower_dict = 0;
   PyObject *__pyx_v_lines_upper_dict = 0;
   PyObject *__pyx_v_lines_intersurf_dict = 0;
@@ -2794,14 +2791,14 @@ static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("find_closed_curve_loops", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 22, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_lower_dict), (&PyDict_Type), 1, "lines_lower_dict", 1))) __PYX_ERR(0, 22, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_upper_dict), (&PyDict_Type), 1, "lines_upper_dict", 1))) __PYX_ERR(0, 22, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lines_intersurf_dict), (&PyDict_Type), 1, "lines_intersurf_dict", 1))) __PYX_ERR(0, 22, __pyx_L1_error)
-  __pyx_r = __pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_2find_closed_curve_loops(__pyx_self, __pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict);
+  __pyx_r = __pyx_pf_16cython_functions_17find_closed_curve_2find_closed_curve_loops(__pyx_self, __pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2812,7 +2809,7 @@ static PyObject *__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve_2find_closed_curve_loops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict) {
+static PyObject *__pyx_pf_16cython_functions_17find_closed_curve_2find_closed_curve_loops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_lines_lower_dict, PyObject *__pyx_v_lines_upper_dict, PyObject *__pyx_v_lines_intersurf_dict) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2821,7 +2818,7 @@ static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("find_closed_curve_loops", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_13spline_mesher_16cython_functions_17find_closed_curve_find_closed_curve_loops(__pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 22, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_16cython_functions_17find_closed_curve_find_closed_curve_loops(__pyx_v_lines_lower_dict, __pyx_v_lines_upper_dict, __pyx_v_lines_intersurf_dict, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2830,7 +2827,7 @@ static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("spline_mesher.cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("cython_functions.find_closed_curve.find_closed_curve_loops", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2839,8 +2836,8 @@ static PyObject *__pyx_pf_13spline_mesher_16cython_functions_17find_closed_curve
 }
 
 static PyMethodDef __pyx_methods[] = {
-  {"check_closed_curve_loop", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_1check_closed_curve_loop, METH_VARARGS|METH_KEYWORDS, 0},
-  {"find_closed_curve_loops", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13spline_mesher_16cython_functions_17find_closed_curve_3find_closed_curve_loops, METH_VARARGS|METH_KEYWORDS, 0},
+  {"check_closed_curve_loop", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_16cython_functions_17find_closed_curve_1check_closed_curve_loop, METH_VARARGS|METH_KEYWORDS, 0},
+  {"find_closed_curve_loops", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_16cython_functions_17find_closed_curve_3find_closed_curve_loops, METH_VARARGS|METH_KEYWORDS, 0},
   {0, 0, 0, 0}
 };
 
@@ -2919,7 +2916,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":26
+  /* "cython_functions/find_closed_curve.pyx":26
  *     cdef list args_list = [(l1, l3, lines_lower_dict, lines_upper_dict, lines_intersurf_dict) for l1, l3 in product(list(lines_lower_dict.keys()), list(lines_upper_dict.keys()))]
  *     cdef int i
  *     with Pool(cpu_count()) as p:             # <<<<<<<<<<<<<<
@@ -3182,14 +3179,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_spline_mesher__cython_functions__find_closed_curve) {
+  if (__pyx_module_is_main_cython_functions__find_closed_curve) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name, __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "spline_mesher.cython_functions.find_closed_curve")) {
-      if (unlikely(PyDict_SetItemString(modules, "spline_mesher.cython_functions.find_closed_curve", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "cython_functions.find_closed_curve")) {
+      if (unlikely(PyDict_SetItemString(modules, "cython_functions.find_closed_curve", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -3210,7 +3207,7 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":1
+  /* "cython_functions/find_closed_curve.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * from itertools import product
  * from multiprocessing import Pool, cpu_count
@@ -3220,7 +3217,7 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":2
+  /* "cython_functions/find_closed_curve.pyx":2
  * import numpy as np
  * from itertools import product             # <<<<<<<<<<<<<<
  * from multiprocessing import Pool, cpu_count
@@ -3240,7 +3237,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":3
+  /* "cython_functions/find_closed_curve.pyx":3
  * import numpy as np
  * from itertools import product
  * from multiprocessing import Pool, cpu_count             # <<<<<<<<<<<<<<
@@ -3268,7 +3265,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "spline_mesher/cython_functions/find_closed_curve.pyx":1
+  /* "cython_functions/find_closed_curve.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * from itertools import product
  * from multiprocessing import Pool, cpu_count
@@ -3286,11 +3283,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init spline_mesher.cython_functions.find_closed_curve", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init cython_functions.find_closed_curve", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_CLEAR(__pyx_m);
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init spline_mesher.cython_functions.find_closed_curve");
+    PyErr_SetString(PyExc_ImportError, "init cython_functions.find_closed_curve");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
