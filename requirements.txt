@@ -9,4 +9,4 @@ setuptools==65.5.1
 shapely == 2.0.1
 SimpleITK==2.2.0
 vtk==9.1.0
-cython==0.29.33
+Cython==0.29.33
