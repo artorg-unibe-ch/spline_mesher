@@ -14,7 +14,7 @@
 <h3 align="center">Spline-based structured conformal hexahedral meshing</h3>
 
   <p align="center">
-    Add a project description here
+    A Python package for generating GMSH meshes from SCANCO HR-pQCT images.
     <br />
     <a href="https://github.com/simoneponcioni/spline-mesher"><strong>Explore the docs »</strong></a>
     <br />

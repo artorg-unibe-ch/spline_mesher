@@ -719,7 +719,7 @@ if "__main__" == __name__:
     # ? make sure of the point order (has to be clockwise)
 
     outer_point_tags = []
-    for i in range(0, 10, 2):
+    for i in range(0, 5, 2):
         d1 = c1 - (0.1 * i * c1)
         d2 = c2 - (0.1 * i * c2)
         point_01 = gmsh.model.occ.addPoint(d1 * a, 0, i, -1)

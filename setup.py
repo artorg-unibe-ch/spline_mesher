@@ -2,9 +2,7 @@ from setuptools import setup
 from Cython.Build import cythonize
 
 setup(
-    name="find_closed_curve",
+    name="spline_mesher",
+    packages=["spline_mesher"],
     ext_modules=cythonize("src/cython_functions/find_closed_curve.pyx"),
 )
-
-if __name__ == "__main__":
-    setup()
