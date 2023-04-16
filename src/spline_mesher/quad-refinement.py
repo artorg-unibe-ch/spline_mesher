@@ -704,24 +704,78 @@ class QuadRefinement:
             lines_intersurf_dict[line] = line_points
         return lines_lower_dict, lines_upper_dict, lines_intersurf_dict
 
+    def create_surf_dict(self, surf_lower, surf_upper, surf_inter):
+        surf_lower_dict = {}
+        surf_upper_dict = {}
+        surf_inter_dict = {}
+        for surf in surf_lower:
+            _, surf_lines = gmsh.model.getAdjacencies(2, surf)
+            surf_lower_dict[surf] = surf_lines
+        for surf in surf_upper:
+            _, surf_lines = gmsh.model.getAdjacencies(2, surf)
+            surf_upper_dict[surf] = surf_lines
+        for surf in surf_inter:
+            _, surf_lines = gmsh.model.getAdjacencies(2, surf)
+            surf_inter_dict[surf] = surf_lines
+        return surf_lower_dict, surf_upper_dict, surf_inter_dict
+
+    def check_closed_surface_loop(
+        self, lines_lower_dict: dict, lines_upper_dict: dict, lines_intersurf_dict: dict
+    ) -> dict:
+        surf_loop_dict = {}
+        index = 1
+        for key1, value1 in lines_lower_dict.items():
+            key_pairs = []
+            for key2, value2 in lines_intersurf_dict.items():
+                if any(item in value2 for item in value1):
+                    print(f"Found a matching value in {key1} and {key2}")
+                    key_pairs.append(key2)
+            surf_loop = [key1] + key_pairs
+
+            surf_loop_dict[index] = surf_loop
+            index += 1
+
+        # every line in surf_loop_dict should be contained in 4 surfaces made from lines_intersurf_dict --> check the combinations
+        for key3, value3 in lines_upper_dict.items():
+            key_pairs_2 = []
+            for key2, value2 in lines_intersurf_dict.items():
+                if any(item in value2 for item in value3):
+                    print(f"Found a matching value in {key3} and {key2}")
+                    key_pairs_2.append(key2)
+
+            # check if all values in key_pairs_two are in item, if yes, append key3 to surf_loop_dict
+            for key, item in surf_loop_dict.items():
+                if all(key_pair in item for key_pair in key_pairs_2):
+                    item.append(key3)
+                    print(f"Found a matching value: {item}")
+
+        print(f"surf_loop_dict: {surf_loop_dict}")
+        return surf_loop_dict
+
     def add_curve_loop(self, curve_loop_tags):
         return self.factory.addCurveLoop(curve_loop_tags, tag=-1)
 
     def gmsh_add_surface(self, curve_loop):
         return self.factory.addPlaneSurface(curve_loop, tag=-1)
 
+    def add_surface_loop(self, surface_loop_tags):
+        return self.factory.addSurfaceLoop(surface_loop_tags, sewing=False, tag=-1)
+
+    def gmsh_add_volume(self, surface_loop):
+        return self.factory.addVolume(surface_loop, tag=-1)
+
 
 if "__main__" == __name__:
     gmsh.initialize()
-    a = 10
+    a = 20
     c1 = 1
     c2 = 1
     # ? make sure of the point order (has to be clockwise)
 
     outer_point_tags = []
-    for i in range(0, 5, 2):
-        d1 = c1 - (0.1 * i * c1)
-        d2 = c2 - (0.1 * i * c2)
+    for i in range(0, 10, 7):
+        d1 = c1 - (0 * i * c1)
+        d2 = c2 - (0 * i * c2)
         point_01 = gmsh.model.occ.addPoint(d1 * a, 0, i, -1)
         point_02 = gmsh.model.occ.addPoint(0, -d2 * a, i, -1)
         point_03 = gmsh.model.occ.addPoint(-d1 * a, 0, i, -1)
@@ -754,6 +808,7 @@ if "__main__" == __name__:
         surf_tags_internal.append(trab_refinement_surf_tags[:-4])
 
     points_in_surf = []
+    plane_surfs = []
     for _slice in surf_tags_internal:
         connected_points = []
         for surf in _slice:
@@ -761,9 +816,10 @@ if "__main__" == __name__:
             tag_unique = np.unique(tag)
             connected_points.append(tag_unique)
         points_in_surf.append(connected_points)
+        plane_surfs.append(_slice)
 
     line_tags_intersurf = trab_refinement.create_intersurface_connection(points_in_surf)
-
+    volume_tags = []
     for _iter in range(1, len(points_in_surf)):
         (
             lines_lower_dict,
@@ -776,34 +832,70 @@ if "__main__" == __name__:
         )
 
         start_time = time.time()
-        curve_loops_tags = fcc.find_closed_curve_loops(
+        curve_loops = fcc.find_closed_curve_loops(
             lines_lower_dict, lines_upper_dict, lines_intersurf_dict
         )
         end_time = time.time()
         exec_time = end_time - start_time
         print(f"Time to find closed curve loops: {exec_time:.2f} seconds")
+        trab_refinement.factory.synchronize()
+        intersurface_surfaces_tags = []
+        for cl in curve_loops:
+            curve_loop_tag = trab_refinement.add_curve_loop(cl)
+            surf = trab_refinement.gmsh_add_surface([curve_loop_tag])
+            intersurface_surfaces_tags.append(surf)
+
+        # * ADDING SURFACE LOOPS AND INTERSURFACE VOLUMES
+        trab_refinement.factory.synchronize()
+        (
+            surf_lower_dict,
+            surf_upper_dict,
+            surf_inter_dict,
+        ) = trab_refinement.create_surf_dict(
+            plane_surfs[_iter - 1],
+            plane_surfs[_iter],
+            intersurface_surfaces_tags,
+        )
+        print(surf_lower_dict)
+        print(surf_upper_dict)
+        print(surf_inter_dict)
+        print("-----------------")
+
+        start_time = time.time()
+        surf_loops = trab_refinement.check_closed_surface_loop(
+            surf_lower_dict, surf_upper_dict, surf_inter_dict
+        )
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Time to check closed surface loops: {elapsed_time:.2f} seconds")
+
         gmsh.model.occ.synchronize()
-        intersurface_surfaces = []
-        for cl in curve_loops_tags:
-            curve_loop = trab_refinement.add_curve_loop(cl)
-            surf = trab_refinement.gmsh_add_surface([curve_loop])
-            intersurface_surfaces.append(surf)
+        intersurface_volume_tags = []
+        for _, _surf_values in surf_loops.items():
+            surf_loop_tag = trab_refinement.add_surface_loop(_surf_values)
+            vol_tag = trab_refinement.gmsh_add_volume([surf_loop_tag])
+            intersurface_volume_tags.append(vol_tag)
+        volume_tags.append(intersurface_volume_tags)
 
     # TODO: move to upper scope when testing is done
-    gmsh.model.occ.synchronize()
+    trab_refinement.factory.synchronize()
     for intersurf_tags in line_tags_intersurf:
         for line in intersurf_tags:
-            gmsh.model.mesh.setTransfiniteCurve(line, 2, "Progression", 1.0)
-    for surf in intersurface_surfaces:
+            gmsh.model.mesh.setTransfiniteCurve(line, 1, "Progression", 1.0)
+    for surf in intersurface_surfaces_tags:
         gmsh.model.mesh.setTransfiniteSurface(surf)
+    for intersurf_vols in volume_tags:
+        for vol in intersurf_vols:
+            gmsh.model.mesh.setTransfiniteVolume(vol)
 
     gmsh.option.setNumber("Mesh.RecombineAll", 1)
     gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
     gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
-    gmsh.option.setNumber("Mesh.ElementOrder", 2)
+    gmsh.option.setNumber("Mesh.ElementOrder", 1)
 
     # * 10. Create 2D mesh
-    gmsh.model.occ.synchronize()
-    gmsh.model.mesh.generate(2)
+    trab_refinement.factory.synchronize()
+    # https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710
+    gmsh.model.mesh.generate(3)
     gmsh.fltk.run()
     gmsh.finalize()

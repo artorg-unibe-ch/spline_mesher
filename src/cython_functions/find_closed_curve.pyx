@@ -3,6 +3,8 @@ from itertools import product
 from multiprocessing import Pool, cpu_count
 cimport cython
 
+# https://blog.logrocket.com/improve-python-performance-using-cython/
+
 cpdef list check_closed_curve_loop(int l1, int l3, dict lines_lower_dict, dict lines_upper_dict, dict lines_intersurf_dict):
     cdef tuple l1_tuple, l3_tuple, l2_tuple, l4_tuple
     cdef int l4, l2
@@ -28,3 +30,18 @@ cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict
             if result is not None:
                 closed_curve_loops.append(result)
     return closed_curve_loops
+
+cpdef list check_closed_surface_loop()
+
+
+'''
+cpdef find_closed_surface_loops(dict surf_lower_dict, dict surf_upper_dict, dict surf_intersurf_dict):
+    closed_surface_loops = []
+    cdef list args_list = [(s1, s3, surf_lower_dict, surf_upper_dict, surf_intersurf_dict) for s1, s3 in product(list(surf_lower_dict.keys()), list(surf_upper_dict.keys()))]
+    cdef int i
+    with Pool(cpu_count()) as p:
+        for result in p.starmap(check_closed_surface_loop, args_list):
+            if result is not None:
+                closed_surface_loops.append(result)
+    return closed_surface_loops
+'''
