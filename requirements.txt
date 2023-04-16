@@ -3,9 +3,11 @@ matplotlib==3.4.3
 numpy==1.22.0
 opencv_python==4.6.0.66
 plotly==5.8.0
-scipy==1.7.1
+scipy==1.10.1
 seaborn==0.11.2
 setuptools==65.5.1
 shapely == 2.0.1
-SimpleITK==2.2.0
-vtk==9.1.0
+SimpleITK==2.2.1
+vtk==9.2.6
+coloredlogs==15.0.1
+scikit-image==0.20.0
