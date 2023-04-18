@@ -61,7 +61,7 @@ def main():
             OUTSIDE_VAL=1,
             LOWER_THRESH=0,
             UPPER_THRESH=0.9,
-            S=5,
+            S=10,
             K=3,
             INTERP_POINTS=200,
             debug_orientation=0,
@@ -102,8 +102,8 @@ def main():
         gmsh.initialize()
         gmsh.clear()
 
-        N_TRANSVERSE = 5
-        N_RADIAL = 8
+        N_TRANSVERSE = 8
+        N_RADIAL = 25
         mesher = Mesher(
             geo_file_path,
             mesh_file_path,
@@ -225,7 +225,7 @@ def main():
             n_transverse=N_TRANSVERSE,
             n_radial=N_RADIAL,
         )
-        trabecular_volume.set_length_factor(0.5)
+        trabecular_volume.set_length_factor(0.6)
 
         if QUAD_REFINEMENT:
             trab_refinement = QuadRefinement(
