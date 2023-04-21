@@ -1,3 +1,9 @@
+"""
+Geometry representation and meshing through spline reconstruction
+Author: Simone Poncioni, MSB
+Date: 09.2022 - Ongoing
+"""
+
 import os
 from spline_mesher import HexMesh
 
