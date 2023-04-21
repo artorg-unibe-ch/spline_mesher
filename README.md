@@ -87,6 +87,9 @@ To get a local copy up and running follow these simple example steps.
    ```sh
    conda create -n meshenv python=3.9 --file requirements.txt
    conda activate meshenv
+   cd 02_CODE/
+   python setup.py build_ext --inplace
+   python setup.py install
    ```
 
 3. For developers: install the package in editable mode

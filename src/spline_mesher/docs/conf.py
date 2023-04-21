@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = "spline-mesher"
+project = "hexmesher"
 copyright = "2023, Simone Poncioni"
 author = "Simone Poncioni"
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.1-pre-alpha"
+release = "0.0.1"
 
 
 # -- General configuration ---------------------------------------------------
