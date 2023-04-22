@@ -971,9 +971,9 @@ if "__main__" == __name__:
 
     # * 10. Create 2D mesh
     trab_refinement.factory.synchronize()
-    # gmsh.write(
-    #     "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests.geo_unrolled"
-    # )
+    gmsh.write(
+        "99_testing_prototyping/trabecular-refinement/transfinite-volume-tests.geo_unrolled"
+    )
     # https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710
     # gmsh.model.mesh.generate(3)
     gmsh.fltk.run()
