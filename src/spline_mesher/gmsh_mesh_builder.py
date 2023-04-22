@@ -475,7 +475,7 @@ class Mesher:
 
         for test in test_list:
             self.model.mesh.setTransfiniteCurve(
-                test, 10, "Progression", 1.2
+                test, 8, "Progression", 1.0
             )  # TODO: works fine, but needs to be parametrized (number of trabecular radial points)
 
         for intersection in intersection_tags:
@@ -599,12 +599,6 @@ class Mesher:
             (-1, self.slicing_coefficient - 1)
         )
 
-        # trab_line_tags_v_np_r = np.concatenate(
-        # (trab_line_tags_v_np[3:, :], trab_line_tags_v_np[:3, :]), axis=0
-        # )
-
-        trab_line_tags_v_np_r = trab_line_tags_v_np  # ! debugging this lines
-
         intersection_line_tags_int_np = np.array(
             intersection_line_tags_int, dtype=int
         ).reshape((-1, self.slicing_coefficient - 1))
@@ -615,14 +609,14 @@ class Mesher:
         for j in range(0, len(trab_line_tags_v_np[:, 0])):
             for i in range(1, len(trab_cort_line_tags_np[:, 0])):
                 self.logger.debug(
-                    f"{j}, {i}:\t{trab_cort_line_tags_np[i-1][j]} {intersection_line_tags_int_np[j][i-1]} {trab_cort_line_tags_np[i][j]} {trab_line_tags_v_np_r[j][i-1]}"
+                    f"{j}, {i}:\t{trab_cort_line_tags_np[i-1][j]} {intersection_line_tags_int_np[j][i-1]} {trab_cort_line_tags_np[i][j]} {trab_line_tags_v_np[j][i-1]}"
                 )
                 curve_loop = self.factory.addCurveLoop(
                     [
                         trab_cort_line_tags_np[i - 1][j],
                         intersection_line_tags_int_np[j][i - 1],
                         trab_cort_line_tags_np[i][j],
-                        trab_line_tags_v_np_r[j][i - 1],
+                        trab_line_tags_v_np[j][i - 1],
                     ],
                     tag=-1,
                 )
@@ -693,12 +687,6 @@ class Mesher:
             .reshape(-1, self.slicing_coefficient - 1)
             .T
         )
-        # start from second row, concatenate first at the end
-        # trab_surfs_v_np_s = np.concatenate(
-        #     (trab_surfs_v_np[:, -1][:, None], trab_surfs_v_np[:, :-1]), axis=1
-        # )
-
-        trab_surfs_v_np_s = trab_surfs_v_np  # ! debugging this line
 
         trab_plane_inertia_tags_np = (
             np.array(trab_plane_inertia_tags, dtype=int)
@@ -725,7 +713,7 @@ class Mesher:
                 self.logger.debug(
                     f"{j}, {i}:\t{trab_plane_inertia[j][i-1]} {trab_slice_surf_tags_np[j][i-1]} "
                     f"{trab_plane_inertia[j][i]} {cortical_int_surfs_np_2[j][i-1]} "
-                    f"{trab_slice_surf_tags_np[j+1][i-1]} {trab_surfs_v_np_s[j][i-1]}"
+                    f"{trab_slice_surf_tags_np[j+1][i-1]} {trab_surfs_v_np[j][i-1]}"
                 )
                 surf_loop = self.factory.addSurfaceLoop(
                     [
@@ -734,7 +722,7 @@ class Mesher:
                         trab_plane_inertia[j][i],
                         cortical_int_surfs_np_2[j][i - 1],
                         trab_slice_surf_tags_np[j + 1][i - 1],
-                        trab_surfs_v_np_s[j][i - 1],
+                        trab_surfs_v_np[j][i - 1],
                     ],
                     tag=-1,
                 )
@@ -805,6 +793,125 @@ class Mesher:
         self.plugin.setNumber("AnalyseMeshQuality", "HidingThreshold", hiding_thresh)
         self.plugin.run("AnalyseMeshQuality")
         return None
+
+    def get_mesh(self):
+        # Get all the elementary entities in the model, as a vector of (dimension, tag)
+        # pairs:
+        self.factory.synchronize()
+        physicalgroups = self.model.getPhysicalGroups(3)
+
+        entities = []
+        nodeTags = []
+        elemTags = []
+        for pg in physicalgroups:
+            ent = self.model.getEntitiesForPhysicalGroup(3, pg[1])
+            entities.append(ent)
+
+        for sub_entities in entities:
+            for e in sub_entities:
+                # Dimension and tag of the entity:
+                dim = 3
+                tag = e
+
+                # Mesh data is made of `elements' (points, lines, triangles, ...), defined
+                # by an ordered list of their `nodes'. Elements and nodes are identified by
+                # `tags' as well (strictly positive identification numbers), and are stored
+                # ("classified") in the model entity they discretize. Tags for elements and
+                # nodes are globally unique (and not only per dimension, like entities).
+
+                # A model entity of dimension 0 (a geometrical point) will contain a mesh
+                # element of type point, as well as a mesh node. A model curve will contain
+                # line elements as well as its interior nodes, while its boundary nodes will
+                # be stored in the bounding model points. A model surface will contain
+                # triangular and/or quadrangular elements and all the nodes not classified
+                # on its boundary or on its embedded entities. A model volume will contain
+                # tetrahedra, hexahedra, etc. and all the nodes not classified on its
+                # boundary or on its embedded entities.
+
+                # Get the mesh nodes for the entity (dim, tag):
+                nodeTags, nodeCoords, nodeParams = self.model.mesh.getNodes(dim, tag)
+
+                # Get the mesh elements for the entity (dim, tag):
+                elemTypes, elemTags, elemNodeTags = self.model.mesh.getElements(
+                    dim, tag
+                )
+
+                # Elements can also be obtained by type, by using `getElementTypes()'
+                # followed by `getElementsByType()'.
+
+                # Let's print a summary of the information available on the entity and its
+                # mesh.
+
+                # * Type and name of the entity:
+                type = self.model.getType(e[0], e[1])
+                name = self.model.getEntityName(e[0], e[1])
+                if len(name):
+                    name += " "
+                print("Entity " + name + str(e) + " of type " + type)
+
+                # * Number of mesh nodes and elements:
+                numElem = sum(len(i) for i in elemTags)
+                print(
+                    " - Mesh has "
+                    + str(len(nodeTags))
+                    + " nodes and "
+                    + str(numElem)
+                    + " elements"
+                )
+
+                # * Upward and downward adjacencies:
+                up, down = self.model.getAdjacencies(e[0], e[1])
+                if len(up):
+                    print(" - Upward adjacencies: " + str(up))
+                if len(down):
+                    print(" - Downward adjacencies: " + str(down))
+
+                # * Does the entity belong to physical groups?
+                physicalTags = self.model.getPhysicalGroupsForEntity(dim, tag)
+                if len(physicalTags):
+                    s = ""
+                    for p in physicalTags:
+                        n = self.model.getPhysicalName(dim, p)
+                        if n:
+                            n += " "
+                        s += n + "(" + str(dim) + ", " + str(p) + ") "
+                    print(" - Physical groups: " + s)
+
+                # * Is the entity a partition entity? If so, what is its parent entity?
+                partitions = self.model.getPartitions(e[0], e[1])
+                if len(partitions):
+                    print(
+                        " - Partition tags: "
+                        + str(partitions)
+                        + " - parent entity "
+                        + str(self.model.getParent(e[0], e[1]))
+                    )
+
+                # * List all types of elements making up the mesh of the entity:
+                for t in elemTypes:
+                    (
+                        name,
+                        dim,
+                        order,
+                        numv,
+                        parv,
+                        _,
+                    ) = self.model.mesh.getElementProperties(t)
+                    print(
+                        " - Element type: "
+                        + name
+                        + ", order "
+                        + str(order)
+                        + " ("
+                        + str(numv)
+                        + " nodes in param coord: "
+                        + str(parv)
+                        + ")"
+                    )
+                    nodeTags.append(nodeTags)
+                    elemTags.append(elemTags)
+
+            return nodeTags, elemTags
 
 
 class TrabecularVolume(Mesher):

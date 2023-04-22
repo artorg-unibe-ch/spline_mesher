@@ -596,10 +596,10 @@ class QuadRefinement:
             )
             self.logger.debug(ext_surf_tags[i - 1])
             self.logger.debug(corners_s)
-            self.model.mesh.setTransfiniteSurface(
-                ext_surf_tags[i - 1],
-                cornerTags=corners_s,
-            )
+            # self.model.mesh.setTransfiniteSurface(
+            #     ext_surf_tags[i - 1],
+            #     cornerTags=corners_s,
+            # )
             corners.append(corners_s)
         return line_tags_new, ext_surf_tags, curve_loops_line_tags, corners
 
@@ -650,15 +650,17 @@ class QuadRefinement:
         line_tags = self.gmsh_add_custom_lines(point_tags)
         # * 8. Create GMSH surfaces
         surf_tags = self.gmsh_add_surfs(line_tags)
-        self.gmsh_make_transfinite(line_tags, surf_tags, 1)
-        # * 9. Add outer connectivity
-        (
-            line_tags,
-            ext_surf_tags,
-            curve_loops_line_tags,
-            corners_external,
-        ) = self.gmsh_add_outer_connectivity(line_tags, self.vertices_tags, point_tags)
-        [surf_tags.append(ext_surf_tag) for ext_surf_tag in ext_surf_tags]
+        # self.gmsh_make_transfinite(line_tags, surf_tags, 1)
+        # # * 9. Add outer connectivity
+        # (
+        #     line_tags,
+        #     ext_surf_tags,
+        #     curve_loops_line_tags,
+        #     corners_external,
+        # ) = self.gmsh_add_outer_connectivity(line_tags, self.vertices_tags, point_tags)
+        # [surf_tags.append(ext_surf_tag) for ext_surf_tag in ext_surf_tags]
+        curve_loops_line_tags = []  # ! remove this line
+        self.factory.synchronize()
         return point_tags, line_tags, surf_tags, curve_loops_line_tags, corners_external
 
     def get_adjacent_points(self, surf_tag: str) -> list:
@@ -802,18 +804,20 @@ if "__main__" == __name__:
     logger = logging.getLogger(LOGGING_NAME)
     gmsh.initialize()
     a = 20
-    c1 = 1
-    c2 = 1
+    c1 = 0.05
+    c2 = 0.05
     # ? make sure of the point order (has to be clockwise)
 
     outer_point_tags = []
-    for i in range(0, 10, 9):
-        d1 = c1 - (0 * i * c1)
-        d2 = c2 - (0 * i * c2)
-        point_01 = gmsh.model.occ.addPoint(d1 * a, 0, i, -1)
-        point_02 = gmsh.model.occ.addPoint(0, -d2 * a, i, -1)
-        point_03 = gmsh.model.occ.addPoint(-d1 * a, 0, i, -1)
-        point_04 = gmsh.model.occ.addPoint(0, d2 * a, i, -1)
+    for i in range(0, 10, 10):
+        # d1 = c1 - (1 - i * c1)
+        # d2 = c2 - (1 - i * c2)
+        d1 = 1 - i * c1
+        d2 = 1 - i * c2
+        point_01 = gmsh.model.occ.addPoint(d1 * a, d1 * a, i, -1)
+        point_02 = gmsh.model.occ.addPoint(d2 * a, -d2 * a, i, -1)
+        point_03 = gmsh.model.occ.addPoint(-d1 * a, -d1 * a, i, -1)
+        point_04 = gmsh.model.occ.addPoint(-d2 * a, d2 * a, i, -1)
         initial_point_tags = [point_01, point_02, point_03, point_04]
         outer_point_tags.append(initial_point_tags)
     ###############################
@@ -960,19 +964,19 @@ if "__main__" == __name__:
         for surf in surf_subset:
             gmsh.model.mesh.setTransfiniteSurface(surf)
             gmsh.model.mesh.setRecombine(surf, 2)
-    # for intersurf_vols in volume_tags[:-4]:
-    #     for vol in intersurf_vols:
-    #         gmsh.model.mesh.setTransfiniteVolume(vol)
+    for intersurf_vols in volume_tags:
+        for vol in intersurf_vols:
+            gmsh.model.mesh.setTransfiniteVolume(vol)
 
-    # gmsh.option.setNumber("Mesh.RecombineAll", 1)
-    # gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
-    # gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
-    # gmsh.option.setNumber("Mesh.ElementOrder", 1)
+    gmsh.option.setNumber("Mesh.RecombineAll", 1)
+    gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
+    gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
+    gmsh.option.setNumber("Mesh.ElementOrder", 1)
 
     # * 10. Create 2D mesh
     trab_refinement.factory.synchronize()
     gmsh.write(
-        "99_testing_prototyping/trabecular-refinement/transfinite-volume-tests.geo_unrolled"
+        "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-03.geo_unrolled"
     )
     # https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710
     # gmsh.model.mesh.generate(3)
