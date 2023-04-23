@@ -85,7 +85,7 @@ To get a local copy up and running follow these simple example steps.
 2. Install dependencies
 
    ```sh
-   conda create -n meshenv python=3.9 --file requirements.txt
+   conda create -n meshenv python=3.9 --file 02_CODE/requirements.txt
    conda activate meshenv
    cd 02_CODE/
    python setup.py build_ext --inplace

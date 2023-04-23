@@ -17,7 +17,7 @@ cpdef list check_closed_curve_loop(int l1, int l3, dict lines_lower_dict, dict l
         l4_tuple = tuple(lines_intersurf_dict[l4])
         if (l1_tuple[0] == l2_tuple[1] or l1_tuple[1] == l2_tuple[0]) and (l1_tuple[0] == l4_tuple[0] or l1_tuple[1] == l4_tuple[1]):
             if (l3_tuple[0] == l2_tuple[0] or l3_tuple[1] == l2_tuple[1]) and (l3_tuple[0] == l4_tuple[1] or l3_tuple[1] == l4_tuple[0]):
-                cl_s = [l1, l2, l3, l4]
+                cl_s = [l1, l2, -l3, -l4] # ! -l3 and -l4
                 return cl_s
     return None
 

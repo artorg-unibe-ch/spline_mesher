@@ -12,7 +12,8 @@ import gmsh
 import numpy as np
 import plotly.io as pio
 from futils.setup_utils import logging_setup
-from gmsh_mesh_builder import Mesher, TrabecularVolume, QuadRefinement
+from gmsh_mesh_builder import Mesher, TrabecularVolume
+from quad_refinement import QuadRefinement
 from spline_volume import OCC_volume
 
 pio.renderers.default = "browser"
@@ -123,10 +124,12 @@ class HexMesh:
             )
             cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
         cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
+
         gmsh.initialize()
         gmsh.clear()
         N_TRANSVERSE = 4
         N_RADIAL = 9
+
         mesher = Mesher(
             geo_unrolled_filename,
             mesh_file_path,
@@ -229,6 +232,7 @@ class HexMesh:
             slices_tags,
             intersurface_surface_tags,
         )
+
         # TODO: check if could be implemented when created (relationship with above functions)
         intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
 
@@ -243,13 +247,7 @@ class HexMesh:
         )
 
         trabecular_volume.set_length_factor(0.6)
-        if trabecular_volume.QUAD_REFINEMENT:
-            trab_refinement = QuadRefinement(
-                nb_layers=1,
-                DIM=2,
-                SQUARE_SIZE_0_MM=1,
-                MAX_SUBDIVISIONS=3,
-            )
+
         (
             trab_point_tags,
             trab_line_tags_v,
@@ -264,7 +262,6 @@ class HexMesh:
             coi_idx=indices_coi_int, trab_point_tags=trab_point_tags
         )
 
-        # ! working on this (POS, 23.04.2023)
         trab_slice_surf_tags = mesher.trabecular_slices(
             trab_cort_line_tags=trab_cort_line_tags,
             trab_line_tags_h=trab_line_tags_h,
@@ -283,14 +280,26 @@ class HexMesh:
         )
 
         volume_tags = np.concatenate((cort_vol_tags, cort_trab_vol_tags), axis=None)
-        if QUAD_REFINEMENT:
-            # * quad refinement
-            for _, trab_verts in enumerate(trab_point_tags):
-                quadref_line_tags, quadref_surf_tags = trab_refinement.quad_refinement(
-                    vertices_tags=trab_verts
-                )
-                print(f"Quad refinement, line tags:\n{quadref_line_tags}")
-                print(f"Quad refinement, surf tags:\n{quadref_surf_tags}")
+
+        if trabecular_volume.QUAD_REFINEMENT:
+            # get coords of trab_point_tags
+            coords_vertices = []
+            for subset in trab_point_tags:
+                coords = trabecular_volume.get_vertices_coords(subset)
+                coords_vertices.append(coords)
+
+            trab_refinement = QuadRefinement(
+                nb_layers=1,
+                DIM=2,
+                SQUARE_SIZE_0_MM=1,
+                MAX_SUBDIVISIONS=3,
+            )
+
+            (
+                quadref_line_tags_intersurf,
+                quadref_surfs,
+                quadref_vols,
+            ) = trab_refinement.exec_quad_refinement(coords_vertices)
 
         # * meshing
         trab_surfs = list(
@@ -345,5 +354,4 @@ class HexMesh:
         elapsed = round(end - start, ndigits=3)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
-
         return nodes, elms
