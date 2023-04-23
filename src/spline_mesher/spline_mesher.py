@@ -334,9 +334,9 @@ class HexMesh:
             volume_tags,
             test_list=intersurface_line_tags,
         )
+        mesher.mesh_generate(dim=2, element_order=1, optimise=True)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.occ.synchronize()
-        mesher.mesh_generate(dim=2, element_order=1, optimise=True)
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
