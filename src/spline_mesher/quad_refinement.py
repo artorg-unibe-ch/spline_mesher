@@ -358,6 +358,159 @@ class QuadRefinement:
         l978 = self.factory.addLine(pt[56], pt[46], tag=-1)
         center_squares_first_lvl = [l975, l976, l977, l978]
 
+        # TODO: add 'if' depending on number of subdivisions, now works for only 2 subdivisions
+        # assignee: @simoneponcioni
+        # add outer squares
+        pt = [None] * 4 + pt
+        l100 = self.factory.addLine(pt[9], pt[19], tag=-1)
+        l101 = self.factory.addLine(pt[19], pt[29], tag=-1)
+        l102 = self.factory.addLine(pt[29], pt[39], tag=-1)
+        l103 = self.factory.addLine(pt[39], pt[49], tag=-1)
+        l104 = self.factory.addLine(pt[49], pt[59], tag=-1)
+        l105 = self.factory.addLine(pt[59], pt[69], tag=-1)
+        l106 = self.factory.addLine(pt[69], pt[79], tag=-1)
+        l107 = self.factory.addLine(pt[79], pt[89], tag=-1)
+        l108 = self.factory.addLine(pt[89], pt[99], tag=-1)
+
+        l109 = self.factory.addLine(pt[9], pt[10], tag=-1)
+        l110 = self.factory.addLine(pt[19], pt[20], tag=-1)
+        l111 = self.factory.addLine(pt[29], pt[30], tag=-1)
+        l112 = self.factory.addLine(pt[39], pt[40], tag=-1)
+        l113 = self.factory.addLine(pt[49], pt[50], tag=-1)
+        l114 = self.factory.addLine(pt[59], pt[60], tag=-1)
+        l115 = self.factory.addLine(pt[69], pt[70], tag=-1)
+        l116 = self.factory.addLine(pt[79], pt[80], tag=-1)
+        l117 = self.factory.addLine(pt[89], pt[90], tag=-1)
+        l118 = self.factory.addLine(pt[99], pt[100], tag=-1)
+
+        l120 = self.factory.addLine(pt[10], pt[20], tag=-1)
+        l121 = self.factory.addLine(pt[90], pt[100], tag=-1)
+
+        l130 = self.factory.addLine(pt[10], pt[11], tag=-1)
+        l131 = self.factory.addLine(pt[11], pt[12], tag=-1)
+        l132 = self.factory.addLine(pt[12], pt[13], tag=-1)
+        l133 = self.factory.addLine(pt[13], pt[14], tag=-1)
+        l134 = self.factory.addLine(pt[14], pt[15], tag=-1)
+        l135 = self.factory.addLine(pt[15], pt[16], tag=-1)
+        l136 = self.factory.addLine(pt[16], pt[17], tag=-1)
+        l137 = self.factory.addLine(pt[17], pt[18], tag=-1)
+
+        l140 = self.factory.addLine(pt[11], pt[21], tag=-1)
+        l141 = self.factory.addLine(pt[12], pt[22], tag=-1)
+        l142 = self.factory.addLine(pt[13], pt[23], tag=-1)
+        l143 = self.factory.addLine(pt[14], pt[24], tag=-1)
+        l144 = self.factory.addLine(pt[15], pt[25], tag=-1)
+        l145 = self.factory.addLine(pt[16], pt[26], tag=-1)
+        l146 = self.factory.addLine(pt[17], pt[27], tag=-1)
+        l147 = self.factory.addLine(pt[18], pt[28], tag=-1)
+
+        l148 = self.factory.addLine(pt[27], pt[28], tag=-1)
+
+        l150 = self.factory.addLine(pt[28], pt[38], tag=-1)
+        l151 = self.factory.addLine(pt[38], pt[48], tag=-1)
+        l152 = self.factory.addLine(pt[48], pt[58], tag=-1)
+        l153 = self.factory.addLine(pt[58], pt[68], tag=-1)
+        l154 = self.factory.addLine(pt[68], pt[78], tag=-1)
+        l155 = self.factory.addLine(pt[78], pt[88], tag=-1)
+        l156 = self.factory.addLine(pt[88], pt[98], tag=-1)
+        l157 = self.factory.addLine(pt[98], pt[108], tag=-1)
+
+        l160 = self.factory.addLine(pt[37], pt[38], tag=-1)
+        l161 = self.factory.addLine(pt[47], pt[48], tag=-1)
+        l162 = self.factory.addLine(pt[57], pt[58], tag=-1)
+        l163 = self.factory.addLine(pt[67], pt[68], tag=-1)
+        l164 = self.factory.addLine(pt[77], pt[78], tag=-1)
+        l165 = self.factory.addLine(pt[87], pt[88], tag=-1)
+        l166 = self.factory.addLine(pt[97], pt[98], tag=-1)
+        l167 = self.factory.addLine(pt[107], pt[108], tag=-1)
+
+        l170 = self.factory.addLine(pt[100], pt[101], tag=-1)
+        l171 = self.factory.addLine(pt[101], pt[102], tag=-1)
+        l172 = self.factory.addLine(pt[102], pt[103], tag=-1)
+        l173 = self.factory.addLine(pt[103], pt[104], tag=-1)
+        l174 = self.factory.addLine(pt[104], pt[105], tag=-1)
+        l175 = self.factory.addLine(pt[105], pt[106], tag=-1)
+        l176 = self.factory.addLine(pt[106], pt[107], tag=-1)
+
+        l180 = self.factory.addLine(pt[91], pt[101], tag=-1)
+        l181 = self.factory.addLine(pt[92], pt[102], tag=-1)
+        l182 = self.factory.addLine(pt[93], pt[103], tag=-1)
+        l183 = self.factory.addLine(pt[94], pt[104], tag=-1)
+        l184 = self.factory.addLine(pt[95], pt[105], tag=-1)
+        l185 = self.factory.addLine(pt[96], pt[106], tag=-1)
+        l186 = self.factory.addLine(pt[97], pt[107], tag=-1)
+
+        outer_square = [
+            l100,
+            l101,
+            l102,
+            l103,
+            l104,
+            l105,
+            l106,
+            l107,
+            l108,
+            l109,
+            l110,
+            l111,
+            l112,
+            l113,
+            l114,
+            l115,
+            l116,
+            l117,
+            l118,
+            l120,
+            l121,
+            l130,
+            l131,
+            l132,
+            l133,
+            l134,
+            l135,
+            l136,
+            l137,
+            l140,
+            l141,
+            l142,
+            l143,
+            l144,
+            l145,
+            l146,
+            l147,
+            l148,
+            l150,
+            l151,
+            l152,
+            l153,
+            l154,
+            l155,
+            l156,
+            l157,
+            l160,
+            l161,
+            l162,
+            l163,
+            l164,
+            l165,
+            l166,
+            l167,
+            l170,
+            l171,
+            l172,
+            l173,
+            l174,
+            l175,
+            l176,
+            l180,
+            l181,
+            l182,
+            l183,
+            l184,
+            l185,
+            l186,
+        ]
+
         line_tags = (
             center_square,
             diagonal_lines,
@@ -366,7 +519,7 @@ class QuadRefinement:
             trapezoids,
             center_squares_first_lvl,
         )
-        return line_tags
+        return line_tags, outer_square
 
     def gmsh_skin_points(self, point_tags):
         sqrt_shape = int(np.sqrt(len(point_tags)))
@@ -628,13 +781,102 @@ class QuadRefinement:
             surface_loops.append(surface_loops_t)
         return surface_loops
 
+    def close_outer_loop(self, line_tags, outer_square_lines):
+        # read all the lines
+        self.factory.synchronize()
+        line_tags_f = [item for sublist in line_tags for item in sublist]
+        line_tags = line_tags_f + outer_square_lines
+
+        line = [None] + line_tags
+
+        curve_loop_30 = [line[73], line[83], line[92], line[82]]
+        curve_loop_31 = [line[74], line[84], line[10], line[83]]
+        curve_loop_32 = [line[75], line[85], line[68], line[84]]
+        curve_loop_33 = [line[76], line[86], line[66], line[85]]
+        curve_loop_34 = [line[77], line[87], line[72], line[86]]
+        curve_loop_35 = [line[78], line[88], line[62], line[87]]
+        curve_loop_36 = [line[79], line[89], line[64], line[88]]
+        curve_loop_37 = [line[80], line[90], line[22], line[89]]
+        curve_loop_38 = [line[81], line[91], line[93], line[90]]
+        curve_loop_39 = [line[93], line[127], line[134], line[23]]
+        curve_loop_40 = [line[134], line[128], line[135], line[58]]
+        curve_loop_41 = [line[135], line[129], line[136], line[59]]
+        curve_loop_42 = [line[136], line[130], line[137], line[71]]
+        curve_loop_43 = [line[137], line[131], line[138], line[55]]
+        curve_loop_44 = [line[138], line[132], line[139], line[54]]
+        curve_loop_45 = [line[139], line[133], line[140], line[19]]
+        curve_loop_46 = [line[140], line[126], line[118], line[125]]
+
+        curve_loop_47 = [line[18], line[125], line[117], line[124]]
+        curve_loop_48 = [line[124], line[116], line[123], line[52]]
+        curve_loop_49 = [line[123], line[115], line[122], line[50]]
+        curve_loop_50 = [line[122], line[114], line[121], line[70]]
+        curve_loop_51 = [line[121], line[113], line[120], line[46]]
+        curve_loop_52 = [line[120], line[112], line[119], line[48]]
+        curve_loop_53 = [line[119], line[111], line[110], line[14]]
+        curve_loop_54 = [line[110], line[109], line[101], line[108]]
+        curve_loop_55 = [line[108], line[15], line[107], line[100]]
+        curve_loop_56 = [line[107], line[42], line[106], line[99]]
+        curve_loop_57 = [line[106], line[43], line[105], line[98]]
+        curve_loop_58 = [line[105], line[69], line[104], line[97]]
+        curve_loop_59 = [line[104], line[39], line[103], line[96]]
+        curve_loop_60 = [line[103], line[38], line[102], line[95]]
+        curve_loop_61 = [line[102], line[11], line[92], line[94]]
+
+        # concatenate in list all curve loops
+        curve_loops_outer = [
+            curve_loop_30,
+            curve_loop_31,
+            curve_loop_32,
+            curve_loop_33,
+            curve_loop_34,
+            curve_loop_35,
+            curve_loop_36,
+            curve_loop_37,
+            curve_loop_38,
+            curve_loop_39,
+            curve_loop_40,
+            curve_loop_41,
+            curve_loop_42,
+            curve_loop_43,
+            curve_loop_44,
+            curve_loop_45,
+            curve_loop_46,
+            curve_loop_47,
+            curve_loop_48,
+            curve_loop_49,
+            curve_loop_50,
+            curve_loop_51,
+            curve_loop_52,
+            curve_loop_53,
+            curve_loop_54,
+            curve_loop_55,
+            curve_loop_56,
+            curve_loop_57,
+            curve_loop_58,
+            curve_loop_59,
+            curve_loop_60,
+            curve_loop_61,
+        ]
+
+        surf = []
+        for cl in curve_loops_outer:
+            curve_loop = self.factory.addCurveLoop(cl)
+            surf_s = self.factory.addPlaneSurface([curve_loop])
+            surf.append(surf_s)
+
+        self.model.occ.synchronize()
+        for s in surf:
+            self.model.mesh.setTransfiniteSurface(s)
+
+        return surf
+
     def quad_refinement(self, initial_point_tags):
         SQUARE_SIZE_0_MM = self.SQUARE_SIZE_0_MM
         MAX_SUBDIVISIONS = self.MAX_SUBDIVISIONS
 
         # * 1. get the vertices coordinates from self.vertices_tags
         vertices_coords = self.get_vertices_coords(vertices_tags=initial_point_tags)
-
         # * 2. get the center of mass of the vertices
         center_of_mass = self.center_of_mass(vertices_coords)
         # * 3. create the vertices of the squares
@@ -654,26 +896,27 @@ class QuadRefinement:
         # * 6. Create GMSH points
         point_tags = self.gmsh_add_points(transformed_coords)
         # * 7. Create GMSH lines
-        line_tags = self.gmsh_add_custom_lines(point_tags)
+        line_tags, outer_square_lines = self.gmsh_add_custom_lines(point_tags)
+
+        # make transfinite lines
+        self.model.occ.synchronize()
+        lines = self.model.getEntities(1)
+        for line in lines:
+            self.model.mesh.setTransfiniteCurve(line[1], 2)
+
         # * 8. Create GMSH surfaces
+        # create curve loops based on the outer square lines
         surf_tags = self.gmsh_add_surfs(line_tags)
-        # self.gmsh_make_transfinite(line_tags, surf_tags, 1)
-        # # * 9. Add outer connectivity
-        # (
-        #     line_tags,
-        #     ext_surf_tags,
-        #     curve_loops_line_tags,
-        #     corners_external,
-        # ) = self.gmsh_add_outer_connectivity(line_tags, self.vertices_tags, point_tags)
-        # [surf_tags.append(ext_surf_tag) for ext_surf_tag in ext_surf_tags]
-        curve_loops_line_tags = []  # ! remove this line
-        self.factory.synchronize()
+        outer_surfs = self.close_outer_loop(line_tags, outer_square_lines)
+
+        line_tags = line_tags + tuple([outer_square_lines])
+        surf_tags = surf_tags + outer_surfs
+
         return (
             point_tags,
             line_tags,
             surf_tags,
-            curve_loops_line_tags,
-        )  # , corners_external
+        )
 
     def get_adjacent_points(self, surf_tag: str) -> list:
         _, adjacecies_down = gmsh.model.getAdjacencies(self.DIM, surf_tag)
@@ -819,11 +1062,9 @@ class QuadRefinement:
         # ! check that the points are in the right order (clockwise)
         point_tags = []
         line_tags = []
-        line_tags_external = []
         surf_tags = []
         surf_tags_internal = []
         surf_loops = []
-        corners_external = []
 
         # create points from coords
         outer_point_tags = []
@@ -839,16 +1080,12 @@ class QuadRefinement:
                 trab_refinement_point_tags,
                 trab_refinement_line_tags,
                 trab_refinement_surf_tags,
-                trab_refinement_external_curve_loops,
-                # trab_refinement_corners_external,
             ) = self.quad_refinement(initial_point_tags)
 
             point_tags.append(trab_refinement_point_tags)
             line_tags.append(trab_refinement_line_tags)
             surf_tags.append(trab_refinement_surf_tags)
             surf_tags_internal.append(trab_refinement_surf_tags)
-            line_tags_external.append(trab_refinement_external_curve_loops)
-            # corners_external.append(trab_refinement_corners_external)
 
         points_in_surf = []
         plane_surfs = []
@@ -888,7 +1125,6 @@ class QuadRefinement:
             self.factory.synchronize()
 
             intersurface_surfaces_slice = []
-
             for cl in curve_loops:
                 curve_loop_tag = self.add_curve_loop(cl)
                 surf = self.gmsh_add_surface(curve_loop_tag)
@@ -921,8 +1157,6 @@ class QuadRefinement:
             self.logger.debug(
                 f"Time to check closed surface loops: {elapsed_time:.2f} seconds"
             )
-
-        # external_surface_loops = self.create_connecting_surfaces(line_tags_external)
 
         gmsh.model.occ.synchronize()
         intersurface_volume_tags = []
@@ -969,9 +1203,9 @@ class QuadRefinement:
             for vol in intersurf_vols:
                 gmsh.model.mesh.setTransfiniteVolume(vol)
 
-        gmsh.write(
-            "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-03.geo_unrolled"
-        )
+        # gmsh.write(
+        #     "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-03.geo_unrolled"
+        # )
         return line_tags_intersurf, surfs, volume_tags
 
 
@@ -989,7 +1223,7 @@ if "__main__" == __name__:
 
     outer_point_tags = []
     outer_point_coords = []
-    for i in range(0, 10, 6):
+    for i in range(0, 10, 5):
         d1 = 1 - i * c1
         d2 = 1 - i * c2
         point_coords_01 = [d1 * a, d1 * a, i]
@@ -1031,10 +1265,13 @@ if "__main__" == __name__:
 
     # * 10. Create 3D mesh
     trab_refinement.factory.synchronize()
-    gmsh.write(
-        "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-03.geo_unrolled"
-    )
+    # gmsh.write(
+    #     "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-03.geo_unrolled"
+    # )
     # https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710
-    gmsh.model.mesh.generate(3)
+    try:
+        gmsh.model.mesh.generate(3)
+    except Exception:
+        gmsh.model.mesh.generate(2)
     gmsh.fltk.run()
     gmsh.finalize()

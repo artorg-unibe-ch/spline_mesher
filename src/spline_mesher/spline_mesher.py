@@ -128,7 +128,7 @@ class HexMesh:
         gmsh.initialize()
         gmsh.clear()
         N_TRANSVERSE = 4
-        N_RADIAL = 9
+        N_RADIAL = 10
 
         mesher = Mesher(
             geo_unrolled_filename,
@@ -334,7 +334,8 @@ class HexMesh:
             volume_tags,
             test_list=intersurface_line_tags,
         )
-        mesher.mesh_generate(dim=3, element_order=1, optimise=True)
+
+        mesher.mesh_generate(dim=2, element_order=1, optimise=True)
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
