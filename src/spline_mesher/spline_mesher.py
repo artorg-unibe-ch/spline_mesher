@@ -334,7 +334,8 @@ class HexMesh:
             volume_tags,
             test_list=intersurface_line_tags,
         )
-
+        mesher.model.mesh.removeDuplicateNodes()
+        mesher.model.occ.synchronize()
         mesher.mesh_generate(dim=2, element_order=1, optimise=True)
 
         if MESH_ANALYSIS:
