@@ -17,7 +17,7 @@ from spline_volume import OCC_volume
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "SIMONE"
-QUAD_REFINEMENT = bool(False)
+QUAD_REFINEMENT = bool(True)
 MESH_ANALYSIS = bool(False)
 # flake8: noqa: E402
 
@@ -231,6 +231,7 @@ class HexMesh:
         )
         # TODO: check if could be implemented when created (relationship with above functions)
         intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
+
         # Trabecular meshing
         trabecular_volume = TrabecularVolume(
             geo_unrolled_filename,
@@ -238,9 +239,11 @@ class HexMesh:
             slicing_coefficient=cortical_v.SLICING_COEFFICIENT,
             n_transverse=N_TRANSVERSE,
             n_radial=N_RADIAL,
+            QUAD_REFINEMENT=QUAD_REFINEMENT,
         )
+
         trabecular_volume.set_length_factor(0.6)
-        if QUAD_REFINEMENT:
+        if trabecular_volume.QUAD_REFINEMENT:
             trab_refinement = QuadRefinement(
                 nb_layers=1,
                 DIM=2,
@@ -255,24 +258,30 @@ class HexMesh:
             trab_surfs_h,
             trab_vols,
         ) = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
+
         # connection between inner trabecular and cortical volumes
         trab_cort_line_tags = mesher.trabecular_cortical_connection(
             coi_idx=indices_coi_int, trab_point_tags=trab_point_tags
         )
+
+        # ! working on this (POS, 23.04.2023)
         trab_slice_surf_tags = mesher.trabecular_slices(
             trab_cort_line_tags=trab_cort_line_tags,
             trab_line_tags_h=trab_line_tags_h,
             cort_int_bspline_tags=cortical_int_bspline,
         )
+
         trab_plane_inertia_tags = trabecular_volume.trabecular_planes_inertia(
             trab_cort_line_tags, trab_line_tags_v, intersection_line_tags_int
         )
+
         cort_trab_vol_tags = mesher.get_trabecular_cortical_volume_mesh(
             trab_slice_surf_tags,
             trab_plane_inertia_tags,
             cortical_int_surfs,
             trab_surfs_v,
         )
+
         volume_tags = np.concatenate((cort_vol_tags, cort_trab_vol_tags), axis=None)
         if QUAD_REFINEMENT:
             # * quad refinement
@@ -282,6 +291,7 @@ class HexMesh:
                 )
                 print(f"Quad refinement, line tags:\n{quadref_line_tags}")
                 print(f"Quad refinement, surf tags:\n{quadref_surf_tags}")
+
         # * meshing
         trab_surfs = list(
             chain(
@@ -291,6 +301,7 @@ class HexMesh:
                 trab_plane_inertia_tags,
             )
         )
+
         trabecular_volume.meshing_transfinite(
             trab_line_tags_v,
             trab_line_tags_h,
@@ -298,6 +309,7 @@ class HexMesh:
             trab_vols,
             trab_cort_line_tags,
         )
+
         # * physical groups
         mesher.factory.synchronize()
         trab_vol_tags = np.concatenate((trab_vols, cort_trab_vol_tags), axis=None)
@@ -324,8 +336,10 @@ class HexMesh:
         nodes = []
         elms = []
 
-        if SHOW_PLOTS:
-            gmsh.fltk.run()
+        # if SHOW_PLOTS:
+        #     gmsh.fltk.run()
+
+        gmsh.fltk.run()
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=3)

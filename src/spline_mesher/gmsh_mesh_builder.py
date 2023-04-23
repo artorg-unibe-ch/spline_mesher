@@ -664,6 +664,7 @@ class Mesher:
                     ],
                     tag=-1,
                 )
+
                 trab_slice = self.factory.addPlaneSurface([curve_loop], tag=-1)
                 trabecular_slice_surf_tags.append(trab_slice)
         return trabecular_slice_surf_tags
@@ -922,6 +923,7 @@ class TrabecularVolume(Mesher):
         slicing_coefficient,
         n_transverse,
         n_radial,
+        QUAD_REFINEMENT,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
@@ -937,6 +939,7 @@ class TrabecularVolume(Mesher):
         self.surf_tags = []
         self.vol_tags = []
         self.LENGTH_FACTOR = float(1.0)
+        self.QUAD_REFINEMENT = QUAD_REFINEMENT
         super().__init__(
             geo_file_path,
             mesh_file_path,
@@ -1091,9 +1094,10 @@ class TrabecularVolume(Mesher):
 
         # make volume
         trab_vol_tag = []
-        for _, surf_tag in enumerate(trab_surf_loop_tag):
-            volume_t = self.factory.addVolume([surf_tag], tag=-1)
-            trab_vol_tag.append(volume_t)
+        if self.QUAD_REFINEMENT is not True:
+            for _, surf_tag in enumerate(trab_surf_loop_tag):
+                volume_t = self.factory.addVolume([surf_tag], tag=-1)
+                trab_vol_tag.append(volume_t)
 
         self.line_tags_v = list(map(int, np.unique(line_tags_v)))
         self.line_tags_h = list(map(int, np.unique(line_tags_h)))
