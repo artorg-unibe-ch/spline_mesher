@@ -7,7 +7,6 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-[![Issues][issues-shield]][issues-url]
 ![Issue creation][todo_to_issue]
 ![Python application][pyapp]
 
@@ -64,8 +63,10 @@ Import a voxel-based model and convert it to a geometrical simplified representa
 
 ### Built With
 
+<p align="center">
 [<img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="100" height="100">][Python-url]
 [<img src="https://gitlab.onelab.info/uploads/-/system/project/avatar/3/gmsh.png" alt="Python" width="100" height="100">][GMSH-url]
+</p>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -85,22 +86,16 @@ To get a local copy up and running follow these simple example steps.
 2. Install dependencies
 
    ```sh
-   conda create -n meshenv python=3.9 --file 02_CODE/requirements.txt
+   conda create -n meshenv python=3.9 --file requirements.txt
    conda activate meshenv
-   cd 02_CODE/
    python setup.py build_ext --inplace
    python setup.py install
    ```
 
-3. For developers: install the package in editable mode
+3. For developers: install the package in editable mode and install requirements for testing
 
    ```sh
    pip install -e .
-   ```
-
-4. For developers: install requirements for testing
-
-   ```sh
    pip install -r requirements-dev.txt
    ```
 
@@ -168,7 +163,6 @@ Simone Poncioni - simone.poncioni@unibe.ch
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[issues-shield]: https://img.shields.io/github/issues-raw/simoneponcioni/spline-mesher
 [issues-url]: https://github.com/simoneponcioni/spline-mesher/issues
 
 [Python-url]: https://www.python.org/

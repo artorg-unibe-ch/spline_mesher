@@ -19,7 +19,7 @@ from spline_volume import OCC_volume
 pio.renderers.default = "browser"
 LOGGING_NAME = "SIMONE"
 QUAD_REFINEMENT = bool(True)
-MESH_ANALYSIS = bool(False)
+MESH_ANALYSIS = bool(True)
 # flake8: noqa: E402
 
 
@@ -326,6 +326,10 @@ class HexMesh:
         trab_vol_tags = np.concatenate((trab_vols, cort_trab_vol_tags), axis=None)
         cort_physical_group = mesher.model.addPhysicalGroup(3, cort_vol_tags)
         trab_physical_group = mesher.model.addPhysicalGroup(3, trab_vol_tags)
+        if trabecular_volume.QUAD_REFINEMENT:
+            quadref_physical_group = trab_refinement.model.addPhysicalGroup(
+                3, quadref_vols[0]
+            )
         print(
             f"cortical physical group: {cort_physical_group}\ntrabecular physical group: {trab_physical_group}"
         )

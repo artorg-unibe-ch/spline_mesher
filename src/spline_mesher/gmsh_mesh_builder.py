@@ -478,7 +478,7 @@ class Mesher:
 
         for test in test_list:
             self.model.mesh.setTransfiniteCurve(
-                test, 8, "Progression", 1.0
+                test, 6, "Progression", 1.0
             )  # TODO: works fine, but needs to be parametrized (number of trabecular radial points)
 
         for intersection in intersection_tags:
