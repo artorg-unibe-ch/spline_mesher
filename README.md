@@ -64,9 +64,10 @@ Import a voxel-based model and convert it to a geometrical simplified representa
 ### Built With
 
 <p align="center">
-[<img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="100" height="100">][Python-url]
-[<img src="https://gitlab.onelab.info/uploads/-/system/project/avatar/3/gmsh.png" alt="Python" width="100" height="100">][GMSH-url]
+  <a href="https://www.python.org/"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="100" height="100"></a>
+  <a href="https://gmsh.info/"><img src="https://gitlab.onelab.info/uploads/-/system/project/avatar/3/gmsh.png" alt="GMSH" width="100" height="100"></a>
 </p>
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
