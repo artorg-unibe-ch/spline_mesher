@@ -5,17 +5,20 @@ Date: 04.2023
 
 https://stackoverflow.com/questions/31527755/extract-blocks-or-patches-from-numpy-array
 https://blender.stackexchange.com/questions/230534/fastest-way-to-skin-a-grid
+https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710
+https://gitlab.onelab.info/gmsh/gmsh/-/issues/2439
+
 """
+import logging
 import time
 from itertools import chain
-import logging
 
 import cv2
 import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
-from skimage.util import view_as_windows
 from cython_functions import find_closed_curve as fcc
+from skimage.util import view_as_windows
 
 LOGGING_NAME = "SIMONE"
 # flake8: noqa: E402
@@ -787,6 +790,7 @@ class QuadRefinement:
         line_tags_f = [item for sublist in line_tags for item in sublist]
         line_tags = line_tags_f + outer_square_lines
 
+        # start line indices at 1
         line = [None] + line_tags
 
         curve_loop_30 = [line[73], line[83], line[92], line[82]]
@@ -806,7 +810,6 @@ class QuadRefinement:
         curve_loop_44 = [line[138], line[132], line[139], line[54]]
         curve_loop_45 = [line[139], line[133], line[140], line[19]]
         curve_loop_46 = [line[140], line[126], line[118], line[125]]
-
         curve_loop_47 = [line[18], line[125], line[117], line[124]]
         curve_loop_48 = [line[124], line[116], line[123], line[52]]
         curve_loop_49 = [line[123], line[115], line[122], line[50]]
@@ -909,6 +912,7 @@ class QuadRefinement:
         surf_tags = self.gmsh_add_surfs(line_tags)
         outer_surfs = self.close_outer_loop(line_tags, outer_square_lines)
 
+        point_tags = initial_point_tags + point_tags
         line_tags = line_tags + tuple([outer_square_lines])
         surf_tags = surf_tags + outer_surfs
 
@@ -952,8 +956,8 @@ class QuadRefinement:
                     start_point_0 = point_tags[i - 1][j][m - 1]
                     end_point_0 = point_tags[i][j][m - 1]
                     if m == len(point_tags[i][j]):
-                        start_point_1 = point_tags[i - 1][j][0]
-                        end_point_1 = point_tags[i][j][0]
+                        start_point_1 = point_tags[i - 1][j][-1]  # point_tags[i][j][0]
+                        end_point_1 = point_tags[i][j][-1]  # point_tags[i][j][0]
                     else:
                         start_point_1 = point_tags[i - 1][j][m]
                         end_point_1 = point_tags[i][j][m]
@@ -1054,28 +1058,17 @@ class QuadRefinement:
     def gmsh_add_volume(self, surface_loop):
         return self.factory.addVolume(surface_loop, tag=-1)
 
-    def exec_quad_refinement(self, outer_vertices):
+    def exec_quad_refinement(self, outer_point_tags):
         """
         :param outer_point_tags: list of list of point tags, each list of point tags represents a corner of the trabecular structure
         :return:
         """
-        # ! check that the points are in the right order (clockwise)
+        # ? check that the points are in the right order (clockwise)
         point_tags = []
         line_tags = []
         surf_tags = []
-        surf_tags_internal = []
         surf_loops = []
-
-        # create points from coords
-        outer_point_tags = []
-        for vertices_subset in outer_vertices:
-            point_tags_subset = []
-            for vertex in vertices_subset:
-                point_tag = self.factory.addPoint(*vertex, tag=-1)
-                point_tags_subset.append(point_tag)
-            outer_point_tags.append(point_tags_subset)
-
-        for _, initial_point_tags in enumerate(outer_point_tags):
+        for i, initial_point_tags in enumerate(outer_point_tags):
             (
                 trab_refinement_point_tags,
                 trab_refinement_line_tags,
@@ -1085,20 +1078,28 @@ class QuadRefinement:
             point_tags.append(trab_refinement_point_tags)
             line_tags.append(trab_refinement_line_tags)
             surf_tags.append(trab_refinement_surf_tags)
-            surf_tags_internal.append(trab_refinement_surf_tags)
+
+        # add missing line at the end of the surface
+        intersurf_line_last_line = []
+        for i in range(1, len(point_tags)):
+            ll = self.factory.addLine(point_tags[i - 1][-1], point_tags[i][-1], tag=-1)
+            intersurf_line_last_line.append(ll)
 
         points_in_surf = []
         plane_surfs = []
-        for _slice in surf_tags_internal:
+        for _slice in surf_tags:
             connected_points = []
             for surf in _slice:
-                tag = self.get_adjacent_points(surf)
-                tag_unique = np.unique(tag)
+                pt_tag = self.get_adjacent_points(surf)
+                tag_unique = np.unique(pt_tag)
                 connected_points.append(tag_unique)
             points_in_surf.append(connected_points)
             plane_surfs.append(_slice)
 
         line_tags_intersurf = self.create_intersurface_connection(points_in_surf)
+        for i, l_intersurf_subset in enumerate(line_tags_intersurf):
+            l_intersurf_subset.extend([intersurf_line_last_line[i]])
+
         intersurface_surfaces_tags = []
         volume_tags = []
         for _iter in range(1, len(points_in_surf)):
@@ -1167,30 +1168,8 @@ class QuadRefinement:
                 intersurface_volume_tags.append(vol_tag)
             volume_tags.append(intersurface_volume_tags)
 
-        gmsh.model.occ.synchronize()
-        # add external surface loops, because it need 4 faces to work
-        # for subsubset in external_surface_loops:
-        #     for subset in subsubset:
-        #         for surf in subset:
-        #             gmsh.model.mesh.setTransfiniteSurface(surf)
-
-        # vol_ext_tag = []
-        # for i in range(len(corners_external) - 1):
-        #     corners_curr = corners_external[i]
-        #     corners_next = corners_external[i + 1]
-        #     for j, _ in enumerate(corners_curr):
-        #         print(f"corner_curr: {corners_curr[j]}")
-        #         print(f"corner_next: {corners_next[j]}")
-        #         print("------------")
-
-        #         corners_ll = corners_curr[j] + corners_next[j]
-        #         corners_list = [corner for corner in corners_ll]
-        #         surf_loop = self.add_surface_loop(external_surface_loops[i][j])
-        #         vol_ext_s = self.gmsh_add_volume([surf_loop])
-        #         vol_ext_tag.append(vol_ext_s)
-
         # # TODO: move to upper scope when testing is done
-        surfs = list(chain(surf_tags_internal, intersurface_surfaces_tags))
+        surfs = list(chain(surf_tags, intersurface_surfaces_tags))
         self.factory.synchronize()
         for line_subset in line_tags_intersurf:
             for line in line_subset:
@@ -1204,7 +1183,7 @@ class QuadRefinement:
                 gmsh.model.mesh.setTransfiniteVolume(vol)
 
         # gmsh.write(
-        #     "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-03.geo_unrolled"
+        #     "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-040.geo_unrolled"
         # )
         return line_tags_intersurf, surfs, volume_tags
 
@@ -1223,7 +1202,7 @@ if "__main__" == __name__:
 
     outer_point_tags = []
     outer_point_coords = []
-    for i in range(0, 10, 5):
+    for i in range(0, 10, 9):
         d1 = 1 - i * c1
         d2 = 1 - i * c2
         point_coords_01 = [d1 * a, d1 * a, i]
@@ -1237,6 +1216,7 @@ if "__main__" == __name__:
             point_coords_03,
             point_coords_04,
         ]
+
         initial_point_tag = []
         for coord in initial_point_coords:
             pt_tag = create_initial_points(coord)
@@ -1256,7 +1236,7 @@ if "__main__" == __name__:
         quadref_line_tags_intersurf,
         quadref_surfs,
         quadref_vols,
-    ) = trab_refinement.exec_quad_refinement(outer_point_coords)
+    ) = trab_refinement.exec_quad_refinement(outer_point_tags)
 
     gmsh.option.setNumber("Mesh.RecombineAll", 1)
     gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
@@ -1268,10 +1248,8 @@ if "__main__" == __name__:
     # gmsh.write(
     #     "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-03.geo_unrolled"
     # )
-    # https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710
-    try:
-        gmsh.model.mesh.generate(3)
-    except Exception:
-        gmsh.model.mesh.generate(2)
+
+    quadref_physical_group = trab_refinement.model.addPhysicalGroup(3, quadref_vols[0])
+    gmsh.model.mesh.generate(3)
     gmsh.fltk.run()
     gmsh.finalize()

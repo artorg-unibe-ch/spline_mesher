@@ -299,7 +299,9 @@ class HexMesh:
                 quadref_line_tags_intersurf,
                 quadref_surfs,
                 quadref_vols,
-            ) = trab_refinement.exec_quad_refinement(coords_vertices)
+            ) = trab_refinement.exec_quad_refinement(
+                trab_point_tags.tolist()
+            )  # , coords_vertices
 
         # * meshing
         trab_surfs = list(
@@ -334,7 +336,7 @@ class HexMesh:
             volume_tags,
             test_list=intersurface_line_tags,
         )
-        mesher.mesh_generate(dim=2, element_order=1, optimise=True)
+        mesher.mesh_generate(dim=3, element_order=1, optimise=True)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.occ.synchronize()
 

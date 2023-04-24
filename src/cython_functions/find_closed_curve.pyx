@@ -25,7 +25,7 @@ cpdef find_closed_curve_loops(dict lines_lower_dict, dict lines_upper_dict, dict
     closed_curve_loops = []
     cdef list args_list = [(l1, l3, lines_lower_dict, lines_upper_dict, lines_intersurf_dict) for l1, l3 in product(list(lines_lower_dict.keys()), list(lines_upper_dict.keys()))]
     cdef int i
-    with Pool(cpu_count()) as p:
+    with Pool(cpu_count()-2) as p:
         for result in p.starmap(check_closed_curve_loop, args_list):
             if result is not None:
                 closed_curve_loops.append(result)
