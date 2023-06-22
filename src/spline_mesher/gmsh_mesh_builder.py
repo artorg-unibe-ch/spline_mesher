@@ -7,7 +7,7 @@ import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as shpg
-from scipy import spatial
+import scipy.spatial as spatial
 from skimage.util import view_as_windows
 from cython_functions import find_closed_curve as fcc
 from itertools import chain
@@ -22,7 +22,9 @@ class Mesher:
         geo_file_path,
         mesh_file_path,
         slicing_coefficient,
-        n_transverse,
+        n_longitudinal,
+        n_transverse_cort,
+        n_transverse_trab,
         n_radial,
     ):
         self.model = gmsh.model
@@ -32,7 +34,9 @@ class Mesher:
         self.geo_file_path = geo_file_path
         self.mesh_file_path = mesh_file_path
         self.slicing_coefficient = slicing_coefficient
-        self.n_transverse = n_transverse
+        self.n_longitudinal = n_longitudinal
+        self.n_transverse_cort = n_transverse_cort
+        self.n_transverse_trab = n_transverse_trab
         self.n_radial = n_radial
         self.logger = logging.getLogger(LOGGING_NAME)
 
@@ -114,7 +118,7 @@ class Mesher:
         arr = np.insert(arr, closest_idx, values, axis=0)
         return arr
 
-    def insert_tensor_of_inertia(self, array, centroid) -> np.ndarray:
+    def insert_tensor_of_inertia(self, array, centroid) -> tuple:
         """
         1. calculate centroid of the cortex
         2. calculate intersection of the centroid with the contours
@@ -274,6 +278,7 @@ class Mesher:
         ]
 
         array_split_idx_full = []
+        array_split_idx = None
         for i, _ in enumerate(array_pts_tags_split):
             for j in range(len(idx_list_sorted[0, :]) - 1):
                 # section the array with the idx_list
@@ -445,7 +450,7 @@ class Mesher:
             intersurface_surface_tags.append(intersurf_tag)
         return intersurface_surface_tags
 
-    def gmsh_geometry_formulation(self, array: np.ndarray, idx_list: list):
+    def gmsh_geometry_formulation(self, array: np.ndarray, idx_list: np.ndarray):
         array_pts_tags = self.insert_points(array)
 
         intersection_line_tag, indexed_points_coi = self.insert_intersection_line(
@@ -468,24 +473,35 @@ class Mesher:
         )
 
     def meshing_transfinite(
-        self, intersection_tags, bspline_tags, surface_tags, volume_tags, test_list
+        self,
+        longitudinal_line_tags,
+        transverse_line_tags,
+        radial_line_tags,
+        surface_tags,
+        volume_tags,
+        phase='cort'
     ):
         self.factory.synchronize()
 
-        intersection_tags = list(map(int, intersection_tags))
-        bspline_tags = list(map(int, bspline_tags))
+        longitudinal_line_tags = list(map(int, longitudinal_line_tags))
+        radial_line_tags = list(map(int, radial_line_tags))
         surface_tags = list(map(int, surface_tags))
+        volume_tags = list(map(int, volume_tags))
 
-        for test in test_list:
-            self.model.mesh.setTransfiniteCurve(
-                test, 6, "Progression", 1.0
-            )  # TODO: works fine, but needs to be parametrized (number of trabecular radial points)
+        n_transverse = None
+        if phase == 'cort':
+            n_transverse = self.n_transverse_cort
+        elif phase == 'trab':
+            n_transverse = self.n_transverse_trab
 
-        for intersection in intersection_tags:
-            self.model.mesh.setTransfiniteCurve(intersection, self.n_transverse)
+        for ll in longitudinal_line_tags:
+            self.model.mesh.setTransfiniteCurve(ll, self.n_longitudinal)
 
-        for bspline in bspline_tags:
-            self.model.mesh.setTransfiniteCurve(bspline, self.n_radial)
+        for ll in transverse_line_tags:
+            self.model.mesh.setTransfiniteCurve(ll, n_transverse)
+
+        for intersection in radial_line_tags:
+            self.model.mesh.setTransfiniteCurve(intersection, self.n_radial)
 
         for surface in surface_tags:
             self.model.mesh.setTransfiniteSurface(surface)
@@ -910,10 +926,46 @@ class Mesher:
                         + str(parv)
                         + ")"
                     )
-                    nodeTags.append(nodeTags)
-                    elemTags.append(elemTags)
 
             return nodeTags, elemTags
+
+    def nodes2coords(self, nodes, elements):
+        """
+        https://github.com/dmelgarm/gmsh/blob/master/gmsh_tools.py#L254
+        Associate node coordinates to each element
+        """
+
+        ncoords = np.zeros((len(elements), 10))
+        for k in range(len(elements)):
+            node1 = int(elements[k, 5])
+            node2 = int(elements[k, 6])
+            node3 = int(elements[k, 7])
+            ncoords[k, 0] = k + 1
+            # Get node 1 coordinates
+            i = np.where(nodes[:, 0] == node1)[0]
+            ncoords[k, 1:4] = nodes[i, 1:4]
+            # Get node 2 coordinates
+            i = np.where(nodes[:, 0] == node2)[0]
+            ncoords[k, 4:7] = nodes[i, 1:4]
+            # Get node 1 coordinates
+            i = np.where(nodes[:, 0] == node3)[0]
+            ncoords[k, 7:10] = nodes[i, 1:4]
+        return ncoords
+
+    def get_centroids(self, nodes, elements):
+        """
+        https://github.com/dmelgarm/gmsh/blob/master/gmsh_tools.py#L254
+        From node coordinates get element centroid
+        """
+        ncoords = self.nodes2coords(nodes, elements)
+        # fmt: off
+        centroids=np.zeros((len(ncoords),4))
+        centroids[:,0]=np.arange(1,len(ncoords)+1)
+        centroids[:,1]=(1./3)*(ncoords[:,1]+ncoords[:,4]+ncoords[:,7]) # x centroids
+        centroids[:,2]=(1./3)*(ncoords[:,2]+ncoords[:,5]+ncoords[:,8]) # y centroids
+        centroids[:,3]=(1./3)*(ncoords[:,3]+ncoords[:,6]+ncoords[:,9]) # z centroids
+        # fmt: on
+        return centroids
 
 
 class TrabecularVolume(Mesher):
@@ -922,7 +974,9 @@ class TrabecularVolume(Mesher):
         geo_file_path,
         mesh_file_path,
         slicing_coefficient,
-        n_transverse,
+        n_longitudinal,
+        n_transverse_cort,
+        n_transverse_trab,
         n_radial,
         QUAD_REFINEMENT,
     ):
@@ -931,7 +985,8 @@ class TrabecularVolume(Mesher):
         self.geo_file_path = geo_file_path
         self.mesh_file_path = mesh_file_path
         self.slicing_coefficient = slicing_coefficient
-        self.n_transverse = n_transverse
+        self.n_transverse_cort = n_transverse_cort
+        self.n_transverse_trab = n_transverse_trab
         self.n_radial = n_radial
         self.logger = logging.getLogger(LOGGING_NAME)
         self.coi_idx = []
@@ -945,7 +1000,9 @@ class TrabecularVolume(Mesher):
             geo_file_path,
             mesh_file_path,
             slicing_coefficient,
-            n_transverse,
+            n_longitudinal,
+            n_transverse_cort,
+            n_transverse_trab,
             n_radial,
         )
 
@@ -1114,18 +1171,6 @@ class TrabecularVolume(Mesher):
             self.surf_tags_h,
             self.vol_tags,
         )
-
-    def trabecular_transfinite(self, line_tags_v, line_tags_h, surf_tags, vol_tags):
-        # make transfinite
-        self.factory.synchronize()
-        for line in line_tags_v:
-            self.model.mesh.setTransfiniteCurve(line, self.n_transverse)
-        for line in line_tags_h:
-            self.model.mesh.setTransfiniteCurve(line, self.n_radial)
-        for surface in surf_tags:
-            self.model.mesh.setTransfiniteSurface(surface)
-        for volume in vol_tags:
-            self.model.mesh.setTransfiniteVolume(volume)
 
     def get_vertices_coords(self, vertices_tags):
         self.factory.synchronize()

@@ -18,8 +18,6 @@ from spline_volume import OCC_volume
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "SIMONE"
-QUAD_REFINEMENT = bool(True)
-MESH_ANALYSIS = bool(True)
 # flake8: noqa: E402
 
 
@@ -45,7 +43,7 @@ class HexMesh:
         filepath_ext = str(Path(img_basepath, img_basefilename, img_basefilename))
         geo_unrolled_filename = str(
             Path(
-                self.img_dict["img_outputpath"],
+                self.img_dict["outputpath"],
                 img_basefilename,
                 img_basefilename + ".geo_unrolled",
             )
@@ -53,12 +51,13 @@ class HexMesh:
 
         mesh_file_path = str(
             Path(
-                self.img_dict["img_outputpath"],
+                self.img_dict["meshpath"],
                 img_basefilename,
-                img_basefilename + ".msh",
+                img_basefilename,
             )
         )
 
+        # Spline_volume settings
         ASPECT = int(self.settings_dict["aspect"])
         SLICE = int(self.settings_dict["slice"])
         UNDERSAMPLING = int(self.settings_dict["undersampling"])
@@ -72,9 +71,19 @@ class HexMesh:
         INTERP_POINTS = int(self.settings_dict["interp_points"])
         DEBUG_ORIENTATION = int(self.settings_dict["debug_orientation"])
         SHOW_PLOTS = bool(self.settings_dict["show_plots"])
+        SHOW_GMSH = bool(self.settings_dict["show_gmsh"])
+        WRITE_MESH = bool(self.settings_dict["write_mesh"])
         LOCATION = str(self.settings_dict["location"])
         THICKNESS_TOL = float(self.settings_dict["thickness_tol"])
         PHASES = int(self.settings_dict["phases"])
+
+        # spline_mesher settings
+        N_LONGITUDINAL = int(self.settings_dict["n_elms_longitudinal"])
+        N_TRANSVERSE_CORT = int(self.settings_dict["n_elms_transverse_cort"])
+        N_TRANSVERSE_TRAB = int(self.settings_dict["n_elms_transverse_trab"])
+        N_RADIAL = int(self.settings_dict["n_elms_radial"])
+        QUAD_REFINEMENT = bool(self.settings_dict["trab_refinement"])
+        MESH_ANALYSIS = bool(self.settings_dict["mesh_analysis"])
 
         cortical_v = OCC_volume(
             img_path_ext,
@@ -127,14 +136,14 @@ class HexMesh:
 
         gmsh.initialize()
         gmsh.clear()
-        N_TRANSVERSE = 4
-        N_RADIAL = 10
 
         mesher = Mesher(
             geo_unrolled_filename,
             mesh_file_path,
             slicing_coefficient=cortical_v.SLICING_COEFFICIENT,
-            n_transverse=N_TRANSVERSE,
+            n_longitudinal=N_LONGITUDINAL,
+            n_transverse_trab=N_TRANSVERSE_TRAB,
+            n_transverse_cort=N_TRANSVERSE_CORT,
             n_radial=N_RADIAL,
         )
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))
@@ -177,17 +186,19 @@ class HexMesh:
             (
                 cortical_ext_centroid[i],
                 idx_list_ext[i],
-                intersections_ext[i],
+                intersections_ext_s,
             ) = mesher.insert_tensor_of_inertia(
                 cortical_ext_split[i], cortex_centroid[i][:-1]
             )
+            intersections_ext[i] = intersections_ext_s
             (
                 cortical_int_centroid[i],
                 idx_list_int[i],
-                intersections_int[i],
+                intersections_int_s,
             ) = mesher.insert_tensor_of_inertia(
                 cortical_int_sanity_split[i], cortex_centroid[i][:-1]
             )
+            intersections_int[i] = intersections_int_s
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
         (
@@ -217,7 +228,7 @@ class HexMesh:
             intersection_line_tags_ext, intersection_line_tags_int
         )
         cortical_bspline_tags = np.append(cortical_ext_bspline, cortical_int_bspline)
-        cortical_surfs = np.concatenate(
+        cort_surfs = np.concatenate(
             (
                 cortical_ext_surfs,
                 cortical_int_surfs,
@@ -241,7 +252,9 @@ class HexMesh:
             geo_unrolled_filename,
             mesh_file_path,
             slicing_coefficient=cortical_v.SLICING_COEFFICIENT,
-            n_transverse=N_TRANSVERSE,
+            n_longitudinal=N_LONGITUDINAL,
+            n_transverse_cort=N_TRANSVERSE_CORT,
+            n_transverse_trab=N_TRANSVERSE_TRAB,
             n_radial=N_RADIAL,
             QUAD_REFINEMENT=QUAD_REFINEMENT,
         )
@@ -279,8 +292,10 @@ class HexMesh:
             trab_surfs_v,
         )
 
-        volume_tags = np.concatenate((cort_vol_tags, cort_trab_vol_tags), axis=None)
+        cort_volume_tags = np.concatenate((cort_vol_tags, cort_trab_vol_tags), axis=None)
 
+        trab_refinement = None
+        quadref_vols = None
         if trabecular_volume.QUAD_REFINEMENT:
             # get coords of trab_point_tags
             coords_vertices = []
@@ -313,12 +328,17 @@ class HexMesh:
             )
         )
 
+        trab_lines_longitudinal = trab_line_tags_v
+        trab_lines_transverse = trab_cort_line_tags
+        trab_lines_radial = trab_line_tags_h
+
         trabecular_volume.meshing_transfinite(
-            trab_line_tags_v,
-            trab_line_tags_h,
+            trab_lines_longitudinal,
+            trab_lines_transverse,
+            trab_lines_radial,
             trab_surfs,
             trab_vols,
-            trab_cort_line_tags,
+            phase='trab'
         )
 
         # * physical groups
@@ -326,20 +346,26 @@ class HexMesh:
         trab_vol_tags = np.concatenate((trab_vols, cort_trab_vol_tags), axis=None)
         cort_physical_group = mesher.model.addPhysicalGroup(3, cort_vol_tags)
         trab_physical_group = mesher.model.addPhysicalGroup(3, trab_vol_tags)
-        if trabecular_volume.QUAD_REFINEMENT:
+        
+        if trab_refinement is not None and quadref_vols is not None:  # same as saying if QUAD_REFINEMENT
             quadref_physical_group = trab_refinement.model.addPhysicalGroup(
                 3, quadref_vols[0]
             )
         print(
             f"cortical physical group: {cort_physical_group}\ntrabecular physical group: {trab_physical_group}"
         )
+
+        cort_longitudinal_lines = intersection_line_tags
+        cort_transverse_lines = intersurface_line_tags
         mesher.meshing_transfinite(
-            intersection_line_tags,
+            cort_longitudinal_lines,
+            cort_transverse_lines,
             cortical_bspline_tags,
-            cortical_surfs,
-            volume_tags,
-            test_list=intersurface_line_tags,
+            cort_surfs,
+            cort_volume_tags,
+            phase='cort',
         )
+
         mesher.mesh_generate(dim=3, element_order=1, optimise=True)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.occ.synchronize()
@@ -350,16 +376,24 @@ class HexMesh:
             mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
 
         # nodes, elms = mesher.get_mesh()
-        nodes = []
-        elms = []
+        # nodes = mesher.model.mesh.getNodes(dim=-1, tag=-1)
+        # elms = mesher.model.mesh.getElements(dim=-1, tag=-1)
+        # centroids = mesher.get_centroids(nodes, elms)
 
-        # if SHOW_PLOTS:
-        #     gmsh.fltk.run()
+        if SHOW_GMSH:
+            gmsh.fltk.run()
 
-        gmsh.fltk.run()
+        if WRITE_MESH:
+            Path(mesher.mesh_file_path).parent.mkdir(exist_ok=True)
+            gmsh.write(f"{mesher.mesh_file_path}.msh")
+            gmsh.write(f"{mesher.mesh_file_path}.inp")
+
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=3)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
+
+        nodes = []
+        elms = []
         return nodes, elms

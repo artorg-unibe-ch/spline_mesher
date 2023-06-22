@@ -151,8 +151,8 @@ class OCC_volume:
     def exec_thresholding(self, image, THRESHOLD_PARAM):
         # Binary threshold
         btif = sitk.BinaryThresholdImageFilter()
-        btif.SetInsideValue(THRESHOLD_PARAM[0])
-        btif.SetOutsideValue(THRESHOLD_PARAM[1])
+        btif.SetInsideValue(int(THRESHOLD_PARAM[0]))
+        btif.SetOutsideValue(int(THRESHOLD_PARAM[1]))
         btif.SetLowerThreshold(THRESHOLD_PARAM[2])
         btif.SetUpperThreshold(THRESHOLD_PARAM[3])
         image_thr = btif.Execute(image)
@@ -208,9 +208,9 @@ class OCC_volume:
         """
         THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
         """
-        THRESHOLD_PARAM = [0, 1, 0, 0.9]
-        ASPECT = 50
-        SLICE = 50
+        THRESHOLD_PARAM = self.THRESHOLD_PARAM
+        ASPECT = self.ASPECT
+        SLICE = self.SLICE
 
         image = sitk.ReadImage(img_path)
         image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)

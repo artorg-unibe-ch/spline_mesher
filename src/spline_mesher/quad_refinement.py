@@ -1238,18 +1238,12 @@ if "__main__" == __name__:
         quadref_vols,
     ) = trab_refinement.exec_quad_refinement(outer_point_tags)
 
+    # * 10. Create 3D mesh
+    trab_refinement.factory.synchronize()
     gmsh.option.setNumber("Mesh.RecombineAll", 1)
     gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
     gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
     gmsh.option.setNumber("Mesh.ElementOrder", 1)
-
-    # * 10. Create 3D mesh
-    trab_refinement.factory.synchronize()
-    # gmsh.write(
-    #     "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-03.geo_unrolled"
-    # )
-
-    quadref_physical_group = trab_refinement.model.addPhysicalGroup(3, quadref_vols[0])
     gmsh.model.mesh.generate(3)
     gmsh.fltk.run()
     gmsh.finalize()
