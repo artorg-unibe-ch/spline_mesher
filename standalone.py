@@ -5,7 +5,8 @@ Date: 09.2022 - Ongoing
 """
 
 import os
-from spline_mesher import HexMesh
+from src.pyhexspline.spline_mesher import HexMesh
+
 
 img_settings = {
     "img_basefilename": "C0002234",
@@ -27,8 +28,8 @@ meshing_settings = {
     "interp_points": 200,
     "debug_orientation": 0,
     "show_plots": False,
-    "show_gmsh": True,
-    "write_mesh": True,
+    "show_gmsh": False,
+    "write_mesh": False,
     "location": "cort_ext",
     "thickness_tol": 180e-3,    # 3 * XCTII voxel size
     "phases": 2,
@@ -42,3 +43,9 @@ meshing_settings = {
 
 mesh = HexMesh(meshing_settings, img_settings)
 nodes, elms = mesh.mesher()
+print(f"Number of nodes: {len(nodes)}")
+print(f"Number of elements: {len(elms)}")
+print(f'Nodes:\n{nodes}')
+print(f'Elements:\n{elms}')
+print('------------------------------------------')
+print('------------------------------------------')

@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as shpg
 import scipy.spatial as spatial
-from skimage.util import view_as_windows
 from cython_functions import find_closed_curve as fcc
 from itertools import chain
 

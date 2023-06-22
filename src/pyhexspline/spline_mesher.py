@@ -7,14 +7,17 @@ import time
 from itertools import chain
 from pathlib import Path
 
-import cortical_sanity as csc
+import sys
+print('\n'.join(sys.path)) # does this show the files and folders you need?
+
 import gmsh
 import numpy as np
 import plotly.io as pio
-from futils.setup_utils import logging_setup
-from gmsh_mesh_builder import Mesher, TrabecularVolume
-from quad_refinement import QuadRefinement
-from spline_volume import OCC_volume
+from pyhexspline import cortical_sanity as csc
+# from pyhexspline.futils.setup_utils import logging_setup
+from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
+from pyhexspline.quad_refinement import QuadRefinement
+from pyhexspline.spline_volume import OCC_volume
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "SIMONE"
