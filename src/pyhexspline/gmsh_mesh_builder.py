@@ -478,7 +478,7 @@ class Mesher:
         radial_line_tags,
         surface_tags,
         volume_tags,
-        phase='cort'
+        phase="cort",
     ):
         self.factory.synchronize()
 
@@ -488,9 +488,9 @@ class Mesher:
         volume_tags = list(map(int, volume_tags))
 
         n_transverse = None
-        if phase == 'cort':
+        if phase == "cort":
             n_transverse = self.n_transverse_cort
-        elif phase == 'trab':
+        elif phase == "trab":
             n_transverse = self.n_transverse_trab
 
         for ll in longitudinal_line_tags:
@@ -811,122 +811,42 @@ class Mesher:
         self.plugin.run("AnalyseMeshQuality")
         return None
 
-    def get_mesh(self):
-        # Get all the elementary entities in the model, as a vector of (dimension, tag)
-        # pairs:
-        self.factory.synchronize()
-        physicalgroups = self.model.getPhysicalGroups(3)
+    def gmsh_get_nodes(self):
+        nTagsCoord_dict = {}
+        for physical_group in self.model.getPhysicalGroups():
+            nTags_s, nCoord_s = self.model.mesh.getNodesForPhysicalGroup(
+                3, physical_group[1]
+            )
+            nTags_np = np.array(nTags_s)
+            nCoord_np = np.array(nCoord_s).reshape(-1, 3)
+            # create dictionary with key = nTags_np and value = nCoord_np
+            nTagsCoord_dict_s = dict(zip(nTags_np, nCoord_np))
+            nTagsCoord_dict.update(nTagsCoord_dict_s)
+        return nTagsCoord_dict
 
-        entities = []
-        nodeTags = []
-        elemTags = []
-        for pg in physicalgroups:
-            ent = self.model.getEntitiesForPhysicalGroup(3, pg[1])
-            entities.append(ent)
+    def gmsh_get_elms(self):
+        elms_dict = {}
+        for vol in self.model.getEntities(3):
+            elmTypes_s, elmTags_s, nodeTags_s = self.model.mesh.getElements(3, vol[1])
+            nodeTags = np.array(nodeTags_s[0]).reshape(-1, 8)
+            elms_s = dict(zip(elmTags_s[0], nodeTags))
+            elms_dict.update(elms_s)
+        return elms_dict
 
-        for sub_entities in entities:
-            for e in sub_entities:
-                # Dimension and tag of the entity:
-                dim = 3
-                tag = e
+        # if elementTypes[0] == 4:
+        #     nodeTags = nodeTags[0].reshape(-1, 4)  # linear tetrahedron with 4 nodes
+        #     f.write("*Element, type=C3D4, Elset=" + vol[1] + "\n")
+        # elif elementTypes[0] == 11:
+        #     nodeTags = nodeTags[0].reshape(
+        #         -1, 10
+        #     )  # quadratic tetrahedron with 10 nodes
+        #     nodeTags[:, [8, 9]] = nodeTags[
+        #         :, [9, 8]
+        #     ]  # invert postition of nodes 9 and 10 (gmsh 8 and 9)
+        #     f.write("*Element, type=C3D10, Elset=" + vol[1] + "\n")
 
-                # Mesh data is made of `elements' (points, lines, triangles, ...), defined
-                # by an ordered list of their `nodes'. Elements and nodes are identified by
-                # `tags' as well (strictly positive identification numbers), and are stored
-                # ("classified") in the model entity they discretize. Tags for elements and
-                # nodes are globally unique (and not only per dimension, like entities).
-
-                # A model entity of dimension 0 (a geometrical point) will contain a mesh
-                # element of type point, as well as a mesh node. A model curve will contain
-                # line elements as well as its interior nodes, while its boundary nodes will
-                # be stored in the bounding model points. A model surface will contain
-                # triangular and/or quadrangular elements and all the nodes not classified
-                # on its boundary or on its embedded entities. A model volume will contain
-                # tetrahedra, hexahedra, etc. and all the nodes not classified on its
-                # boundary or on its embedded entities.
-
-                # Get the mesh nodes for the entity (dim, tag):
-                nodeTags, nodeCoords, nodeParams = self.model.mesh.getNodes(dim, tag)
-
-                # Get the mesh elements for the entity (dim, tag):
-                elemTypes, elemTags, elemNodeTags = self.model.mesh.getElements(
-                    dim, tag
-                )
-
-                # Elements can also be obtained by type, by using `getElementTypes()'
-                # followed by `getElementsByType()'.
-
-                # Let's print a summary of the information available on the entity and its
-                # mesh.
-
-                # * Type and name of the entity:
-                type = self.model.getType(e[0], e[1])
-                name = self.model.getEntityName(e[0], e[1])
-                if len(name):
-                    name += " "
-                print("Entity " + name + str(e) + " of type " + type)
-
-                # * Number of mesh nodes and elements:
-                numElem = sum(len(i) for i in elemTags)
-                print(
-                    " - Mesh has "
-                    + str(len(nodeTags))
-                    + " nodes and "
-                    + str(numElem)
-                    + " elements"
-                )
-
-                # * Upward and downward adjacencies:
-                up, down = self.model.getAdjacencies(e[0], e[1])
-                if len(up):
-                    print(" - Upward adjacencies: " + str(up))
-                if len(down):
-                    print(" - Downward adjacencies: " + str(down))
-
-                # * Does the entity belong to physical groups?
-                physicalTags = self.model.getPhysicalGroupsForEntity(dim, tag)
-                if len(physicalTags):
-                    s = ""
-                    for p in physicalTags:
-                        n = self.model.getPhysicalName(dim, p)
-                        if n:
-                            n += " "
-                        s += n + "(" + str(dim) + ", " + str(p) + ") "
-                    print(" - Physical groups: " + s)
-
-                # * Is the entity a partition entity? If so, what is its parent entity?
-                partitions = self.model.getPartitions(e[0], e[1])
-                if len(partitions):
-                    print(
-                        " - Partition tags: "
-                        + str(partitions)
-                        + " - parent entity "
-                        + str(self.model.getParent(e[0], e[1]))
-                    )
-
-                # * List all types of elements making up the mesh of the entity:
-                for t in elemTypes:
-                    (
-                        name,
-                        dim,
-                        order,
-                        numv,
-                        parv,
-                        _,
-                    ) = self.model.mesh.getElementProperties(t)
-                    print(
-                        " - Element type: "
-                        + name
-                        + ", order "
-                        + str(order)
-                        + " ("
-                        + str(numv)
-                        + " nodes in param coord: "
-                        + str(parv)
-                        + ")"
-                    )
-
-            return nodeTags, elemTags
+        # eTagsNodes = np.column_stack((elementTags[0], nodeTags))
+        # np.savetxt(f, np.asarray(eTagsNodes), fmt="%i", delimiter=",\t")
 
     def nodes2coords(self, nodes, elements):
         """

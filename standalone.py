@@ -18,7 +18,7 @@ meshing_settings = {
     "aspect": 30,
     "slice": 1,
     "undersampling": 1,
-    "slicing_coefficient": 5,   # 5, 10, 20 working on 2234
+    "slicing_coefficient": 5,  # 5, 10, 20 working on 2234
     "inside_val": int(0),
     "outside_val": int(1),
     "lower_thresh": float(0),
@@ -31,13 +31,13 @@ meshing_settings = {
     "show_gmsh": False,
     "write_mesh": False,
     "location": "cort_ext",
-    "thickness_tol": 180e-3,    # 3 * XCTII voxel size
+    "thickness_tol": 180e-3,  # 3 * XCTII voxel size
     "phases": 2,
     "trab_refinement": False,
     "n_elms_longitudinal": 3,
     "n_elms_transverse_trab": 10,
     "n_elms_transverse_cort": 2,
-    "n_elms_radial": 10,        # should be 10 if trab_refinement is True
+    "n_elms_radial": 10,  # should be 10 if trab_refinement is True
     "mesh_analysis": False,
 }
 
@@ -45,7 +45,3 @@ mesh = HexMesh(meshing_settings, img_settings)
 nodes, elms = mesh.mesher()
 print(f"Number of nodes: {len(nodes)}")
 print(f"Number of elements: {len(elms)}")
-print(f'Nodes:\n{nodes}')
-print(f'Elements:\n{elms}')
-print('------------------------------------------')
-print('------------------------------------------')

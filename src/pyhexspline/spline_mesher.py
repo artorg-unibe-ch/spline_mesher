@@ -7,17 +7,17 @@ import time
 from itertools import chain
 from pathlib import Path
 
-import sys
-print('\n'.join(sys.path)) # does this show the files and folders you need?
-
 import gmsh
 import numpy as np
 import plotly.io as pio
 from pyhexspline import cortical_sanity as csc
+
 # from pyhexspline.futils.setup_utils import logging_setup
 from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
 from pyhexspline.quad_refinement import QuadRefinement
 from pyhexspline.spline_volume import OCC_volume
+
+import pickle
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "SIMONE"
@@ -295,7 +295,9 @@ class HexMesh:
             trab_surfs_v,
         )
 
-        cort_volume_tags = np.concatenate((cort_vol_tags, cort_trab_vol_tags), axis=None)
+        cort_volume_tags = np.concatenate(
+            (cort_vol_tags, cort_trab_vol_tags), axis=None
+        )
 
         trab_refinement = None
         quadref_vols = None
@@ -341,7 +343,7 @@ class HexMesh:
             trab_lines_radial,
             trab_surfs,
             trab_vols,
-            phase='trab'
+            phase="trab",
         )
 
         # * physical groups
@@ -349,8 +351,10 @@ class HexMesh:
         trab_vol_tags = np.concatenate((trab_vols, cort_trab_vol_tags), axis=None)
         cort_physical_group = mesher.model.addPhysicalGroup(3, cort_vol_tags)
         trab_physical_group = mesher.model.addPhysicalGroup(3, trab_vol_tags)
-        
-        if trab_refinement is not None and quadref_vols is not None:  # same as saying if QUAD_REFINEMENT
+
+        if (
+            trab_refinement is not None and quadref_vols is not None
+        ):  # same as saying if QUAD_REFINEMENT
             quadref_physical_group = trab_refinement.model.addPhysicalGroup(
                 3, quadref_vols[0]
             )
@@ -366,7 +370,7 @@ class HexMesh:
             cortical_bspline_tags,
             cort_surfs,
             cort_volume_tags,
-            phase='cort',
+            phase="cort",
         )
 
         mesher.mesh_generate(dim=3, element_order=1, optimise=True)
@@ -378,10 +382,8 @@ class HexMesh:
             JAC_NEG = -0.01
             mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
 
-        # nodes, elms = mesher.get_mesh()
-        # nodes = mesher.model.mesh.getNodes(dim=-1, tag=-1)
-        # elms = mesher.model.mesh.getElements(dim=-1, tag=-1)
-        # centroids = mesher.get_centroids(nodes, elms)
+        nodes = mesher.gmsh_get_nodes()
+        elms = mesher.gmsh_get_elms()
 
         if SHOW_GMSH:
             gmsh.fltk.run()
@@ -397,6 +399,9 @@ class HexMesh:
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
 
-        nodes = []
-        elms = []
+        with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
+            nodes_test = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
+            elms_test = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return nodes, elms
