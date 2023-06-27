@@ -826,27 +826,61 @@ class Mesher:
 
     def gmsh_get_elms(self):
         elms_dict = {}
+        nodeTags = None
         for vol in self.model.getEntities(3):
             elmTypes_s, elmTags_s, nodeTags_s = self.model.mesh.getElements(3, vol[1])
-            nodeTags = np.array(nodeTags_s[0]).reshape(-1, 8)
+
+            if elmTypes_s[0] == 5:
+                # 8-node hexahedron
+                nodeTags = np.array(nodeTags_s[0]).reshape(-1, 8)
+            elif elmTypes_s[0] == 12:
+                # 27-node second order hexahedron (8 nodes associated with the vertices, 12 with the edges, 6 with the faces and 1 with the volume)
+                nodeTags = np.array(nodeTags_s[0]).reshape(-1, 27)
+
             elms_s = dict(zip(elmTags_s[0], nodeTags))
             elms_dict.update(elms_s)
         return elms_dict
 
-        # if elementTypes[0] == 4:
-        #     nodeTags = nodeTags[0].reshape(-1, 4)  # linear tetrahedron with 4 nodes
-        #     f.write("*Element, type=C3D4, Elset=" + vol[1] + "\n")
-        # elif elementTypes[0] == 11:
-        #     nodeTags = nodeTags[0].reshape(
-        #         -1, 10
-        #     )  # quadratic tetrahedron with 10 nodes
-        #     nodeTags[:, [8, 9]] = nodeTags[
-        #         :, [9, 8]
-        #     ]  # invert postition of nodes 9 and 10 (gmsh 8 and 9)
-        #     f.write("*Element, type=C3D10, Elset=" + vol[1] + "\n")
+    def gmsh_get_bnds(self, nodes: dict):
+        """creates two dictionaries defining the boundary nodes of the mesh based on their z coordinate
 
-        # eTagsNodes = np.column_stack((elementTags[0], nodeTags))
-        # np.savetxt(f, np.asarray(eTagsNodes), fmt="%i", delimiter=",\t")
+        Args:
+            nodes (dict): node set of the mesh
+
+        Returns:
+            bnds_bot, bnds_top (dict): node sets of the bottom and top boundary of the mesh
+        """
+        z_min = float("inf")
+        z_max = float("-inf")
+        tol = 0.05
+
+        for arr in nodes.values():
+            last_element = arr[-1]
+            z_min = min(z_min, last_element)
+            z_max = max(z_max, last_element)
+
+        # mask the dict to get only the key value pairs with z_min and z_max
+        # here z_max and z_min are inverted because of the nature of our csys
+        # (the most distal part is actually at z=0 and the most proximal at z>0)
+        bnds_bot = {
+            k: v for k, v in nodes.items() if math.isclose(v[2], z_max, rel_tol=tol)
+        }
+        bnds_top = {
+            k: v for k, v in nodes.items() if math.isclose(v[2], z_min, rel_tol=tol)
+        }
+        return bnds_bot, bnds_top
+
+    def gmsh_get_reference_point_coord(self, nodes: dict):
+        # get the center of mass of the nodes dictionary values
+        center_of_mass = np.mean(list(nodes.values()), axis=0)
+        reference_point_coords = np.array(
+            [
+                center_of_mass[0],
+                center_of_mass[1],
+                math.copysign(abs(center_of_mass[2]) + 2, center_of_mass[2]),
+            ]
+        )
+        return reference_point_coords
 
     def nodes2coords(self, nodes, elements):
         """

@@ -349,8 +349,12 @@ class HexMesh:
         # * physical groups
         mesher.factory.synchronize()
         trab_vol_tags = np.concatenate((trab_vols, cort_trab_vol_tags), axis=None)
-        cort_physical_group = mesher.model.addPhysicalGroup(3, cort_vol_tags)
-        trab_physical_group = mesher.model.addPhysicalGroup(3, trab_vol_tags)
+        cort_physical_group = mesher.model.addPhysicalGroup(
+            3, cort_vol_tags, name="Cortical_Compartment"
+        )
+        trab_physical_group = mesher.model.addPhysicalGroup(
+            3, trab_vol_tags, name="Trabecular_Compartment"
+        )
 
         if (
             trab_refinement is not None and quadref_vols is not None
@@ -373,7 +377,7 @@ class HexMesh:
             phase="cort",
         )
 
-        mesher.mesh_generate(dim=3, element_order=1, optimise=True)
+        mesher.mesh_generate(dim=3, element_order=2, optimise=True)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.occ.synchronize()
 
@@ -384,6 +388,8 @@ class HexMesh:
 
         nodes = mesher.gmsh_get_nodes()
         elms = mesher.gmsh_get_elms()
+        bnds_bot, bnds_top = mesher.gmsh_get_bnds(nodes)
+        reference_point_coord = mesher.gmsh_get_reference_point_coord(bnds_top)
 
         if SHOW_GMSH:
             gmsh.fltk.run()
@@ -399,9 +405,20 @@ class HexMesh:
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
 
-        with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
-            nodes_test = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"{mesh_file_path}_nodes_quad.pickle", "wb") as handle:
+            nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
-            elms_test = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        return nodes, elms
+        with open(f"{mesh_file_path}_elms_quad.pickle", "wb") as handle:
+            elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(f"{mesh_file_path}_bnds_bot_quad.pickle", "wb") as handle:
+            bnds_bot_pkl = pickle.dump(
+                bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
+            )
+
+        with open(f"{mesh_file_path}_bnds_top_quad.pickle", "wb") as handle:
+            bnds_top_pkl = pickle.dump(
+                bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
+            )
+
+        return nodes, elms, bnds_bot, bnds_top, reference_point_coord

@@ -29,7 +29,7 @@ meshing_settings = {
     "debug_orientation": 0,
     "show_plots": False,
     "show_gmsh": False,
-    "write_mesh": False,
+    "write_mesh": True,
     "location": "cort_ext",
     "thickness_tol": 180e-3,  # 3 * XCTII voxel size
     "phases": 2,
@@ -42,6 +42,8 @@ meshing_settings = {
 }
 
 mesh = HexMesh(meshing_settings, img_settings)
-nodes, elms = mesh.mesher()
+nodes, elms, bnds_bot, bnds_top, reference_point_coord = mesh.mesher()
 print(f"Number of nodes: {len(nodes)}")
 print(f"Number of elements: {len(elms)}")
+print(f"Number of bottom boundary nodes: {len(bnds_bot)}")
+print(f"Number of top boundary nodes: {len(bnds_top)}")
