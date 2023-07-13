@@ -3,6 +3,9 @@ import sys
 
 import cv2
 import gmsh
+import matplotlib
+
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
@@ -20,6 +23,7 @@ LOGGING_NAME = "SIMONE"
 class OCC_volume:
     def __init__(
         self,
+        sitk_image,
         img_path,
         filepath,
         filename,
@@ -49,6 +53,7 @@ class OCC_volume:
         self.model = gmsh.model
         self.factory = self.model.occ
 
+        self.sitk_image = sitk_image
         self.img_path = img_path
         self.filepath = filepath
         self.filename = filename
@@ -104,8 +109,12 @@ class OCC_volume:
             None
         """
         if self.show_plots is True:
-            img = sitk.PermuteAxes(sitk.ReadImage(self.img_path), [1, 2, 0])
-            img_view = sitk.GetArrayViewFromImage(img)
+            if self.sitk_image is None:
+                img = sitk.PermuteAxes(sitk.ReadImage(self.img_path), [1, 2, 0])
+                img_view = sitk.GetArrayViewFromImage(img)
+            else:
+                img = self.sitk_image
+                img_view = sitk.GetArrayViewFromImage(img)
 
             plt.figure(
                 f"Plot MHD slice n.{self.SLICE}",
@@ -236,7 +245,13 @@ class OCC_volume:
         ASPECT = self.ASPECT
         SLICE = self.SLICE
 
-        image = sitk.ReadImage(img_path)
+        if self.sitk_image is None:
+            image = sitk.ReadImage(img_path)
+        else:
+            image = self.sitk_image
+            image = sitk.PermuteAxes(image, [2, 0, 1])
+            image.SetSpacing(self.sitk_image.GetSpacing())
+
         image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
         image_pad = self.pad_image(image_thr, iso_pad_size=10)
         if self.show_plots is True:
@@ -402,8 +417,8 @@ class OCC_volume:
             font=dict(size=18, family="stix"),
         )
 
-        fig.update_xaxes(range=[0, 40])
-        fig.update_yaxes(range=[0, 40])
+        fig.update_xaxes(range=[0, 50])
+        fig.update_yaxes(range=[0, 50])
         fig.show()
         return fig
 
@@ -713,7 +728,6 @@ class OCC_volume:
         for i, _slice in enumerate(self.slice_index):
             self.logger.debug(f"Slice:\t{_slice}")
             if self.phases >= 1:
-                # TODO: check if ::-1 is still needed (minus sign)
                 image_slice_ext = image_data_ext[_slice, :, :][::-1, ::-1]
                 original, cortical_ext_x, cortical_ext_y = self.sort_surface(
                     image_slice_ext
@@ -734,7 +748,6 @@ class OCC_volume:
                 self.logger.warning(f"Phases is not >= 1: {self.phases}")
 
             if self.phases == 2:
-                # TODO: check if ::-1 is still needed (minus sign)
                 image_slice_int = image_data_int[_slice, :, :][::-1, ::-1]
                 original, cortical_int_x, cortical_int_y = self.sort_surface(
                     image_slice_int

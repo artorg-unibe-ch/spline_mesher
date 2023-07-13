@@ -25,9 +25,13 @@ LOGGING_NAME = "SIMONE"
 
 
 class HexMesh:
-    def __init__(self, settings_dict: dict, img_dict: dict):
+    def __init__(self, settings_dict: dict, img_dict: dict, sitk_image=None):
         self.settings_dict = settings_dict
         self.img_dict = img_dict
+        if sitk_image is not None:
+            self.sitk_image = sitk_image  # imports the image
+        else:
+            self.sitk_image = None  # reads the image from img_path_ext
 
     def mesher(self):
         logger = logging.getLogger(LOGGING_NAME)
@@ -38,11 +42,19 @@ class HexMesh:
         img_basefilename = self.img_dict["img_basefilename"]
         str(Path(img_basepath, img_basefilename, img_basefilename))
 
-        img_path_ext = str(
-            Path(
-                img_basepath, img_basefilename, img_basefilename + "_CORT_MASK_cap.mhd"
+        if self.sitk_image is None:
+            img_path_ext = str(
+                Path(
+                    img_basepath,
+                    img_basefilename,
+                    img_basefilename + "_CORT_MASK_cap.mhd",
+                )
             )
-        )
+            sitk_image = None
+        else:
+            img_path_ext = None
+            sitk_image = self.sitk_image
+
         filepath_ext = str(Path(img_basepath, img_basefilename, img_basefilename))
         geo_unrolled_filename = str(
             Path(
@@ -89,6 +101,7 @@ class HexMesh:
         MESH_ANALYSIS = bool(self.settings_dict["mesh_analysis"])
 
         cortical_v = OCC_volume(
+            sitk_image,
             img_path_ext,
             filepath_ext,
             geo_unrolled_filename,
@@ -396,9 +409,10 @@ class HexMesh:
             gmsh.fltk.run()
 
         if WRITE_MESH:
-            Path(mesher.mesh_file_path).parent.mkdir(exist_ok=True)
+            Path(mesher.mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
             gmsh.write(f"{mesher.mesh_file_path}.msh")
             gmsh.write(f"{mesher.mesh_file_path}.inp")
+            gmsh.write(f"{mesher.mesh_file_path}.vtk")
 
         centroids = mesher.get_barycenters()
 
