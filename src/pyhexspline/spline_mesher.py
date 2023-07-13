@@ -139,6 +139,7 @@ class HexMesh:
 
         gmsh.initialize()
         gmsh.clear()
+        gmsh.option.setNumber("General.NumThreads", 6)
 
         mesher = Mesher(
             geo_unrolled_filename,
@@ -377,7 +378,7 @@ class HexMesh:
             phase="cort",
         )
 
-        mesher.mesh_generate(dim=3, element_order=2, optimise=True)
+        mesher.mesh_generate(dim=3, element_order=1, optimise=True)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.occ.synchronize()
 
@@ -399,26 +400,33 @@ class HexMesh:
             gmsh.write(f"{mesher.mesh_file_path}.msh")
             gmsh.write(f"{mesher.mesh_file_path}.inp")
 
+        centroids = mesher.get_barycenters()
+
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=3)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
 
-        with open(f"{mesh_file_path}_nodes_quad.pickle", "wb") as handle:
+        with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
             nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_elms_quad.pickle", "wb") as handle:
+        with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
             elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_bnds_bot_quad.pickle", "wb") as handle:
+        with open(f"{mesh_file_path}_centroids.pickle", "wb") as handle:
+            centroids_pkl = pickle.dump(
+                centroids, handle, protocol=pickle.HIGHEST_PROTOCOL
+            )
+
+        with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
             bnds_bot_pkl = pickle.dump(
                 bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
             )
 
-        with open(f"{mesh_file_path}_bnds_top_quad.pickle", "wb") as handle:
+        with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
             bnds_top_pkl = pickle.dump(
                 bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
             )
 
-        return nodes, elms, bnds_bot, bnds_top, reference_point_coord
+        return nodes, elms, centroids, bnds_bot, bnds_top, reference_point_coord

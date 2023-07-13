@@ -905,20 +905,26 @@ class Mesher:
             ncoords[k, 7:10] = nodes[i, 1:4]
         return ncoords
 
-    def get_centroids(self, nodes, elements):
+    def get_barycenters(self):
         """
-        https://github.com/dmelgarm/gmsh/blob/master/gmsh_tools.py#L254
-        From node coordinates get element centroid
+        Gets barycenters of each volumetric element of type 5 (8-node hexahedron) or 12 (27-node second order hexahedron)
+        Returns:
+            barycenters (np.array): array of barycenters in (x, y, z) format (shape: (n_elms, 3))
         """
-        ncoords = self.nodes2coords(nodes, elements)
-        # fmt: off
-        centroids=np.zeros((len(ncoords),4))
-        centroids[:,0]=np.arange(1,len(ncoords)+1)
-        centroids[:,1]=(1./3)*(ncoords[:,1]+ncoords[:,4]+ncoords[:,7]) # x centroids
-        centroids[:,2]=(1./3)*(ncoords[:,2]+ncoords[:,5]+ncoords[:,8]) # y centroids
-        centroids[:,3]=(1./3)*(ncoords[:,3]+ncoords[:,6]+ncoords[:,9]) # z centroids
-        # fmt: on
-        return centroids
+
+        fast_s = False
+        primary_s = False
+
+        barycenters = gmsh.model.mesh.getBarycenters(
+            elementType=5, tag=-1, fast=fast_s, primary=primary_s
+        )
+        if not barycenters.any():
+            # if elementType=5 is empty, then it is a second order mesh
+            barycenters = gmsh.model.mesh.getBarycenters(
+                elementType=12, tag=-1, fast=fast_s, primary=primary_s
+            )
+        barycenters_xyz = np.array(barycenters).reshape(-1, 3)
+        return barycenters_xyz
 
 
 class TrabecularVolume(Mesher):

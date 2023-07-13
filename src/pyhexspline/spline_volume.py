@@ -167,9 +167,8 @@ class OCC_volume:
                 img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
             out = np.empty(np.shape(img))
-            contour = cv2.drawContours(
-                out, _contours, -1, 1, 1
-            )  # all contours, in white, with thickness 1
+            # all contours, in white, with thickness 1
+            contour = cv2.drawContours(out, _contours, -1, 1, 1)
             contour_s.append(contour)
         elif loc == "inner":
             _contours, hierarchy = cv2.findContours(
@@ -177,6 +176,7 @@ class OCC_volume:
             )
             inn = np.empty(np.shape(img))
             contour = cv2.drawContours(inn, _contours, 2, 1, 1)
+            contour_s.append(contour)
         else:
             raise ValueError(
                 "The location of the contour is not valid. Please choose between 'outer' and 'inner'."
@@ -197,12 +197,36 @@ class OCC_volume:
 
     def get_draw_contour(self, image, contour_s, loc=str("outer")):
         img_np = np.transpose(sitk.GetArrayFromImage(image), [2, 1, 0])
-        outer_contour_np = [
+        contour_np = [
             self.draw_contours(img_np[z, :, :], contour_s, loc)
             for z in np.arange(np.shape(img_np)[0])
         ]
-        outer_contour_np = np.flip(outer_contour_np, axis=1)
-        return outer_contour_np
+        contour_np = np.flip(contour_np, axis=1)
+        return contour_np
+
+    def pad_image(self, image, iso_pad_size: int):
+        """
+        Pads the input image with a constant value (background value) to increase its size.
+        Padding is used to prevent having contours on the edges of the image,
+        which would cause the spline fitting to fail.
+        Padding is performed on the transverse plane only
+        (image orientation is assumed to be z, y, x)
+
+        Args:
+            image (SimpleITK.Image): The input image to be padded.
+            iso_pad_size (int): The size of the padding to be added to each dimension.
+
+        Returns:
+            SimpleITK.Image: The padded image.
+        """
+        constant = int(sitk.GetArrayFromImage(image).min())
+        image_pad = sitk.ConstantPad(
+            image,
+            (0, iso_pad_size, iso_pad_size),
+            (0, iso_pad_size, iso_pad_size),
+            constant,
+        )
+        return image_pad
 
     def binary_threshold(self, contour_ext, contour_int, img_path: str):
         """
@@ -214,7 +238,14 @@ class OCC_volume:
 
         image = sitk.ReadImage(img_path)
         image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
-        img_thr_join = self.get_binary_contour(image_thr)
+        image_pad = self.pad_image(image_thr, iso_pad_size=10)
+        if self.show_plots is True:
+            self.plot_slice(
+                image_pad, SLICE, f"Padded Image on slice n. {SLICE}", ASPECT
+            )
+        else:
+            self.logger.info(f"Padded Image\t\t\tshow_plots:\t{self.show_plots}")
+        img_thr_join = self.get_binary_contour(image_pad)
         self.spacing = image.GetSpacing()
 
         if self.show_plots is True:
@@ -233,10 +264,10 @@ class OCC_volume:
             if self.phases == 1:
                 if self.show_plots is True:
                     outer_contour_sitk = sitk.GetImageFromArray(contour_ext)
-                    outer_contour_sitk.CopyInformation(image)
+                    outer_contour_sitk.CopyInformation(image_pad)
 
                     self.plot_slice(
-                        outer_contour_sitk,  # outer_contour_sitk,
+                        outer_contour_sitk,
                         SLICE,
                         f"Outer contour on slice n. {SLICE}",
                         ASPECT,
@@ -254,7 +285,7 @@ class OCC_volume:
 
             if self.show_plots is True:
                 inner_contour_sitk = sitk.GetImageFromArray(contour_int)
-                inner_contour_sitk.CopyInformation(image)
+                inner_contour_sitk.CopyInformation(image_pad)
 
                 self.plot_slice(
                     inner_contour_sitk,
@@ -270,8 +301,8 @@ class OCC_volume:
                 "The number of phases is greater than 2. Only biphasic materials are accepted (e.g. cort+trab)."
             )
 
-        img_size = image.GetSize()
-        img_spacing = image.GetSpacing()
+        img_size = image_pad.GetSize()
+        img_spacing = image_pad.GetSpacing()
 
         coordsX = np.arange(
             0,
@@ -513,7 +544,7 @@ class OCC_volume:
         x_copy = x_mahalanobis.copy()
         y_copy = y_mahalanobis.copy()
 
-        BNDS = 5
+        BNDS = 10  # was 5
         x_bnds, y_bnds = x_copy[BNDS:-BNDS], y_copy[BNDS:-BNDS]
         # find the knot points
         tckp, u = splprep(
