@@ -233,7 +233,7 @@ class Mesher:
             point_tags[i : i + 4] for i in range(0, len(point_tags), 4)
         ]
 
-        point_tags_sliced = np.array(point_tags_sliced)
+        point_tags_sliced = np.array(point_tags_sliced, dtype=object)
         # sort the sub-arrays in c-clockwise order
         point_tags_sliced_sorted = np.copy(point_tags_sliced)
         for i, coord_slice in enumerate(coords_sliced):
@@ -312,6 +312,9 @@ class Mesher:
         return array_bspline, array_split_idx
 
     def add_bspline_filling(self, bsplines, intersections, slicing_coefficient):
+        # ? see if it works
+        bsplines = bsplines.astype(int)
+
         # reshape and convert to list
         bspline_t = np.array(bsplines, dtype="int").reshape((slicing_coefficient, -1))
         bspline_first_elements = bspline_t[:, 0][:, np.newaxis]
