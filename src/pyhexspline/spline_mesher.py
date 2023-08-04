@@ -276,7 +276,9 @@ class HexMesh:
             QUAD_REFINEMENT=QUAD_REFINEMENT,
         )
 
-        trabecular_volume.set_length_factor(0.6)
+        trabecular_volume.set_length_factor(
+            float(self.settings_dict["center_square_length_factor"])
+        )
 
         (
             trab_point_tags,
@@ -414,7 +416,8 @@ class HexMesh:
             gmsh.write(f"{mesher.mesh_file_path}.inp")
             gmsh.write(f"{mesher.mesh_file_path}.vtk")
 
-        centroids = mesher.get_barycenters()
+        centroids_trab = mesher.get_barycenters(physical_group=trab_physical_group)
+        centroids_cort = mesher.get_barycenters(physical_group=cort_physical_group)
 
         gmsh.finalize()
         end = time.time()
@@ -428,9 +431,14 @@ class HexMesh:
         with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
             elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_centroids.pickle", "wb") as handle:
+        with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
             centroids_pkl = pickle.dump(
-                centroids, handle, protocol=pickle.HIGHEST_PROTOCOL
+                centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
+            )
+
+        with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
+            centroids_pkl = pickle.dump(
+                centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
             )
 
         with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
@@ -443,4 +451,12 @@ class HexMesh:
                 bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
             )
 
-        return nodes, elms, centroids, bnds_bot, bnds_top, reference_point_coord
+        return (
+            nodes,
+            elms,
+            centroids_trab,
+            centroids_cort,
+            bnds_bot,
+            bnds_top,
+            reference_point_coord,
+        )

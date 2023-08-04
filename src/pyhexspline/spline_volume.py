@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.io as pio
 import scipy.spatial as ss
 import SimpleITK as sitk
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -229,13 +228,13 @@ class OCC_volume:
             SimpleITK.Image: The padded image.
         """
         constant = int(sitk.GetArrayFromImage(image).min())
-        image_pad = sitk.ConstantPad(
+        image_thr = sitk.ConstantPad(
             image,
             (0, iso_pad_size, iso_pad_size),
             (0, iso_pad_size, iso_pad_size),
             constant,
         )
-        return image_pad
+        return image_thr
 
     def binary_threshold(self, contour_ext, contour_int, img_path: str):
         """
@@ -253,14 +252,16 @@ class OCC_volume:
             image.SetSpacing(self.sitk_image.GetSpacing())
 
         image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
-        image_pad = self.pad_image(image_thr, iso_pad_size=10)
+
+        # image_pad = self.pad_image(image_thr, iso_pad_size=10)
+
         if self.show_plots is True:
             self.plot_slice(
-                image_pad, SLICE, f"Padded Image on slice n. {SLICE}", ASPECT
+                image_thr, SLICE, f"Padded Image on slice n. {SLICE}", ASPECT
             )
         else:
             self.logger.info(f"Padded Image\t\t\tshow_plots:\t{self.show_plots}")
-        img_thr_join = self.get_binary_contour(image_pad)
+        img_thr_join = self.get_binary_contour(image_thr)
         self.spacing = image.GetSpacing()
 
         if self.show_plots is True:
@@ -279,7 +280,7 @@ class OCC_volume:
             if self.phases == 1:
                 if self.show_plots is True:
                     outer_contour_sitk = sitk.GetImageFromArray(contour_ext)
-                    outer_contour_sitk.CopyInformation(image_pad)
+                    outer_contour_sitk.CopyInformation(image_thr)
 
                     self.plot_slice(
                         outer_contour_sitk,
@@ -300,7 +301,7 @@ class OCC_volume:
 
             if self.show_plots is True:
                 inner_contour_sitk = sitk.GetImageFromArray(contour_int)
-                inner_contour_sitk.CopyInformation(image_pad)
+                inner_contour_sitk.CopyInformation(image_thr)
 
                 self.plot_slice(
                     inner_contour_sitk,
@@ -316,8 +317,8 @@ class OCC_volume:
                 "The number of phases is greater than 2. Only biphasic materials are accepted (e.g. cort+trab)."
             )
 
-        img_size = image_pad.GetSize()
-        img_spacing = image_pad.GetSpacing()
+        img_size = image_thr.GetSize()
+        img_spacing = image_thr.GetSpacing()
 
         coordsX = np.arange(
             0,

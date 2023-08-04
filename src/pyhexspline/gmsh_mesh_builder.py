@@ -915,6 +915,8 @@ class Mesher:
             barycenters (np.array): array of barycenters in (x, y, z) format (shape: (n_elms, 3))
         """
 
+        # * add compartment discrimination for cort/trab physical groups
+
         fast_s = False
         primary_s = False
 
