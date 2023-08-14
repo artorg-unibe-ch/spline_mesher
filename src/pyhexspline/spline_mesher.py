@@ -416,11 +416,11 @@ class HexMesh:
             gmsh.write(f"{mesher.mesh_file_path}.inp")
             gmsh.write(f"{mesher.mesh_file_path}.vtk")
 
-        entities_trab = mesher.model.getEntitiesForPhysicalGroup(3, trab_physical_group)
         entities_cort = mesher.model.getEntitiesForPhysicalGroup(3, cort_physical_group)
-        
-        centroids_cort = mesher.get_barycenters(tag_s=cort_physical_group)
-        centroids_trab = mesher.get_barycenters(tag_s=trab_physical_group)
+        entities_trab = mesher.model.getEntitiesForPhysicalGroup(3, trab_physical_group)
+
+        centroids_cort = mesher.get_barycenters(tag_s=entities_cort)
+        centroids_trab = mesher.get_barycenters(tag_s=entities_trab)
 
         gmsh.finalize()
         end = time.time()

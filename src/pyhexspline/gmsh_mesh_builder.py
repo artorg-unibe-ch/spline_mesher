@@ -920,15 +920,23 @@ class Mesher:
         fast_s = False
         primary_s = False
 
-        barycenters = gmsh.model.mesh.getBarycenters(
-            elementType=5, tag=tag_s, fast=fast_s, primary=primary_s
-        )
-        if not barycenters.any():
-            # if elementType=5 is empty, then it is a second order mesh
-            barycenters = gmsh.model.mesh.getBarycenters(
-                elementType=12, tag=tag_s, fast=fast_s, primary=primary_s
-            )
-        barycenters_xyz = np.array(barycenters).reshape(-1, 3)
+        barycenters_t = []
+        for i in range(min(tag_s), max(tag_s) + 1):
+            b = gmsh.model.mesh.getBarycenters(
+                    elementType=5, tag=i, fast=fast_s, primary=primary_s
+                )
+            barycenters_t.append(b)
+
+        if not barycenters_t:
+            # if elementType=5 is empty, then it is a second order mesh            
+            for i in range(min(tag_s), max(tag_s) + 1):
+                b = gmsh.model.mesh.getBarycenters(
+                        elementType=12, tag=i, fast=fast_s, primary=primary_s
+                    )
+                barycenters_t.append(b)
+
+        barycenters_t = np.concatenate(barycenters_t, axis=0)
+        barycenters_xyz = barycenters_t.reshape(-1, 3)
         return barycenters_xyz
 
 

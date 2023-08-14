@@ -29,7 +29,7 @@ meshing_settings = {
     "interp_points": 200,
     "debug_orientation": 0,
     "show_plots": False,
-    "show_gmsh": False,
+    "show_gmsh": True,
     "write_mesh": True,
     "location": "cort_ext",
     "thickness_tol": 180e-3,  # 3 * XCTII voxel size
