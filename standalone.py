@@ -30,16 +30,16 @@ meshing_settings = {
     "debug_orientation": 0,
     "show_plots": False,
     "show_gmsh": False,
-    "write_mesh": False,
+    "write_mesh": True,
     "location": "cort_ext",
     "thickness_tol": 180e-3,  # 3 * XCTII voxel size
     "phases": 2,
     "trab_refinement": False,
     "center_square_length_factor": 0.6,  # 0 < l_f < 1
     "n_elms_longitudinal": 3,
-    "n_elms_transverse_trab": 6,
-    "n_elms_transverse_cort": 4,
-    "n_elms_radial": 10,  # should be 10 if trab_refinement is True
+    "n_elms_transverse_trab": 3,
+    "n_elms_transverse_cort": 3,
+    "n_elms_radial": 5,  # should be 10 if trab_refinement is True
     "mesh_analysis": False,
 }
 

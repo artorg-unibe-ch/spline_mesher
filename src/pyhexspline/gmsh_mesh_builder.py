@@ -908,7 +908,7 @@ class Mesher:
             ncoords[k, 7:10] = nodes[i, 1:4]
         return ncoords
 
-    def get_barycenters(self):
+    def get_barycenters(self, tag_s: list):
         """
         Gets barycenters of each volumetric element of type 5 (8-node hexahedron) or 12 (27-node second order hexahedron)
         Returns:
@@ -921,12 +921,12 @@ class Mesher:
         primary_s = False
 
         barycenters = gmsh.model.mesh.getBarycenters(
-            elementType=5, tag=-1, fast=fast_s, primary=primary_s
+            elementType=5, tag=tag_s, fast=fast_s, primary=primary_s
         )
         if not barycenters.any():
             # if elementType=5 is empty, then it is a second order mesh
             barycenters = gmsh.model.mesh.getBarycenters(
-                elementType=12, tag=-1, fast=fast_s, primary=primary_s
+                elementType=12, tag=tag_s, fast=fast_s, primary=primary_s
             )
         barycenters_xyz = np.array(barycenters).reshape(-1, 3)
         return barycenters_xyz

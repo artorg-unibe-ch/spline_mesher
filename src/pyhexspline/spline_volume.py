@@ -5,7 +5,7 @@ import cv2
 import gmsh
 import matplotlib
 
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
