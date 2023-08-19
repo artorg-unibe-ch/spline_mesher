@@ -422,6 +422,18 @@ class HexMesh:
         centroids_cort = mesher.get_barycenters(tag_s=entities_cort)
         centroids_trab = mesher.get_barycenters(tag_s=entities_trab)
 
+        # i.e., if cort_physical_group is 1 and trab_physical_group is 2:
+        if cort_physical_group < trab_physical_group:
+            centroids_c = np.concatenate((centroids_cort, centroids_trab))
+        else:
+            centroids_c = np.concatenate((centroids_trab, centroids_cort))
+
+        centroids_dict = mesher.get_centroids_dict(centroids_c)
+        # split centroids_dict into cort and trab
+        centroids_cort_dict, centroids_trab_dict = mesher.split_dict_by_array_len(
+            centroids_dict, len(centroids_cort)
+        )
+
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=3)
@@ -453,6 +465,22 @@ class HexMesh:
             bnds_top_pkl = pickle.dump(
                 bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
             )
+
+        botpath = f"{mesh_file_path}_spline_botnodes.pickle"
+        with open(botpath, "wb") as f:
+            pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        toppath = f"{mesh_file_path}_spline_topnodes.pickle"
+        with open(toppath, "wb") as f:
+            pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
+        with open(cort_dict, "wb") as f:
+            pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
+        with open(trab_dict, "wb") as f:
+            pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         return (
             nodes,

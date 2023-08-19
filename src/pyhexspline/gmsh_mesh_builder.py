@@ -885,6 +885,33 @@ class Mesher:
         )
         return reference_point_coords
 
+    def get_centroids_dict(self, centroids):
+        """
+        Returns a dictionary of centroids with keys as indices and values as centroids.
+
+        Args:
+            centroids (np.array): array of centroids in (x, y, z) format (shape: (n_elms, 3))
+
+        Returns:
+            centroids_dict (dict): dictionary of centroids with keys as indices and values as centroids
+        """
+        centroids_dict = {}
+        for i, centroid in enumerate(centroids):
+            centroids_dict[i + 1] = centroid
+        return centroids_dict
+
+    def split_dict_by_array_len(self, input_dict, len1):
+        dict1 = {}
+        dict2 = {}
+        count1 = 0
+        for key, value in input_dict.items():
+            if count1 < len1:
+                dict1[key] = value
+                count1 += 1
+            else:
+                dict2[key] = value
+        return dict1, dict2
+
     def nodes2coords(self, nodes, elements):
         """
         https://github.com/dmelgarm/gmsh/blob/master/gmsh_tools.py#L254
@@ -923,16 +950,16 @@ class Mesher:
         barycenters_t = []
         for i in range(min(tag_s), max(tag_s) + 1):
             b = gmsh.model.mesh.getBarycenters(
-                    elementType=5, tag=i, fast=fast_s, primary=primary_s
-                )
+                elementType=5, tag=i, fast=fast_s, primary=primary_s
+            )
             barycenters_t.append(b)
 
         if not barycenters_t:
-            # if elementType=5 is empty, then it is a second order mesh            
+            # if elementType=5 is empty, then it is a second order mesh
             for i in range(min(tag_s), max(tag_s) + 1):
                 b = gmsh.model.mesh.getBarycenters(
-                        elementType=12, tag=i, fast=fast_s, primary=primary_s
-                    )
+                    elementType=12, tag=i, fast=fast_s, primary=primary_s
+                )
                 barycenters_t.append(b)
 
         barycenters_t = np.concatenate(barycenters_t, axis=0)
