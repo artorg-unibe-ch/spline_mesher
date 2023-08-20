@@ -485,8 +485,8 @@ class HexMesh:
         return (
             nodes,
             elms,
-            centroids_trab,
             centroids_cort,
+            centroids_trab,
             bnds_bot,
             bnds_top,
             reference_point_coord,
