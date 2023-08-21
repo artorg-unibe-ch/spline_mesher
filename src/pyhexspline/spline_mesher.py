@@ -422,6 +422,13 @@ class HexMesh:
         centroids_cort = mesher.get_barycenters(tag_s=entities_cort)
         centroids_trab = mesher.get_barycenters(tag_s=entities_trab)
 
+        elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
+        elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
+
+        assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
+            centroids_trab
+        ), "The number of volumes and centroids does not match."
+
         # i.e., if cort_physical_group is 1 and trab_physical_group is 2:
         if cort_physical_group < trab_physical_group:
             centroids_c = np.concatenate((centroids_cort, centroids_trab))
@@ -482,11 +489,18 @@ class HexMesh:
         with open(trab_dict, "wb") as f:
             pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 
+        cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
+        np.save(cort_elm_vol_path, elm_vol_cort)
+        trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
+        np.save(trab_elm_vol_path, elm_vol_trab)
+
         return (
             nodes,
             elms,
             centroids_cort,
             centroids_trab,
+            elm_vol_cort,
+            elm_vol_trab,
             bnds_bot,
             bnds_top,
             reference_point_coord,

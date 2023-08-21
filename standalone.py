@@ -29,7 +29,7 @@ meshing_settings = {
     "interp_points": 200,  # number of points to interpolate the spline
     "debug_orientation": 0,  # 0: no debug, 1: debug orientation after Mahalanobis sorting # TODO: remove from settings
     "show_plots": False,  # show plots during construction
-    "show_gmsh": True,  # show gmsh GUI
+    "show_gmsh": False,  # show gmsh GUI
     "write_mesh": False,  # write mesh to file
     "location": "cort_ext",
     "thickness_tol": 180e-3,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
@@ -53,6 +53,8 @@ mesh = HexMesh(meshing_settings, img_settings, sitk_image=sitk_image)
     elms,
     centroids_cort,
     centroids_trab,
+    elm_vol_cort,
+    elm_vol_trab,
     bnds_bot,
     bnds_top,
     reference_point_coord,

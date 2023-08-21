@@ -935,7 +935,7 @@ class Mesher:
             ncoords[k, 7:10] = nodes[i, 1:4]
         return ncoords
 
-    def get_barycenters(self, tag_s: list):
+    def get_barycenters(self, tag_s: list[int]):
         """
         Gets barycenters of each volumetric element of type 5 (8-node hexahedron) or 12 (27-node second order hexahedron)
         Returns:
@@ -965,6 +965,29 @@ class Mesher:
         barycenters_t = np.concatenate(barycenters_t, axis=0)
         barycenters_xyz = barycenters_t.reshape(-1, 3)
         return barycenters_xyz
+
+    def get_elm_volume(self, tag_s: list[int]):
+        """
+        Returns an array of containing the volume of each element for the given tags.
+
+        Args:
+            tag_s (list[int]): list of element tags to get volumes for
+
+        Returns:
+            volumes (np.ndarray): array of element volumes (shape: (n_elms, 1))
+        """
+        volumes = []
+        for _, elementTags, _ in (
+            self.model.mesh.getElements(dim=3, tag=tag) for tag in tag_s
+        ):
+            for i in elementTags:
+                v = self.model.mesh.getElementQualities(
+                    elementTags=i, qualityName="volume"
+                )
+                volumes.append(v)
+
+        volumes = np.array(volumes).reshape(-1, 1)
+        return volumes
 
 
 class TrabecularVolume(Mesher):
