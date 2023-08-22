@@ -405,7 +405,7 @@ class HexMesh:
         nodes = mesher.gmsh_get_nodes()
         elms = mesher.gmsh_get_elms()
         bnds_bot, bnds_top = mesher.gmsh_get_bnds(nodes)
-        reference_point_coord = mesher.gmsh_get_reference_point_coord(bnds_top)
+        reference_point_coord = mesher.gmsh_get_reference_point_coord(nodes)
 
         if SHOW_GMSH:
             gmsh.fltk.run()
@@ -447,58 +447,60 @@ class HexMesh:
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
 
-        with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
-            nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
+        #     nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
-            elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
+        #     elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
-            centroids_pkl = pickle.dump(
-                centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
+        #     centroids_pkl = pickle.dump(
+        #         centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
-            centroids_pkl = pickle.dump(
-                centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
+        #     centroids_pkl = pickle.dump(
+        #         centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
-            bnds_bot_pkl = pickle.dump(
-                bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
+        #     bnds_bot_pkl = pickle.dump(
+        #         bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
-            bnds_top_pkl = pickle.dump(
-                bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
+        #     bnds_top_pkl = pickle.dump(
+        #         bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        botpath = f"{mesh_file_path}_spline_botnodes.pickle"
-        with open(botpath, "wb") as f:
-            pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # botpath = f"{mesh_file_path}_spline_botnodes.pickle"
+        # with open(botpath, "wb") as f:
+        #     pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        toppath = f"{mesh_file_path}_spline_topnodes.pickle"
-        with open(toppath, "wb") as f:
-            pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # toppath = f"{mesh_file_path}_spline_topnodes.pickle"
+        # with open(toppath, "wb") as f:
+        #     pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
-        with open(cort_dict, "wb") as f:
-            pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
+        # with open(cort_dict, "wb") as f:
+        #     pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
-        with open(trab_dict, "wb") as f:
-            pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
+        # with open(trab_dict, "wb") as f:
+        #     pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
-        np.save(cort_elm_vol_path, elm_vol_cort)
-        trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
-        np.save(trab_elm_vol_path, elm_vol_trab)
+        # cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
+        # np.save(cort_elm_vol_path, elm_vol_cort)
+        # trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
+        # np.save(trab_elm_vol_path, elm_vol_trab)
 
         return (
             nodes,
             elms,
-            centroids_cort,
-            centroids_trab,
+            centroids_cort_dict,
+            centroids_trab_dict,
+            # centroids_cort,
+            # centroids_trab,
             elm_vol_cort,
             elm_vol_trab,
             bnds_bot,
