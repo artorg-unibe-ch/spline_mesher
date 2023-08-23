@@ -12,7 +12,7 @@ from cython_functions import find_closed_curve as fcc
 from itertools import chain
 
 # flake8: noqa: E203
-LOGGING_NAME = "SIMONE"
+LOGGING_NAME = "MESHING"
 
 
 class Mesher:

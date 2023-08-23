@@ -20,14 +20,17 @@ from pyhexspline.spline_volume import OCC_volume
 import pickle
 
 pio.renderers.default = "browser"
-LOGGING_NAME = "SIMONE"
+LOGGING_NAME = "MESHING"
 # flake8: noqa: E402
 
 
 class HexMesh:
-    def __init__(self, settings_dict: dict, img_dict: dict, sitk_image=None):
+    def __init__(
+        self, settings_dict: dict, img_dict: dict, sitk_image=None, logger=None
+    ):
         self.settings_dict = settings_dict
         self.img_dict = img_dict
+        self.logger = logger
         if sitk_image is not None:
             self.sitk_image = sitk_image  # imports the image
         else:
@@ -84,11 +87,9 @@ class HexMesh:
         S = int(self.settings_dict["s"])
         K = int(self.settings_dict["k"])
         INTERP_POINTS = int(self.settings_dict["interp_points"])
-        DEBUG_ORIENTATION = int(self.settings_dict["debug_orientation"])
         SHOW_PLOTS = bool(self.settings_dict["show_plots"])
         SHOW_GMSH = bool(self.settings_dict["show_gmsh"])
         WRITE_MESH = bool(self.settings_dict["write_mesh"])
-        LOCATION = str(self.settings_dict["location"])
         THICKNESS_TOL = float(self.settings_dict["thickness_tol"])
         PHASES = int(self.settings_dict["phases"])
 
@@ -100,6 +101,10 @@ class HexMesh:
         ELM_ORDER = int(self.settings_dict["mesh_order"])
         QUAD_REFINEMENT = bool(self.settings_dict["trab_refinement"])
         MESH_ANALYSIS = bool(self.settings_dict["mesh_analysis"])
+
+        DEBUG_ORIENTATION = (
+            0  # 0: no debug, 1: debug # ! obscured from settings by design
+        )
 
         cortical_v = OCC_volume(
             sitk_image,
@@ -119,7 +124,6 @@ class HexMesh:
             INTERP_POINTS=INTERP_POINTS,
             debug_orientation=DEBUG_ORIENTATION,
             show_plots=SHOW_PLOTS,
-            location=LOCATION,
             thickness_tol=THICKNESS_TOL,
             phases=PHASES,
         )
