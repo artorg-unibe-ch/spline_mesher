@@ -950,14 +950,17 @@ class Mesher:
         primary_s = False
 
         barycenters_t = []
+        # start by assuming that elementType=5 (8-node hexahedron)
         for i in range(min(tag_s), max(tag_s) + 1):
             b = gmsh.model.mesh.getBarycenters(
                 elementType=5, tag=i, fast=fast_s, primary=primary_s
             )
             barycenters_t.append(b)
 
-        if not barycenters_t:
-            # if elementType=5 is empty, then it is a second order mesh
+        if all(np.size(b) == 0 for b in barycenters_t):
+            # assume there's no mixed linear/quadratic elements --> reinitialize barycenters_t
+            barycenters_t = []
+            # if elementType=5 is empty, then assume it is a second order mesh (elementType=12, 27-node hexahedron)
             for i in range(min(tag_s), max(tag_s) + 1):
                 b = gmsh.model.mesh.getBarycenters(
                     elementType=12, tag=i, fast=fast_s, primary=primary_s

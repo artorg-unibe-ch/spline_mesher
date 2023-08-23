@@ -12,35 +12,37 @@ import hfe_input_transformer as transformer
 img_settings = {
     "img_basefilename": "C0001406",
     "img_basepath": f"{os.getcwd()}/01_AIM",
-    "meshpath": f"{os.getcwd()}/03_MESH",
+    # "meshpath": f"{os.getcwd()}/03_MESH",
+    "meshpath": "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE-ACCURATE/03_MESH",  # This is only to test the pipeline
     "outputpath": f"{os.getcwd()}/04_OUTPUT",
 }
 meshing_settings = {
     "aspect": 100,  # aspect ratio of the plots
     "slice": 1,  # slice of the image to be plotted
     "undersampling": 1,  # undersampling factor of the image
-    "slicing_coefficient": 5,  # 5, 10, 20 working on 2234
+    "slicing_coefficient": 10,  # 5, 10, 20 working on 2234
     "inside_val": int(0),  # threshold value for the inside of the mask
     "outside_val": int(1),  # threshold value for the outside of the mask
     "lower_thresh": float(0),  # lower threshold for the mask
     "upper_thresh": float(0.9),  # upper threshold for the mask
-    "s": 5,  # smoothing factor of the spline
+    "s": 10,  # smoothing factor of the spline
     "k": 3,  # degree of the spline
     "interp_points": 200,  # number of points to interpolate the spline
     "debug_orientation": 0,  # 0: no debug, 1: debug orientation after Mahalanobis sorting # TODO: remove from settings
     "show_plots": False,  # show plots during construction
-    "show_gmsh": False,  # show gmsh GUI
+    "show_gmsh": True,  # show gmsh GUI
     "write_mesh": False,  # write mesh to file
     "location": "cort_ext",
     "thickness_tol": 180e-3,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
     "phases": 2,  # 1: only external contour, 2: external and internal contour
     "trab_refinement": False,  # True: refine trabecular mesh at the center
     "center_square_length_factor": 0.6,  # size ratio of the refinement square: 0 < l_f < 1
-    "n_elms_longitudinal": 3,  # number of elements in the longitudinal direction
-    "n_elms_transverse_trab": 5,  # number of elements in the transverse direction for the trabecular compartment
-    "n_elms_transverse_cort": 5,  # number of elements in the transverse direction for the cortical compartment
-    "n_elms_radial": 5,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
+    "n_elms_longitudinal": 5,  # number of elements in the longitudinal direction
+    "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
+    "n_elms_transverse_cort": 2,  # number of elements in the transverse direction for the cortical compartment
+    "n_elms_radial": 10,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
     "mesh_analysis": False,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
+    "mesh_order": 2,  # set order of the mesh (1: linear, 2: quadratic)
 }
 
 sitk_image = transformer.hfe_input(
