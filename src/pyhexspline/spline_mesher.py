@@ -396,6 +396,8 @@ class HexMesh:
         mesher.mesh_generate(dim=3, element_order=1, optimise=True)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.occ.synchronize()
+        
+        mesher.model.mesh.optimize(method='UntangleMeshGeometry')
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
