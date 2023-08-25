@@ -3,7 +3,7 @@ import coloredlogs
 
 LEVEL = logging.INFO
 coloredlogs.install(level=LEVEL)
-LOGGING_NAME = "SIMONE"
+LOGGING_NAME = "MESHING"
 
 
 def logging_setup():

@@ -5,7 +5,7 @@ import cv2
 import gmsh
 import matplotlib
 
-# matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
@@ -15,7 +15,7 @@ import SimpleITK as sitk
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import splev, splprep
 
-LOGGING_NAME = "SIMONE"
+LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
 
 
@@ -39,7 +39,6 @@ class OCC_volume:
         INTERP_POINTS,
         debug_orientation,
         show_plots,
-        location,
         thickness_tol,
         phases,
     ):
@@ -58,7 +57,6 @@ class OCC_volume:
         self.filename = filename
         self.debug_orientation = debug_orientation
         self.show_plots = bool(show_plots)
-        self.location = str(location)
 
         self.ASPECT = ASPECT
         self.SLICE = SLICE

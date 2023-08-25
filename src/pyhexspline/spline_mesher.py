@@ -20,14 +20,17 @@ from pyhexspline.spline_volume import OCC_volume
 import pickle
 
 pio.renderers.default = "browser"
-LOGGING_NAME = "SIMONE"
+LOGGING_NAME = "MESHING"
 # flake8: noqa: E402
 
 
 class HexMesh:
-    def __init__(self, settings_dict: dict, img_dict: dict, sitk_image=None):
+    def __init__(
+        self, settings_dict: dict, img_dict: dict, sitk_image=None, logger=None
+    ):
         self.settings_dict = settings_dict
         self.img_dict = img_dict
+        self.logger = logger
         if sitk_image is not None:
             self.sitk_image = sitk_image  # imports the image
         else:
@@ -84,11 +87,9 @@ class HexMesh:
         S = int(self.settings_dict["s"])
         K = int(self.settings_dict["k"])
         INTERP_POINTS = int(self.settings_dict["interp_points"])
-        DEBUG_ORIENTATION = int(self.settings_dict["debug_orientation"])
         SHOW_PLOTS = bool(self.settings_dict["show_plots"])
         SHOW_GMSH = bool(self.settings_dict["show_gmsh"])
         WRITE_MESH = bool(self.settings_dict["write_mesh"])
-        LOCATION = str(self.settings_dict["location"])
         THICKNESS_TOL = float(self.settings_dict["thickness_tol"])
         PHASES = int(self.settings_dict["phases"])
 
@@ -97,8 +98,13 @@ class HexMesh:
         N_TRANSVERSE_CORT = int(self.settings_dict["n_elms_transverse_cort"])
         N_TRANSVERSE_TRAB = int(self.settings_dict["n_elms_transverse_trab"])
         N_RADIAL = int(self.settings_dict["n_elms_radial"])
+        ELM_ORDER = int(self.settings_dict["mesh_order"])
         QUAD_REFINEMENT = bool(self.settings_dict["trab_refinement"])
         MESH_ANALYSIS = bool(self.settings_dict["mesh_analysis"])
+
+        DEBUG_ORIENTATION = (
+            0  # 0: no debug, 1: debug # ! obscured from settings by design
+        )
 
         cortical_v = OCC_volume(
             sitk_image,
@@ -118,7 +124,6 @@ class HexMesh:
             INTERP_POINTS=INTERP_POINTS,
             debug_orientation=DEBUG_ORIENTATION,
             show_plots=SHOW_PLOTS,
-            location=LOCATION,
             thickness_tol=THICKNESS_TOL,
             phases=PHASES,
         )
@@ -393,7 +398,7 @@ class HexMesh:
             phase="cort",
         )
 
-        mesher.mesh_generate(dim=3, element_order=1, optimise=True)
+        mesher.mesh_generate(dim=3, element_order=ELM_ORDER, optimise=True)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.occ.synchronize()
         
@@ -407,7 +412,7 @@ class HexMesh:
         nodes = mesher.gmsh_get_nodes()
         elms = mesher.gmsh_get_elms()
         bnds_bot, bnds_top = mesher.gmsh_get_bnds(nodes)
-        reference_point_coord = mesher.gmsh_get_reference_point_coord(bnds_top)
+        reference_point_coord = mesher.gmsh_get_reference_point_coord(nodes)
 
         if SHOW_GMSH:
             gmsh.fltk.run()
@@ -423,6 +428,25 @@ class HexMesh:
 
         centroids_cort = mesher.get_barycenters(tag_s=entities_cort)
         centroids_trab = mesher.get_barycenters(tag_s=entities_trab)
+
+        elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
+        elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
+
+        assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
+            centroids_trab
+        ), "The number of volumes and centroids does not match."
+
+        # i.e., if cort_physical_group is 1 and trab_physical_group is 2:
+        if cort_physical_group < trab_physical_group:
+            centroids_c = np.concatenate((centroids_cort, centroids_trab))
+        else:
+            centroids_c = np.concatenate((centroids_trab, centroids_cort))
+
+        centroids_dict = mesher.get_centroids_dict(centroids_c)
+        # split centroids_dict into cort and trab
+        centroids_cort_dict, centroids_trab_dict = mesher.split_dict_by_array_len(
+            centroids_dict, len(centroids_cort)
+        )
 
         gmsh.finalize()
         end = time.time()
@@ -456,11 +480,34 @@ class HexMesh:
                 bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
             )
 
+        botpath = f"{mesh_file_path}_spline_botnodes.pickle"
+        with open(botpath, "wb") as f:
+            pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        toppath = f"{mesh_file_path}_spline_topnodes.pickle"
+        with open(toppath, "wb") as f:
+            pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
+        with open(cort_dict, "wb") as f:
+            pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
+        with open(trab_dict, "wb") as f:
+            pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
+        np.save(cort_elm_vol_path, elm_vol_cort)
+        trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
+        np.save(trab_elm_vol_path, elm_vol_trab)
+
         return (
             nodes,
             elms,
-            centroids_trab,
-            centroids_cort,
+            centroids_cort_dict,
+            centroids_trab_dict,
+            elm_vol_cort,
+            elm_vol_trab,
             bnds_bot,
             bnds_top,
             reference_point_coord,

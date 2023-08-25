@@ -20,7 +20,7 @@ import numpy as np
 from cython_functions import find_closed_curve as fcc
 from skimage.util import view_as_windows
 
-LOGGING_NAME = "SIMONE"
+LOGGING_NAME = "MESHING"
 # flake8: noqa: E402
 
 

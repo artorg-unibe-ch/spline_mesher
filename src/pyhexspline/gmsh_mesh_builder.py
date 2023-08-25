@@ -12,7 +12,7 @@ from cython_functions import find_closed_curve as fcc
 from itertools import chain
 
 # flake8: noqa: E203
-LOGGING_NAME = "SIMONE"
+LOGGING_NAME = "MESHING"
 
 
 class Mesher:
@@ -874,16 +874,45 @@ class Mesher:
         return bnds_bot, bnds_top
 
     def gmsh_get_reference_point_coord(self, nodes: dict):
+        OFFSET_MM = 2  # RP offset in mm from top surface
         # get the center of mass of the nodes dictionary values
         center_of_mass = np.mean(list(nodes.values()), axis=0)
+        max_z = np.max(np.array(list(nodes.values()))[:, 2])
         reference_point_coords = np.array(
             [
                 center_of_mass[0],
                 center_of_mass[1],
-                math.copysign(abs(center_of_mass[2]) + 2, center_of_mass[2]),
+                abs(max_z) + OFFSET_MM,
             ]
         )
         return reference_point_coords
+
+    def get_centroids_dict(self, centroids):
+        """
+        Returns a dictionary of centroids with keys as indices and values as centroids.
+
+        Args:
+            centroids (np.array): array of centroids in (x, y, z) format (shape: (n_elms, 3))
+
+        Returns:
+            centroids_dict (dict): dictionary of centroids with keys as indices and values as centroids
+        """
+        centroids_dict = {}
+        for i, centroid in enumerate(centroids):
+            centroids_dict[i + 1] = centroid
+        return centroids_dict
+
+    def split_dict_by_array_len(self, input_dict, len1):
+        dict1 = {}
+        dict2 = {}
+        count1 = 0
+        for key, value in input_dict.items():
+            if count1 < len1:
+                dict1[key] = value
+                count1 += 1
+            else:
+                dict2[key] = value
+        return dict1, dict2
 
     def nodes2coords(self, nodes, elements):
         """
@@ -908,7 +937,7 @@ class Mesher:
             ncoords[k, 7:10] = nodes[i, 1:4]
         return ncoords
 
-    def get_barycenters(self, tag_s: list):
+    def get_barycenters(self, tag_s: list[int]):
         """
         Gets barycenters of each volumetric element of type 5 (8-node hexahedron) or 12 (27-node second order hexahedron)
         Returns:
@@ -921,23 +950,50 @@ class Mesher:
         primary_s = False
 
         barycenters_t = []
+        # start by assuming that elementType=5 (8-node hexahedron)
         for i in range(min(tag_s), max(tag_s) + 1):
             b = gmsh.model.mesh.getBarycenters(
-                    elementType=5, tag=i, fast=fast_s, primary=primary_s
-                )
+                elementType=5, tag=i, fast=fast_s, primary=primary_s
+            )
             barycenters_t.append(b)
 
-        if not barycenters_t:
-            # if elementType=5 is empty, then it is a second order mesh            
+        if all(np.size(b) == 0 for b in barycenters_t):
+            # assume there's no mixed linear/quadratic elements --> reinitialize barycenters_t
+            barycenters_t = []
+            # if elementType=5 is empty, then assume it is a second order mesh (elementType=12, 27-node hexahedron)
             for i in range(min(tag_s), max(tag_s) + 1):
                 b = gmsh.model.mesh.getBarycenters(
-                        elementType=12, tag=i, fast=fast_s, primary=primary_s
-                    )
+                    elementType=12, tag=i, fast=fast_s, primary=primary_s
+                )
                 barycenters_t.append(b)
 
         barycenters_t = np.concatenate(barycenters_t, axis=0)
         barycenters_xyz = barycenters_t.reshape(-1, 3)
         return barycenters_xyz
+
+    def get_elm_volume(self, tag_s: list[int]):
+        """
+        Returns an array of containing the volume of each element for the given tags.
+
+        Args:
+            tag_s (list[int]): list of element tags to get volumes for
+
+        Returns:
+            volumes (np.ndarray): array of element volumes (shape: (n_elms, 1))
+        """
+        volumes = []
+        for _, elementTags, _ in (
+            self.model.mesh.getElements(dim=3, tag=tag) for tag in tag_s
+        ):
+            for i in elementTags:
+                v = self.model.mesh.getElementQualities(
+                    elementTags=i, qualityName="volume"
+                )
+                volumes.append(v)
+
+        volumes = np.concatenate(volumes).reshape(-1, 1)
+
+        return volumes
 
 
 class TrabecularVolume(Mesher):
