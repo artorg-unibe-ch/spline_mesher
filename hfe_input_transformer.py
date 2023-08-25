@@ -54,11 +54,4 @@ def hfe_input(path_np_s: str):
 
     # add padding to sitk image
     sitk_padded = pad_image(sitk_image, iso_pad_size=10)
-
-    # save image to mhd format for debugging
-    sitk.WriteImage(
-        sitk_padded,
-        "99_testing_prototyping/pipeline_implementation_errors/C0001406_CORTMASK.mhd",
-    )
-
     return sitk_padded

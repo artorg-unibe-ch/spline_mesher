@@ -10,7 +10,7 @@ import hfe_input_transformer as transformer
 
 
 img_settings = {
-    "img_basefilename": "C0002234",
+    "img_basefilename": "C0001406",
     "img_basepath": f"{os.getcwd()}/01_AIM",
     "meshpath": f"{os.getcwd()}/03_MESH",
     "outputpath": f"{os.getcwd()}/04_OUTPUT",
@@ -36,18 +36,18 @@ meshing_settings = {
     "phases": 2,
     "trab_refinement": False,
     "center_square_length_factor": 0.6,  # 0 < l_f < 1
-    "n_elms_longitudinal": 3,
-    "n_elms_transverse_trab": 3,
+    "n_elms_longitudinal": 2,
+    "n_elms_transverse_trab": 10,
     "n_elms_transverse_cort": 3,
-    "n_elms_radial": 5,  # should be 10 if trab_refinement is True
-    "mesh_analysis": False,
+    "n_elms_radial": 10,  # should be 10 if trab_refinement is True
+    "mesh_analysis": True,
 }
 
-# sitk_image = transformer.hfe_input(
-#     path_np_s="99_testing_prototyping/pipeline_implementation_errors/C0001406_CORTMASK_array.npy"
-# )
+sitk_image_s = transformer.hfe_input(
+    path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/03_MESH/C0001406/C0001406_CORTMASK_array.npy"
+)
 
-mesh = HexMesh(meshing_settings, img_settings, sitk_image=None)
+mesh = HexMesh(meshing_settings, img_settings, sitk_image=sitk_image_s)
 (
     nodes,
     elms,
