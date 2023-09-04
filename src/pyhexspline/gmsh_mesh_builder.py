@@ -493,14 +493,16 @@ class Mesher:
         n_transverse = None
         if phase == "cort":
             n_transverse = self.n_transverse_cort
+            PROGRESSION_FACTOR = 1.0
         elif phase == "trab":
             n_transverse = self.n_transverse_trab
+            PROGRESSION_FACTOR = 1.3
 
         for ll in longitudinal_line_tags:
             self.model.mesh.setTransfiniteCurve(ll, self.n_longitudinal)
 
         for ll in transverse_line_tags:
-            self.model.mesh.setTransfiniteCurve(ll, n_transverse)
+            self.model.mesh.setTransfiniteCurve(ll, n_transverse, 'Progression', PROGRESSION_FACTOR)
 
         for intersection in radial_line_tags:
             self.model.mesh.setTransfiniteCurve(intersection, self.n_radial)
@@ -994,6 +996,33 @@ class Mesher:
         volumes = np.concatenate(volumes).reshape(-1, 1)
 
         return volumes
+    
+    def get_radius_longest_edge(self, tag_s):
+        """
+        Compute the radius of the longest edge for each element in the given tag_s.
+
+
+        Args:
+            tag_s: list([int]) List of element tags to compute the radius for.
+
+        Returns:
+            _:     (float) The radius of the longest edge among all elements in tag_s.
+        """
+        radius = np.array([])
+        for _, elementTags, _ in (
+            self.model.mesh.getElements(dim=3, tag=tag) for tag in tag_s
+        ):
+            for i in elementTags:
+                edge_min = self.model.mesh.getElementQualities(
+                    elementTags=i, qualityName="minEdge"
+                )
+                edge_max = self.model.mesh.getElementQualities(
+                    elementTags=i, qualityName="maxEdge"
+                    )
+                
+                r = (np.sqrt(edge_min**2 + edge_max**2)/2)
+                radius = np.append(radius, r)
+        return np.max(radius)
 
 
 class TrabecularVolume(Mesher):
