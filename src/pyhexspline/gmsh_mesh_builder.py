@@ -804,7 +804,8 @@ class Mesher:
         self.option.setNumber("Mesh.ElementOrder", element_order)
         self.model.mesh.generate(dim)
         if optimise:
-            self.model.mesh.optimize(method="Netgen", niter=3)
+            self.logger.info("Optimising mesh")
+            self.model.mesh.optimize(method="HighOrder", niter=3, force=True)
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:
         self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)
