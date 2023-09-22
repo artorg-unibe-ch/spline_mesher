@@ -158,6 +158,7 @@ class HexMesh:
         gmsh.initialize()
         gmsh.clear()
         gmsh.option.setNumber("General.NumThreads", 6)
+        gmsh.logger.start()
 
         mesher = Mesher(
             geo_unrolled_filename,
@@ -402,6 +403,8 @@ class HexMesh:
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
+        mesher.logger.info("Optimising mesh")
+        mesher.model.mesh.optimize(method="HighOrder", niter=3, force=True)
 
         mesher.model.mesh.optimize(method='HighOrderFastCurving')
 
@@ -457,6 +460,10 @@ class HexMesh:
         centroids_cort_dict, centroids_trab_dict = mesher.split_dict_by_array_len(
             centroids_dict, len(centroids_cort)
         )
+        gmsh_log = gmsh.logger.get()
+        with open(f"{mesh_file_path}_gmsh.log", "w") as f:
+            for line in gmsh_log:
+                f.write(line + "\n")
 
         gmsh.finalize()
         end = time.time()
