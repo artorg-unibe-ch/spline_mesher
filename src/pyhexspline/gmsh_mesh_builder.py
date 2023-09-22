@@ -502,7 +502,9 @@ class Mesher:
             self.model.mesh.setTransfiniteCurve(ll, self.n_longitudinal)
 
         for ll in transverse_line_tags:
-            self.model.mesh.setTransfiniteCurve(ll, n_transverse, 'Progression', PROGRESSION_FACTOR)
+            self.model.mesh.setTransfiniteCurve(
+                ll, n_transverse, "Progression", PROGRESSION_FACTOR
+            )
 
         for intersection in radial_line_tags:
             self.model.mesh.setTransfiniteCurve(intersection, self.n_radial)
@@ -807,7 +809,7 @@ class Mesher:
         self.model.mesh.generate(dim)
         if optimise:
             self.logger.info("Optimising mesh")
-            self.model.mesh.optimize(method="HighOrder", niter=3, force=True)
+            self.model.mesh.optimize(method="HighOrder", niter=1, force=True)
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:
         self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)
@@ -997,7 +999,7 @@ class Mesher:
         volumes = np.concatenate(volumes).reshape(-1, 1)
 
         return volumes
-    
+
     def get_radius_longest_edge(self, tag_s):
         """
         Compute the radius of the longest edge for each element in the given tag_s.
@@ -1019,9 +1021,9 @@ class Mesher:
                 )
                 edge_max = self.model.mesh.getElementQualities(
                     elementTags=i, qualityName="maxEdge"
-                    )
-                
-                r = (np.sqrt(edge_min**2 + edge_max**2)/2)
+                )
+
+                r = np.sqrt(edge_min**2 + edge_max**2) / 2
                 radius = np.append(radius, r)
         return np.max(radius)
 

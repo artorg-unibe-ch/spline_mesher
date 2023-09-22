@@ -399,14 +399,12 @@ class HexMesh:
             phase="cort",
         )
 
-        mesher.mesh_generate(dim=3, element_order=ELM_ORDER, optimise=True)
+        mesher.mesh_generate(dim=3, element_order=ELM_ORDER, optimise=False)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
-        mesher.model.mesh.optimize(method="HighOrder", niter=3, force=True)
-
-        mesher.model.mesh.optimize(method='HighOrderFastCurving')
+        mesher.model.mesh.optimize(method="Netgen", niter=3, force=True)
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
@@ -435,15 +433,14 @@ class HexMesh:
 
         elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
         elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
-        logger.info(f'Minimum cortical element volume: {np.min(elm_vol_cort)}')
-        logger.info(f'Minimum trabecular element volume: {np.min(elm_vol_trab)}')
-        
+        logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort)}")
+        logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab)}")
+
         # get biggest ROI_radius
         radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
         radius_roi_trab = mesher.get_radius_longest_edge(tag_s=entities_trab)
-        logger.info(f'Radius ROI cort:\t{radius_roi_cort} (mm)')
-        logger.info(f'Radius ROI trab:\t{radius_roi_trab} (mm)')
-
+        logger.info(f"Radius ROI cort:\t{radius_roi_cort} (mm)")
+        logger.info(f"Radius ROI trab:\t{radius_roi_trab} (mm)")
 
         assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
             centroids_trab
@@ -470,7 +467,6 @@ class HexMesh:
         elapsed = round(end - start, ndigits=3)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
-        
 
         with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
             nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)

@@ -27,7 +27,7 @@ def main():
     coloredlogs.install(level=logging.INFO, logger=logger)
 
     img_settings = {
-        "img_basefilename": "SYNTHETIC",
+        "img_basefilename": "C0002234",
         "img_basepath": f"{os.getcwd()}/01_AIM",
         "meshpath": f"{os.getcwd()}/03_MESH",
         # "meshpath": "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE-ACCURATE/03_MESH",  # This is only to test the pipeline
@@ -42,21 +42,21 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(119.9),  # upper threshold for the mask
-        "s": 5,  # smoothing factor of the spline
+        "s": 20,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 200,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.5,  # size ratio of the refinement square: 0 < l_f < 1
-        "n_elms_longitudinal": 4,  # number of elements in the longitudinal direction
-        "n_elms_transverse_trab": 6,  # number of elements in the transverse direction for the trabecular compartment
-        "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
-        "n_elms_radial": 15,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
+        "n_elms_longitudinal": 5,  # number of elements in the longitudinal direction
+        "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
+        "n_elms_transverse_cort": 2,  # number of elements in the transverse direction for the cortical compartment
+        "n_elms_radial": 10,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "mesh_order": 2,  # set order of the mesh (1: linear, 2: quadratic)
         "show_plots": False,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
-        "write_mesh": True,  # write mesh to file
-        "trab_refinement": False,  # True: refine trabecular mesh at the center
+        "write_mesh": False,  # write mesh to file
+        "trab_refinement": True,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
 
@@ -64,9 +64,11 @@ def main():
     #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/03_MESH/C0001406/C0001406_CORTMASK_array.npy"
     # )
 
-    sitk_image_s = transformer.hfe_input(
-        path_np_s="/Users/msb/Documents/01_PHD/03_Methods/HFE-ACCURATE/99_TEMP/material_mapping_testing/synthetic_tests/constant.npy"
-    )
+    # sitk_image_s = transformer.hfe_input(
+    #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/HFE-ACCURATE/99_TEMP/material_mapping_testing/synthetic_tests/constant.npy"
+    # )
+
+    sitk_image_s = None
 
     mesh = HexMesh(
         meshing_settings,
