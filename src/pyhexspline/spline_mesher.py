@@ -461,6 +461,7 @@ class HexMesh:
         with open(f"{mesh_file_path}_gmsh.log", "w") as f:
             for line in gmsh_log:
                 f.write(line + "\n")
+        gmsh.logger.stop()
 
         gmsh.finalize()
         end = time.time()
