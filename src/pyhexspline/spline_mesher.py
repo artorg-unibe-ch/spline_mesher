@@ -399,12 +399,12 @@ class HexMesh:
             phase="cort",
         )
 
-        mesher.mesh_generate(dim=3, element_order=ELM_ORDER, optimise=False)
+        mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
-        mesher.model.mesh.optimize(method="Netgen", niter=3, force=True)
+        mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
