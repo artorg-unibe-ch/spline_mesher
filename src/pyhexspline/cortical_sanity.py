@@ -4,14 +4,19 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as shpg
+import shapely.ops as shpops
 from scipy import spatial
 
 # plt.style.use('02_CODE/src/spline_mesher/cfgdir/pos_monitor.mplstyle')  # https://github.com/matplotlib/matplotlib/issues/17978
 
+# flake8: noqa: E501
+
+LOGGING_NAME = "MESHING"
+
 
 class CorticalSanityCheck:
     def __init__(
-        self, MIN_THICKNESS, ext_contour, int_contour, model, save_plot
+        self, MIN_THICKNESS, ext_contour, int_contour, model, save_plot, logger
     ) -> None:
         self.min_thickness = (
             MIN_THICKNESS  # minimum thickness between internal and external contour
@@ -20,6 +25,8 @@ class CorticalSanityCheck:
         self.int_contour = int_contour  # internal contour
         self.model = str(model)
         self.save_plot = bool(save_plot)
+        self.shpg = shpg
+        self.logger = logger
 
     def unit_vector(self, vector):
         """
@@ -564,15 +571,26 @@ class CorticalSanityCheck:
         Returns:
             np.ndarray: 2D array of [x, y] points of the offset surface
         """
+        poly = None
+        noffpoly = None
+        noffafpolypts = None
+        noffpoly_union = None
 
         # Create a Polygon from the 2d array
-        poly = shpg.Polygon(line)
+        poly = self.shpg.Polygon(line)
 
         # Create offset in inward direction
         noffpoly = poly.buffer(offset)  # offset
 
         # Turn polygon points into numpy arrays for plotting
-        noffafpolypts = np.array(noffpoly.exterior.coords)
+        try:
+            noffafpolypts = np.array(noffpoly.exterior.coords)
+        except AttributeError:
+            self.logger.warning(
+                "Multipolygon was found, taking the convex hull as the offset surface"
+            )
+            noffpoly_union = shpops.unary_union(noffpoly)
+            noffafpolypts = np.array(noffpoly_union.convex_hull.exterior.coords)
         return noffafpolypts
 
     def plot_corrected_contours(
@@ -677,16 +695,20 @@ class CorticalSanityCheck:
     def push_contour(
         self, ext_contour: np.ndarray, int_contour: np.ndarray, offset: float
     ):
-        RESAMPLING = int(500)
+        is_inside_shpg = []  # initialise
+
+        RESAMPLING = int(1500)
         ext_offset = self.offset_surface(ext_contour, offset)
         ext_offset_hres = self.resample_contour(ext_offset, n_points=RESAMPLING)
         int_contour_hres = self.resample_contour(int_contour, n_points=RESAMPLING)
 
-        is_inside = [
-            shpg.Point(int_contour_hres[i]).within(shpg.Polygon(ext_offset_hres))
+        is_inside_shpg = [
+            self.shpg.Point(int_contour_hres[i]).within(
+                self.shpg.Polygon(ext_offset_hres)
+            )
             for i in range(len(int_contour_hres))
         ]
-        is_inside = np.c_[is_inside, is_inside]
+        is_inside = np.c_[is_inside_shpg, is_inside_shpg]
         closest_points = [
             ext_offset_hres[
                 spatial.KDTree(ext_offset_hres).query(int_contour_hres[i])[1]

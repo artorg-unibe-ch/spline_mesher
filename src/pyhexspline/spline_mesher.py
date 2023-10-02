@@ -12,10 +12,10 @@ import numpy as np
 import plotly.io as pio
 from pyhexspline import cortical_sanity as csc
 
-# from pyhexspline.futils.setup_utils import logging_setup
 from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
 from pyhexspline.quad_refinement import QuadRefinement
 from pyhexspline.spline_volume import OCC_volume
+import matplotlib.pyplot as plt
 
 import pickle
 
@@ -137,14 +137,13 @@ class HexMesh:
             int_contour=cortical_int,
             model=cortical_v.filename,
             save_plot=False,
+            logger=logger,
         )
-        cortical_ext_split = np.array_split(
-            cortical_ext, len(np.unique(cortical_ext[:, 2]))
-        )
-        cortical_int_split = np.array_split(
-            cortical_int, len(np.unique(cortical_int[:, 2]))
-        )
+        z_unique = np.unique(cortical_ext[:, 2])
+        cortical_ext_split = np.array_split(cortical_ext, len(z_unique))
+        cortical_int_split = np.array_split(cortical_int, len(z_unique))
         cortical_int_sanity = np.zeros(np.shape(cortical_int_split))
+
         for i, _ in enumerate(cortical_ext_split):
             cortical_int_sanity[i][:, :-1] = cortex.cortical_sanity_check(
                 ext_contour=cortical_ext_split[i],
@@ -191,17 +190,40 @@ class HexMesh:
         idx_list_int = np.zeros((len(cortical_ext_split), 4), dtype=int)
         intersections_ext = np.zeros((len(cortical_ext_split), 2, 2, 3), dtype=float)
         intersections_int = np.zeros((len(cortical_ext_split), 2, 2, 3), dtype=float)
+
         for i, _ in enumerate(cortical_ext_split):
-            _, idx = np.unique(
-                cortical_ext_split[i].round(decimals=6), axis=0, return_index=True
+            # before tensor of inertia insertion
+            plt.figure(f"Before ToI pt.1, slice {i}", figsize=(10, 10))
+            plt.plot(cortical_ext_split[i][:, 0], cortical_ext_split[i][:, 1], "r")
+            plt.plot(
+                cortical_int_sanity_split[i][:, 0],
+                cortical_int_sanity_split[i][:, 1],
+                "b",
             )
-            cortical_ext_split[i][np.sort(idx)]
-            _, idx = np.unique(
-                cortical_int_sanity_split[i].round(decimals=6),
-                axis=0,
-                return_index=True,
+            plt.savefig(f"debug_20231002/before_ToI_2_{i}.png", dpi=80)
+            plt.close()
+            """
+            # Ensure that cortical_ext_split[i] is unique and closed
+            unique_ext, idx_ext = np.unique(
+                cortical_ext_split[i], axis=0, return_index=True
             )
-            cortical_int_sanity_split[i][np.sort(idx)]
+            if not np.allclose(unique_ext[0], unique_ext[-1]):
+                idx_ext[-1] = idx_ext[0]
+                cortical_ext_split[i] = unique_ext[np.argsort(idx_ext)]
+            else:
+                cortical_ext_split[i] = unique_ext
+
+            # Ensure that cortical_int_sanity_split[i] is unique and closed
+            unique_int, idx_int = np.unique(
+                cortical_int_sanity_split[i], axis=0, return_index=True
+            )
+            if not np.allclose(unique_int[0], unique_int[-1]):
+                idx_int[-1] = idx_int[0]
+                cortical_int_sanity_split[i] = unique_int[np.argsort(idx_int)]
+            else:
+                cortical_int_sanity_split[i] = unique_int
+            """
+
             cortex_centroid[i][:-1] = mesher.polygon_tensor_of_inertia(
                 cortical_ext_split[i], cortical_int_sanity_split[i]
             )
@@ -222,6 +244,7 @@ class HexMesh:
                 cortical_int_sanity_split[i], cortex_centroid[i][:-1]
             )
             intersections_int[i] = intersections_int_s
+
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
         (
@@ -406,7 +429,7 @@ class HexMesh:
         mesher.logger.info("Optimising mesh")
         mesher.model.mesh.optimize(method="HighOrder", niter=3, force=True)
 
-        mesher.model.mesh.optimize(method='HighOrderFastCurving')
+        mesher.model.mesh.optimize(method="HighOrderFastCurving")
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
@@ -435,15 +458,14 @@ class HexMesh:
 
         elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
         elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
-        logger.info(f'Minimum cortical element volume: {np.min(elm_vol_cort)}')
-        logger.info(f'Minimum trabecular element volume: {np.min(elm_vol_trab)}')
-        
+        logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort)}")
+        logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab)}")
+
         # get biggest ROI_radius
         radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
         radius_roi_trab = mesher.get_radius_longest_edge(tag_s=entities_trab)
-        logger.info(f'Radius ROI cort:\t{radius_roi_cort} (mm)')
-        logger.info(f'Radius ROI trab:\t{radius_roi_trab} (mm)')
-
+        logger.info(f"Radius ROI cort:\t{radius_roi_cort} (mm)")
+        logger.info(f"Radius ROI trab:\t{radius_roi_trab} (mm)")
 
         assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
             centroids_trab
@@ -470,7 +492,6 @@ class HexMesh:
         elapsed = round(end - start, ndigits=3)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
-        
 
         with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
             nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)

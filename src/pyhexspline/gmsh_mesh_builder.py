@@ -10,6 +10,7 @@ import shapely.geometry as shpg
 import scipy.spatial as spatial
 from cython_functions import find_closed_curve as fcc
 from itertools import chain
+import sys
 
 # flake8: noqa: E203
 LOGGING_NAME = "MESHING"
@@ -38,13 +39,23 @@ class Mesher:
         self.n_transverse_trab = n_transverse_trab
         self.n_radial = n_radial
         self.logger = logging.getLogger(LOGGING_NAME)
+        self.shpg = shpg
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
-        ext_arr = np.vstack((ext_arr, ext_arr[0]))
-        int_arr = np.vstack((int_arr, int_arr[0]))
-        extpol = shpg.polygon.Polygon(ext_arr)
-        intpol = shpg.polygon.Polygon(int_arr)
-        cortex = extpol.difference(intpol)
+        # ext_arr = np.vstack((ext_arr, ext_arr[0]))
+        # int_arr = np.vstack((int_arr, int_arr[0]))
+        extpol = self.shpg.polygon.Polygon(ext_arr)
+        intpol = self.shpg.polygon.Polygon(int_arr)
+        plt.figure(figsize=(5, 5))
+        plt.plot(ext_arr[:, 0], ext_arr[:, 1], "r")
+        plt.plot(int_arr[:, 0], int_arr[:, 1], "b")
+        plt.title("Polygon difference failed")
+        plt.show()
+        try:
+            cortex = extpol.difference(intpol)
+        except Exception:
+            self.logger.error("Polygon difference failed")
+            sys.exit(99)
         cortex_centroid = (
             cortex.centroid.coords.xy[0][0],
             cortex.centroid.coords.xy[1][0],
@@ -61,8 +72,8 @@ class Mesher:
             shapely.geometry.Point: intersection point
         """
 
-        shapely_poly = shpg.Polygon(poly)
-        shapely_line = shpg.LineString(line_1)
+        shapely_poly = self.shpg.Polygon(poly)
+        shapely_line = self.shpg.LineString(line_1)
         return list(shapely_poly.intersection(shapely_line).coords)
 
     def partition_lines(self, radius, centroid):
@@ -502,7 +513,9 @@ class Mesher:
             self.model.mesh.setTransfiniteCurve(ll, self.n_longitudinal)
 
         for ll in transverse_line_tags:
-            self.model.mesh.setTransfiniteCurve(ll, n_transverse, 'Progression', PROGRESSION_FACTOR)
+            self.model.mesh.setTransfiniteCurve(
+                ll, n_transverse, "Progression", PROGRESSION_FACTOR
+            )
 
         for intersection in radial_line_tags:
             self.model.mesh.setTransfiniteCurve(intersection, self.n_radial)
@@ -997,7 +1010,7 @@ class Mesher:
         volumes = np.concatenate(volumes).reshape(-1, 1)
 
         return volumes
-    
+
     def get_radius_longest_edge(self, tag_s):
         """
         Compute the radius of the longest edge for each element in the given tag_s.
@@ -1019,9 +1032,9 @@ class Mesher:
                 )
                 edge_max = self.model.mesh.getElementQualities(
                     elementTags=i, qualityName="maxEdge"
-                    )
-                
-                r = (np.sqrt(edge_min**2 + edge_max**2)/2)
+                )
+
+                r = np.sqrt(edge_min**2 + edge_max**2) / 2
                 radius = np.append(radius, r)
         return np.max(radius)
 

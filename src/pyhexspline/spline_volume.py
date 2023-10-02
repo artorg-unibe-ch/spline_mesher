@@ -14,6 +14,7 @@ import scipy.spatial as ss
 import SimpleITK as sitk
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import splev, splprep
+import time
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
@@ -573,8 +574,14 @@ class OCC_volume:
 
         # evaluate spline, including interpolated points
         xnew, ynew = splev(np.linspace(0, 1, self.INTERP_POINTS_S), tckp)
-        xnew = np.append(xnew, xnew[0])
-        ynew = np.append(ynew, ynew[0])
+        if np.allclose(xnew[0], xnew[-1], rtol=1e-05, atol=1e-08):
+            xnew = np.append(xnew, xnew[0])
+        else:
+            pass
+        if np.allclose(ynew[0], ynew[-1], rtol=1e-05, atol=1e-08):
+            ynew = np.append(ynew, ynew[0])
+        else:
+            pass
 
         # Sanity check to ensure directionality of sorting in cw- or ccw-direction
         xnew, ynew = self.check_orient(xnew, ynew, direction=1)
