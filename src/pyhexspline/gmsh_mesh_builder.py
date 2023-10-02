@@ -507,7 +507,7 @@ class Mesher:
             PROGRESSION_FACTOR = 1.0
         elif phase == "trab":
             n_transverse = self.n_transverse_trab
-            PROGRESSION_FACTOR = 1.3
+            PROGRESSION_FACTOR = 1.05
 
         for ll in longitudinal_line_tags:
             self.model.mesh.setTransfiniteCurve(ll, self.n_longitudinal)
@@ -812,15 +812,12 @@ class Mesher:
         sorted_indices = angles_idx[sorted_angles]
         return sorted_indices
 
-    def mesh_generate(self, dim: int, element_order: int, optimise: bool = True):
+    def mesh_generate(self, dim: int, element_order: int):
         self.option.setNumber("Mesh.RecombineAll", 1)
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
-        self.option.setNumber("Mesh.Recombine3DLevel", 2)
+        self.option.setNumber("Mesh.Recombine3DLevel", 0)
         self.option.setNumber("Mesh.ElementOrder", element_order)
         self.model.mesh.generate(dim)
-        if optimise:
-            self.logger.info("Optimising mesh")
-            self.model.mesh.optimize(method="HighOrder", niter=3, force=True)
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:
         self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)

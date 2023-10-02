@@ -41,12 +41,12 @@ def main():
         "aspect": 100,  # aspect ratio of the plots
         "slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 5,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 10,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(119.9),  # upper threshold for the mask
-        "s": 5,  # smoothing factor of the spline
+        "s": 200,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 100,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size

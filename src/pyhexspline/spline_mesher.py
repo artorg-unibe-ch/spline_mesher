@@ -422,14 +422,12 @@ class HexMesh:
             phase="cort",
         )
 
-        mesher.mesh_generate(dim=3, element_order=ELM_ORDER, optimise=True)
+        mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
-        mesher.model.mesh.optimize(method="HighOrder", niter=3, force=True)
-
-        mesher.model.mesh.optimize(method="HighOrderFastCurving")
+        mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
@@ -486,6 +484,7 @@ class HexMesh:
         with open(f"{mesh_file_path}_gmsh.log", "w") as f:
             for line in gmsh_log:
                 f.write(line + "\n")
+        gmsh.logger.stop()
 
         gmsh.finalize()
         end = time.time()

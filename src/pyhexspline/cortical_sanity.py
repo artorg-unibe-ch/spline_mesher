@@ -6,6 +6,8 @@ import numpy as np
 import shapely.geometry as shpg
 import shapely.ops as shpops
 from scipy import spatial
+from shapely.ops import unary_union
+
 
 # plt.style.use('02_CODE/src/spline_mesher/cfgdir/pos_monitor.mplstyle')  # https://github.com/matplotlib/matplotlib/issues/17978
 
@@ -581,6 +583,10 @@ class CorticalSanityCheck:
 
         # Create offset in inward direction
         noffpoly = poly.buffer(offset)  # offset
+
+        # If the result is a MultiPolygon, merge them into a single Polygon
+        if isinstance(noffpoly, shpg.MultiPolygon):
+            noffpoly = unary_union(noffpoly)
 
         # Turn polygon points into numpy arrays for plotting
         try:

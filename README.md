@@ -55,7 +55,10 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-<img src="https://github.com/simoneponcioni/spline-mesher/blob/master/src/spline_mesher/docs/img/mesh-example.png" alt="Spline-mesher">
+<div style="display: flex; justify-content: center;">
+  <img src="https://github.com/simoneponcioni/spline-mesher/blob/master/src/pyhexspline/docs/img/mesh-example01.png" alt="Spline-mesher01" style="width: 45%;">
+  <img src="https://github.com/simoneponcioni/spline-mesher/blob/master/src/pyhexspline/docs/img/mesh-example02.png" alt="Spline-mesher02" style="width: 45%;">
+</div>
 
 Import a voxel-based model and convert it to a geometrical simplified representation through the use of splines for each slice in the transverse plane.
 
