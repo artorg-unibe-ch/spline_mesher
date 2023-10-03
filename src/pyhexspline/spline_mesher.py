@@ -15,8 +15,6 @@ from pyhexspline import cortical_sanity as csc
 from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
 from pyhexspline.quad_refinement import QuadRefinement
 from pyhexspline.spline_volume import OCC_volume
-import matplotlib.pyplot as plt
-
 import pickle
 
 pio.renderers.default = "browser"
@@ -130,6 +128,7 @@ class HexMesh:
 
         cortical_v.plot_mhd_slice()
         cortical_ext, cortical_int = cortical_v.volume_splines()
+
         # Cortical surface sanity check
         cortex = csc.CorticalSanityCheck(
             MIN_THICKNESS=cortical_v.MIN_THICKNESS,
@@ -192,16 +191,6 @@ class HexMesh:
         intersections_int = np.zeros((len(cortical_ext_split), 2, 2, 3), dtype=float)
 
         for i, _ in enumerate(cortical_ext_split):
-            # before tensor of inertia insertion
-            plt.figure(f"Before ToI pt.1, slice {i}", figsize=(10, 10))
-            plt.plot(cortical_ext_split[i][:, 0], cortical_ext_split[i][:, 1], "r")
-            plt.plot(
-                cortical_int_sanity_split[i][:, 0],
-                cortical_int_sanity_split[i][:, 1],
-                "b",
-            )
-            plt.savefig(f"debug_20231002/before_ToI_2_{i}.png", dpi=80)
-            plt.close()
             """
             # Ensure that cortical_ext_split[i] is unique and closed
             unique_ext, idx_ext = np.unique(

@@ -10,7 +10,6 @@ from src.pyhexspline.spline_mesher import HexMesh
 import hfe_input_transformer as transformer
 import coloredlogs
 import numpy as np
-import gc
 
 # flake8: noqa: E501
 
@@ -41,7 +40,7 @@ def main():
         "aspect": 100,  # aspect ratio of the plots
         "slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 10,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 5,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
@@ -118,10 +117,6 @@ def main():
         print(f"Radius ROI trab: {radius_roi_trab:.3f} (mm)")
         print(f"Reference point coordinates: {reference_point_coord} (mm)")
         print("---------------")
-
-        # delete class instance
-        del mesh
-        gc.collect()
 
 
 if __name__ == "__main__":

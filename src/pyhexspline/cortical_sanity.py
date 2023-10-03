@@ -27,7 +27,6 @@ class CorticalSanityCheck:
         self.int_contour = int_contour  # internal contour
         self.model = str(model)
         self.save_plot = bool(save_plot)
-        self.shpg = shpg
         self.logger = logger
 
     def unit_vector(self, vector):
@@ -579,7 +578,7 @@ class CorticalSanityCheck:
         noffpoly_union = None
 
         # Create a Polygon from the 2d array
-        poly = self.shpg.Polygon(line)
+        poly = shpg.Polygon(line)
 
         # Create offset in inward direction
         noffpoly = poly.buffer(offset)  # offset
@@ -709,9 +708,7 @@ class CorticalSanityCheck:
         int_contour_hres = self.resample_contour(int_contour, n_points=RESAMPLING)
 
         is_inside_shpg = [
-            self.shpg.Point(int_contour_hres[i]).within(
-                self.shpg.Polygon(ext_offset_hres)
-            )
+            shpg.Point(int_contour_hres[i]).within(shpg.Polygon(ext_offset_hres))
             for i in range(len(int_contour_hres))
         ]
         is_inside = np.c_[is_inside_shpg, is_inside_shpg]

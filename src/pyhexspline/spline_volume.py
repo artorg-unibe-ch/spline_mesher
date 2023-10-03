@@ -3,9 +3,7 @@ import sys
 
 import cv2
 import gmsh
-import matplotlib
 
-# matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
@@ -14,7 +12,6 @@ import scipy.spatial as ss
 import SimpleITK as sitk
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import splev, splprep
-import time
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
@@ -165,25 +162,37 @@ class OCC_volume:
         image_thr = btif.Execute(image)
         return image_thr
 
-    def draw_contours(self, img, contour_s, loc=str("outer")):
+    def draw_contours(self, img, loc=str("outer")):
         """
-        https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour
+        Find the contours of an image.
+
+        Args:
+            img (numpy.ndarray): The input image as a 2D numpy array.
+            loc (str, optional): The location of the contour. Can be "outer" or "inner". Defaults to "outer".
+
+        Returns:
+            numpy.ndarray: The contour image as a 2D numpy array.
+
+        Raises:
+            ValueError: If the location of the contour is not valid.
+
+        Credits to:
+            https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour
         """
         if loc == "outer":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
-            out = np.empty(np.shape(img))
+            # out = np.empty(np.shape(img)) #! BUG HERE
+            out = np.zeros(np.shape(img), dtype=np.uint8)  # * CORRECTED
             # all contours, in white, with thickness 1
             contour = cv2.drawContours(out, _contours, -1, 1, 1)
-            contour_s.append(contour)
         elif loc == "inner":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-            inn = np.empty(np.shape(img))
+            inn = np.zeros(np.shape(img), dtype=np.uint8)
             contour = cv2.drawContours(inn, _contours, 2, 1, 1)
-            contour_s.append(contour)
         else:
             raise ValueError(
                 "The location of the contour is not valid. Please choose between 'outer' and 'inner'."
@@ -202,10 +211,10 @@ class OCC_volume:
         img_thr_join.SetSpacing(image.GetSpacing())
         return img_thr_join
 
-    def get_draw_contour(self, image, contour_s, loc=str("outer")):
+    def get_draw_contour(self, image, loc=str("outer")):
         img_np = np.transpose(sitk.GetArrayFromImage(image), [2, 1, 0])
         contour_np = [
-            self.draw_contours(img_np[z, :, :], contour_s, loc)
+            self.draw_contours(img_np[z, :, :], loc)
             for z in np.arange(np.shape(img_np)[0])
         ]
         contour_np = np.flip(contour_np, axis=1)
@@ -235,7 +244,7 @@ class OCC_volume:
         )
         return image_thr
 
-    def binary_threshold(self, contour_ext, contour_int, img_path: str):
+    def binary_threshold(self, img_path: str):
         """
         THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
         """
@@ -260,6 +269,7 @@ class OCC_volume:
             )
         else:
             self.logger.info(f"Padded Image\t\t\tshow_plots:\t{self.show_plots}")
+
         img_thr_join = self.get_binary_contour(image_thr)
         self.spacing = image.GetSpacing()
 
@@ -271,9 +281,7 @@ class OCC_volume:
             self.logger.info(f"Binary threshold\t\tshow_plots:\t{self.show_plots}")
 
         if self.phases >= 1:
-            outer_contour_np = self.get_draw_contour(
-                img_thr_join, contour_ext, loc="outer"
-            )
+            outer_contour_np = self.get_draw_contour(img_thr_join, loc="outer")
             contour_ext = np.transpose(outer_contour_np, [2, 1, 0])
 
             if self.phases == 1:
@@ -293,9 +301,7 @@ class OCC_volume:
                     )
 
         if self.phases == 2:
-            inner_contour_np = self.get_draw_contour(
-                img_thr_join, contour_int, loc="inner"
-            )
+            inner_contour_np = self.get_draw_contour(img_thr_join, loc="inner")
             contour_int = np.transpose(inner_contour_np, [2, 1, 0])
 
             if self.show_plots is True:
@@ -319,19 +325,19 @@ class OCC_volume:
         img_size = image_thr.GetSize()
         img_spacing = image_thr.GetSpacing()
 
-        coordsX = np.arange(
+        xx = np.arange(
             0,
             img_size[1] * img_spacing[1],
             img_size[1] * img_spacing[1] / float(img_size[1]),
         )
-        coordsY = np.arange(
+        yy = np.arange(
             0,
             img_size[2] * img_spacing[2],
             img_size[2] * img_spacing[2] / float(img_size[2]),
         )
-        self.coordsX, self.coordsY = np.meshgrid(coordsX, coordsY)
-        self.coordsX = np.transpose(self.coordsX, [1, 0])
-        self.coordsY = np.transpose(self.coordsY, [1, 0])
+        coordsX, coordsY = np.meshgrid(xx, yy)
+        self.coordsX = np.transpose(coordsX, [1, 0])
+        self.coordsY = np.transpose(coordsY, [1, 0])
         return contour_ext, contour_int
 
     def sort_xy(self, x, y):
@@ -559,7 +565,7 @@ class OCC_volume:
         x_copy = x_mahalanobis.copy()
         y_copy = y_mahalanobis.copy()
 
-        BNDS = 10  # was 5
+        BNDS = 10  # was 5, then 10
         x_bnds, y_bnds = x_copy[BNDS:-BNDS], y_copy[BNDS:-BNDS]
         # find the knot points
         tckp, u = splprep(
@@ -584,12 +590,12 @@ class OCC_volume:
             pass
 
         # Sanity check to ensure directionality of sorting in cw- or ccw-direction
-        xnew, ynew = self.check_orient(xnew, ynew, direction=1)
+        xnew_oriented, ynew_oriented = self.check_orient(xnew, ynew, direction=1)
 
         return (
             xy_sorted_closed,
-            xnew,
-            ynew,
+            xnew_oriented,
+            ynew_oriented,
         )
 
     def input_sanity_check(self, ext_contour_s: np.ndarray, int_contour_s: np.ndarray):
@@ -702,11 +708,7 @@ class OCC_volume:
         return np.concatenate((*pnts, a0), axis=0)
 
     def volume_splines(self):
-        contour_ext_fig = []
-        contour_int_fig = []
-        contour_ext_fig, contour_int_fig = self.binary_threshold(
-            contour_ext_fig, contour_int_fig, img_path=self.img_path
-        )
+        contour_ext_fig, contour_int_fig = self.binary_threshold(img_path=self.img_path)
 
         self.slice_index = np.linspace(
             1, len(contour_ext_fig[0, 0, :]) - 1, self.SLICING_COEFFICIENT, dtype=int
@@ -729,8 +731,9 @@ class OCC_volume:
                 sitk.GetArrayViewFromImage(img_contours_int), [2, 1, 0]
             )
 
-        contour_ext = []
-        contour_int = []
+        contour_ext = np.ndarray(shape=(0, 3))
+        contour_int = np.ndarray(shape=(0, 3))
+        image_slice_ext = []
         for i, _slice in enumerate(self.slice_index):
             self.logger.debug(f"Slice:\t{_slice}")
             if self.phases >= 1:

@@ -1,8 +1,6 @@
-import time
 import logging
 import math
 
-import cv2
 import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
@@ -39,21 +37,18 @@ class Mesher:
         self.n_transverse_trab = n_transverse_trab
         self.n_radial = n_radial
         self.logger = logging.getLogger(LOGGING_NAME)
-        self.shpg = shpg
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
-        # ext_arr = np.vstack((ext_arr, ext_arr[0]))
-        # int_arr = np.vstack((int_arr, int_arr[0]))
-        extpol = self.shpg.polygon.Polygon(ext_arr)
-        intpol = self.shpg.polygon.Polygon(int_arr)
-        plt.figure(figsize=(5, 5))
-        plt.plot(ext_arr[:, 0], ext_arr[:, 1], "r")
-        plt.plot(int_arr[:, 0], int_arr[:, 1], "b")
-        plt.title("Polygon difference failed")
-        plt.show()
+        extpol = shpg.polygon.Polygon(ext_arr)
+        intpol = shpg.polygon.Polygon(int_arr)
         try:
             cortex = extpol.difference(intpol)
         except Exception:
+            plt.figure(figsize=(5, 5))
+            plt.plot(ext_arr[:, 0], ext_arr[:, 1], "r")
+            plt.plot(int_arr[:, 0], int_arr[:, 1], "b")
+            plt.title("Polygon difference failed")
+            plt.show()
             self.logger.error("Polygon difference failed")
             sys.exit(99)
         cortex_centroid = (
@@ -72,8 +67,8 @@ class Mesher:
             shapely.geometry.Point: intersection point
         """
 
-        shapely_poly = self.shpg.Polygon(poly)
-        shapely_line = self.shpg.LineString(line_1)
+        shapely_poly = shpg.Polygon(poly)
+        shapely_line = shpg.LineString(line_1)
         return list(shapely_poly.intersection(shapely_line).coords)
 
     def partition_lines(self, radius, centroid):
