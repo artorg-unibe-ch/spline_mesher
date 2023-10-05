@@ -336,6 +336,10 @@ class HexMesh:
         trab_refinement = None
         quadref_vols = None
         if trabecular_volume.QUAD_REFINEMENT:
+            self.logger.info(
+                "Starting quad refinement procedure (this might take some time)"
+            )
+
             # get coords of trab_point_tags
             coords_vertices = []
             for subset in trab_point_tags:
@@ -386,16 +390,22 @@ class HexMesh:
         cort_physical_group = mesher.model.addPhysicalGroup(
             3, cort_vol_tags, name="Cortical_Compartment"
         )
+
+        if quadref_vols[0] is not None:
+            trab_vol_tags = np.append(trab_vol_tags, quadref_vols[0])
+        else:
+            pass
+
         trab_physical_group = mesher.model.addPhysicalGroup(
             3, trab_vol_tags, name="Trabecular_Compartment"
         )
 
-        if (
-            trab_refinement is not None and quadref_vols is not None
-        ):  # same as saying if QUAD_REFINEMENT
-            quadref_physical_group = trab_refinement.model.addPhysicalGroup(
-                3, quadref_vols[0]
-            )
+        # if (
+        #     trab_refinement is not None and quadref_vols is not None
+        # ):  # same as saying if QUAD_REFINEMENT
+        #     quadref_physical_group = trab_refinement.model.addPhysicalGroup(
+        #         3, quadref_vols[0]
+        #     )
         print(
             f"cortical physical group: {cort_physical_group}\ntrabecular physical group: {trab_physical_group}"
         )
