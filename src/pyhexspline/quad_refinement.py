@@ -31,6 +31,7 @@ class QuadRefinement:
         DIM: int = 2,
         SQUARE_SIZE_0_MM: int = 1,
         MAX_SUBDIVISIONS: int = 3,
+        ELMS_THICKNESS: int = 2,
     ):
         self.nb_layers = int(nb_layers)
         self.DIM = int(DIM)
@@ -42,6 +43,7 @@ class QuadRefinement:
         self.SQUARE_SIZE_0_MM = SQUARE_SIZE_0_MM
         self.MAX_SUBDIVISIONS = MAX_SUBDIVISIONS
         self.logger.setLevel(logging.DEBUG)
+        self.elms_thickness = ELMS_THICKNESS
 
     def center_of_mass(self, vertices_coords):
         return np.mean(vertices_coords, axis=0)
@@ -878,27 +880,27 @@ class QuadRefinement:
         SQUARE_SIZE_0_MM = self.SQUARE_SIZE_0_MM
         MAX_SUBDIVISIONS = self.MAX_SUBDIVISIONS
 
-        # * 1. get the vertices coordinates from self.vertices_tags
+        self.logger.debug("* 1. Get the vertices coordinates from self.vertices_tags")
         vertices_coords = self.get_vertices_coords(vertices_tags=initial_point_tags)
-        # * 2. get the center of mass of the vertices
+        self.logger.debug("* 2. get the center of mass of the vertices")
         center_of_mass = self.center_of_mass(vertices_coords)
-        # * 3. create the vertices of the squares
+        self.logger.debug("* 3. create the vertices of the squares")
         vertices = np.empty((0, 3))
         for subs in range(1, MAX_SUBDIVISIONS):
             square = self.create_subvertices(center_of_mass, subs, SQUARE_SIZE_0_MM)
             vertices = np.concatenate((vertices, square), axis=0)
         if self.SHOW_PLOT:
             self.plot_vertices(vertices)
-        # * 4. sort the vertices in a grid
+        self.logger.debug("* 4. sort the vertices in a grid")
         vertices_sorted = self.vertices_grid_cleanup(vertices)
         if self.SHOW_PLOT:
             self.plot_vertices(vertices_sorted)
-        # * 5. Calculate transformation matrix
+        self.logger.debug("* 5. Calculate transformation matrix")
         M = self.get_affine_transformation_matrix(vertices_coords, vertices_sorted)
         transformed_coords = self.set_transformation_matrix(M, vertices_sorted)
-        # * 6. Create GMSH points
+        self.logger.debug("* 6. Create GMSH points")
         point_tags = self.gmsh_add_points(transformed_coords)
-        # * 7. Create GMSH lines
+        self.logger.debug("* 7. Create GMSH lines")
         line_tags, outer_square_lines = self.gmsh_add_custom_lines(point_tags)
 
         # make transfinite lines
@@ -907,7 +909,7 @@ class QuadRefinement:
         for line in lines:
             self.model.mesh.setTransfiniteCurve(line[1], 2)
 
-        # * 8. Create GMSH surfaces
+        self.logger.debug("* 8. Create GMSH surfaces")
         # create curve loops based on the outer square lines
         surf_tags = self.gmsh_add_surfs(line_tags)
         outer_surfs = self.close_outer_loop(line_tags, outer_square_lines)
@@ -1122,7 +1124,6 @@ class QuadRefinement:
             self.logger.debug(
                 f"Time to find closed curve loops: {exec_time:.2f} seconds"
             )
-
             self.factory.synchronize()
 
             intersurface_surfaces_slice = []
@@ -1173,7 +1174,9 @@ class QuadRefinement:
         self.factory.synchronize()
         for line_subset in line_tags_intersurf:
             for line in line_subset:
-                gmsh.model.mesh.setTransfiniteCurve(line, 2, "Progression", 1.0)
+                gmsh.model.mesh.setTransfiniteCurve(
+                    line, self.elms_thickness, "Progression", 1.0
+                )
         for surf_subset in surfs:
             for surf in surf_subset:
                 gmsh.model.mesh.setTransfiniteSurface(surf)
@@ -1230,6 +1233,7 @@ if "__main__" == __name__:
         DIM=2,
         SQUARE_SIZE_0_MM=10,
         MAX_SUBDIVISIONS=3,
+        ELMS_THICKNESS=2,
     )
 
     (

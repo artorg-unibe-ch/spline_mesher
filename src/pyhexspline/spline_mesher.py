@@ -351,6 +351,7 @@ class HexMesh:
                 DIM=2,
                 SQUARE_SIZE_0_MM=1,
                 MAX_SUBDIVISIONS=3,
+                ELMS_THICKNESS=N_LONGITUDINAL,
             )
 
             (
@@ -360,6 +361,7 @@ class HexMesh:
             ) = trab_refinement.exec_quad_refinement(
                 trab_point_tags.tolist()
             )  # , coords_vertices
+            self.logger.info("Trabecular refinement done")
 
         # * meshing
         trab_surfs = list(
@@ -391,7 +393,7 @@ class HexMesh:
             3, cort_vol_tags, name="Cortical_Compartment"
         )
 
-        if quadref_vols[0] is not None:
+        if quadref_vols is not None:
             trab_vol_tags = np.append(trab_vol_tags, quadref_vols[0])
         else:
             pass
@@ -455,14 +457,14 @@ class HexMesh:
 
         elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
         elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
-        logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort)}")
-        logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab)}")
+        logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort):.3f}")
+        logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab):.3f}")
 
         # get biggest ROI_radius
         radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
         radius_roi_trab = mesher.get_radius_longest_edge(tag_s=entities_trab)
-        logger.info(f"Radius ROI cort:\t{radius_roi_cort} (mm)")
-        logger.info(f"Radius ROI trab:\t{radius_roi_trab} (mm)")
+        logger.info(f"Radius ROI cort:\t{radius_roi_cort:.3f} (mm)")
+        logger.info(f"Radius ROI trab:\t{radius_roi_trab:.3f} (mm)")
 
         assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
             centroids_trab
@@ -487,56 +489,56 @@ class HexMesh:
 
         gmsh.finalize()
         end = time.time()
-        elapsed = round(end - start, ndigits=3)
+        elapsed = round(end - start, ndigits=1)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
 
-        with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
-            nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
+        #     nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
-            elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
+        #     elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
-            centroids_pkl = pickle.dump(
-                centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
+        #     centroids_pkl = pickle.dump(
+        #         centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
-            centroids_pkl = pickle.dump(
-                centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
+        #     centroids_pkl = pickle.dump(
+        #         centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
-            bnds_bot_pkl = pickle.dump(
-                bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
+        #     bnds_bot_pkl = pickle.dump(
+        #         bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
-            bnds_top_pkl = pickle.dump(
-                bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
+        #     bnds_top_pkl = pickle.dump(
+        #         bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        botpath = f"{mesh_file_path}_spline_botnodes.pickle"
-        with open(botpath, "wb") as f:
-            pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # botpath = f"{mesh_file_path}_spline_botnodes.pickle"
+        # with open(botpath, "wb") as f:
+        #     pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        toppath = f"{mesh_file_path}_spline_topnodes.pickle"
-        with open(toppath, "wb") as f:
-            pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # toppath = f"{mesh_file_path}_spline_topnodes.pickle"
+        # with open(toppath, "wb") as f:
+        #     pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
-        with open(cort_dict, "wb") as f:
-            pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
+        # with open(cort_dict, "wb") as f:
+        #     pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
-        with open(trab_dict, "wb") as f:
-            pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
+        # with open(trab_dict, "wb") as f:
+        #     pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
-        np.save(cort_elm_vol_path, elm_vol_cort)
-        trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
-        np.save(trab_elm_vol_path, elm_vol_trab)
+        # cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
+        # np.save(cort_elm_vol_path, elm_vol_cort)
+        # trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
+        # np.save(trab_elm_vol_path, elm_vol_trab)
 
         return (
             nodes,

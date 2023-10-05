@@ -171,6 +171,20 @@ class Mesher:
             array_lines_tags.append(array_tag)
         return array_lines_tags
 
+    def insert_ellipse_arcs(self, array: np.ndarray, center_tag: int):
+        array_ellipse_tags = []
+        for i in range(len(array) - 1):
+            try:
+                array_tag = self.factory.add_ellipse_arc(
+                    array[i], center_tag, array[i], array[i + 1], tag=-1
+                )
+            except Exception:
+                array_tag = self.factory.add_ellipse_arc(
+                    array[i], center_tag, array[i + 1], array[i + 1], tag=-1
+                )
+            array_ellipse_tags.append(array_tag)
+        return array_ellipse_tags
+
     def sort_intersection_points_legacy(self, array):
         """
         Legacy function to sort the intersection points in cw direction
@@ -1132,6 +1146,8 @@ class TrabecularVolume(Mesher):
 
     def get_trabecular_vol(self, coi_idx):
         self.coi_idx = coi_idx
+        # ? add point tag to center to create self.ellipse_arcs?
+
         trabecular_points = self.get_trabecular_position()
         point_tags = self.insert_points(trabecular_points)
         point_tags_sorted = self.sort_trab_coords(point_tags.tolist())
@@ -1145,7 +1161,17 @@ class TrabecularVolume(Mesher):
 
         line_tags_h = []
         for i in range(len(point_tags_c[:, 0])):
-            line_tags_s = self.insert_lines(point_tags_c[i])
+            # line_tags_s = self.insert_lines(point_tags_c[i])
+
+            # * NEW (POS, 05.10.2023)
+            coi_r = self.coi_idx[i].reshape(-1, 3)
+            coi_r_center = np.mean(coi_r, axis=0)
+            coi_idx_tag_i = self.gmsh_add_points(
+                coi_r_center[0], coi_r_center[1], coi_r_center[2]
+            )
+            line_tags_s = self.insert_ellipse_arcs(
+                point_tags_c[i], center_tag=coi_idx_tag_i
+            )  #! check coi_idx, might not be the one
             line_tags_h.append(line_tags_s)
 
         surf_tags_h = []
