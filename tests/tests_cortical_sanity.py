@@ -1,5 +1,5 @@
 # from spline_mesher import cortical_sanity as cs
-from src.spline_mesher import cortical_sanity as cs
+from pyhexspline import cortical_sanity as cs
 import nose.tools as nt
 import numpy as np
 
