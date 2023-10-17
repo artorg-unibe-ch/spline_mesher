@@ -10,11 +10,11 @@ from pathlib import Path
 import gmsh
 import numpy as np
 import plotly.io as pio
-from pyhexspline import cortical_sanity as csc
+from src.pyhexspline import cortical_sanity as csc
 
-from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
-from pyhexspline.quad_refinement import QuadRefinement
-from pyhexspline.spline_volume import OCC_volume
+from src.pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
+from src.pyhexspline.quad_refinement import QuadRefinement
+from src.pyhexspline.spline_volume import OCC_volume
 import pickle
 
 pio.renderers.default = "browser"
