@@ -10,11 +10,11 @@ from pathlib import Path
 import gmsh
 import numpy as np
 import plotly.io as pio
-from src.pyhexspline import cortical_sanity as csc
+from pyhexspline import cortical_sanity as csc
 
-from src.pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
-from src.pyhexspline.quad_refinement import QuadRefinement
-from src.pyhexspline.spline_volume import OCC_volume
+from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
+from pyhexspline.quad_refinement import QuadRefinement
+from pyhexspline.spline_volume import OCC_volume
 import pickle
 
 pio.renderers.default = "browser"
@@ -99,6 +99,7 @@ class HexMesh:
         ELM_ORDER = int(self.settings_dict["mesh_order"])
         QUAD_REFINEMENT = bool(self.settings_dict["trab_refinement"])
         MESH_ANALYSIS = bool(self.settings_dict["mesh_analysis"])
+        ELLIPSOID_FITTING = bool(self.settings_dict["ellipsoid_fitting"])
 
         DEBUG_ORIENTATION = (
             0  # 0: no debug, 1: debug # ! obscured from settings by design
@@ -166,6 +167,7 @@ class HexMesh:
             n_transverse_trab=N_TRANSVERSE_TRAB,
             n_transverse_cort=N_TRANSVERSE_CORT,
             n_radial=N_RADIAL,
+            ellipsoid_fitting=ELLIPSOID_FITTING,
         )
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))
         cortical_int_sanity_split = np.array_split(
@@ -292,6 +294,7 @@ class HexMesh:
             n_transverse_trab=N_TRANSVERSE_TRAB,
             n_radial=N_RADIAL,
             QUAD_REFINEMENT=QUAD_REFINEMENT,
+            ellipsoid_fitting=ELLIPSOID_FITTING,
         )
 
         trabecular_volume.set_length_factor(
@@ -409,7 +412,7 @@ class HexMesh:
         #         3, quadref_vols[0]
         #     )
         print(
-            f"cortical physical group: {cort_physical_group}\ntrabecular physical group: {trab_physical_group}"
+            f"Cortical physical group: {cort_physical_group}\nTrabecular physical group: {trab_physical_group}"
         )
 
         cort_longitudinal_lines = intersection_line_tags
@@ -481,6 +484,16 @@ class HexMesh:
         centroids_cort_dict, centroids_trab_dict = mesher.split_dict_by_array_len(
             centroids_dict, len(centroids_cort)
         )
+
+        # get number of nodes
+        node_tags_cort, _ = mesher.model.mesh.getNodesForPhysicalGroup(
+            3, cort_physical_group
+        )
+        node_tags_trab, _ = mesher.model.mesh.getNodesForPhysicalGroup(
+            3, trab_physical_group
+        )
+        nb_nodes = len(node_tags_cort) + len(node_tags_trab)
+        logger.info(f"Number of nodes in model: {nb_nodes}")
         gmsh_log = gmsh.logger.get()
         with open(f"{mesh_file_path}_gmsh.log", "w") as f:
             for line in gmsh_log:
@@ -543,6 +556,7 @@ class HexMesh:
         return (
             nodes,
             elms,
+            nb_nodes,
             centroids_cort_dict,
             centroids_trab_dict,
             elm_vol_cort,

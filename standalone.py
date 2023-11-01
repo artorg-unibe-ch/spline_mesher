@@ -56,8 +56,9 @@ def main():
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 10,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "mesh_order": 1,  # set order of the mesh (1: linear, 2: quadratic)
+        "ellipsoid_fitting": False,  # True: perform ellipsoid fitting
         "show_plots": False,  # show plots during construction
-        "show_gmsh": True,  # show gmsh GUI
+        "show_gmsh": False,  # show gmsh GUI
         "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
@@ -82,6 +83,7 @@ def main():
     (
         nodes,
         elms,
+        nb_nodes,
         centroids_cort,
         centroids_trab,
         elm_vol_cort,
@@ -93,17 +95,20 @@ def main():
         reference_point_coord,
     ) = mesh.mesher()
 
-    logger.info(f"Number of nodes: {len(nodes)}")
-    logger.info(f"Number of elements: {len(elms)}")
-    logger.info(f"Number of bottom boundary nodes: {len(bnds_bot)}")
-    logger.info(f"Number of top boundary nodes: {len(bnds_top)}")
-    logger.info(f"Number of centroids in trab physical group: {len(centroids_trab)}")
-    logger.info(f"Number of centroids in cort physical group: {len(centroids_cort)}")
-    logger.info(f"Radius ROI cort: {radius_roi_cort:.3f} (mm)")
-    logger.info(f"Radius ROI trab: {radius_roi_trab:.3f} (mm)")
+    _w_text = 60  # width of the text
+    _w_value = 10  # width of the value
+    logger.info(f"{'Nodes:':<{_w_text}}{len(nodes):>{_w_value}}")
+    logger.info(f"{'Elements:':<{_w_text}}{len(elms):>{_w_value}}")
+    logger.info(f"{'Bottom boundary nodes:':<{_w_text}}{len(bnds_bot):>{_w_value}}")
+    logger.info(f"{'Top boundary nodes:':<{_w_text}}{len(bnds_top):>{_w_value}}")
     logger.info(
-        f"Reference point coordinates: {np.round(reference_point_coord, 3)} (mm)"
+        f"{'Centroids in trab physical group:':<{_w_text}}{len(centroids_trab):>{_w_value}}"
     )
+    logger.info(
+        f"{'Centroids in cort physical group:':<{_w_text}}{len(centroids_cort):>{_w_value}}"
+    )
+    logger.info(f"'Radius ROI cort: {radius_roi_cort:.3f} (mm)")
+    logger.info(f"'Radius ROI trab: {radius_roi_trab:.3f} (mm)")
     print("-" * 150)
 
 

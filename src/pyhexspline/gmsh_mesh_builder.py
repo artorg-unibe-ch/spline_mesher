@@ -17,13 +17,14 @@ LOGGING_NAME = "MESHING"
 class Mesher:
     def __init__(
         self,
-        geo_file_path,
-        mesh_file_path,
-        slicing_coefficient,
-        n_longitudinal,
-        n_transverse_cort,
-        n_transverse_trab,
-        n_radial,
+        geo_file_path: str,
+        mesh_file_path: str,
+        slicing_coefficient: int,
+        n_longitudinal: int,
+        n_transverse_cort: int,
+        n_transverse_trab: int,
+        n_radial: int,
+        ellipsoid_fitting: bool = False,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
@@ -36,6 +37,7 @@ class Mesher:
         self.n_transverse_cort = n_transverse_cort
         self.n_transverse_trab = n_transverse_trab
         self.n_radial = n_radial
+        self.ellipsoid_fitting = ellipsoid_fitting
         self.logger = logging.getLogger(LOGGING_NAME)
 
     def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
@@ -877,12 +879,15 @@ class Mesher:
         """
         z_min = float("inf")
         z_max = float("-inf")
-        tol = 0.05
+        tol = 0.01
 
         for arr in nodes.values():
             last_element = arr[-1]
             z_min = min(z_min, last_element)
             z_max = max(z_max, last_element)
+
+        print(f"z_min: {z_min}")
+        print(f"z_max: {z_max}")
 
         # mask the dict to get only the key value pairs with z_min and z_max
         # here z_max and z_min are inverted because of the nature of our csys
@@ -900,6 +905,7 @@ class Mesher:
         # get the center of mass of the nodes dictionary values
         center_of_mass = np.mean(list(nodes.values()), axis=0)
         max_z = np.max(np.array(list(nodes.values()))[:, 2])
+
         reference_point_coords = np.array(
             [
                 center_of_mass[0],
@@ -1055,6 +1061,7 @@ class TrabecularVolume(Mesher):
         n_transverse_cort,
         n_transverse_trab,
         n_radial,
+        ellipsoid_fitting,
         QUAD_REFINEMENT,
     ):
         self.model = gmsh.model
@@ -1065,6 +1072,7 @@ class TrabecularVolume(Mesher):
         self.n_transverse_cort = n_transverse_cort
         self.n_transverse_trab = n_transverse_trab
         self.n_radial = n_radial
+        self.ellipsoid_fitting = ellipsoid_fitting
         self.logger = logging.getLogger(LOGGING_NAME)
         self.coi_idx = []
         self.line_tags_v = []
@@ -1161,17 +1169,19 @@ class TrabecularVolume(Mesher):
 
         line_tags_h = []
         for i in range(len(point_tags_c[:, 0])):
-            # line_tags_s = self.insert_lines(point_tags_c[i])
+            if self.ellipsoid_fitting:
+                # * NEW (POS, 05.10.2023)
+                coi_r = self.coi_idx[i].reshape(-1, 3)
+                coi_r_center = np.mean(coi_r, axis=0)
+                coi_idx_tag_i = self.gmsh_add_points(
+                    coi_r_center[0], coi_r_center[1], coi_r_center[2]
+                )
+                line_tags_s = self.insert_ellipse_arcs(
+                    point_tags_c[i], center_tag=coi_idx_tag_i
+                )  #! check coi_idx, might not be the one
+            else:
+                line_tags_s = self.insert_lines(point_tags_c[i])
 
-            # * NEW (POS, 05.10.2023)
-            coi_r = self.coi_idx[i].reshape(-1, 3)
-            coi_r_center = np.mean(coi_r, axis=0)
-            coi_idx_tag_i = self.gmsh_add_points(
-                coi_r_center[0], coi_r_center[1], coi_r_center[2]
-            )
-            line_tags_s = self.insert_ellipse_arcs(
-                point_tags_c[i], center_tag=coi_idx_tag_i
-            )  #! check coi_idx, might not be the one
             line_tags_h.append(line_tags_s)
 
         surf_tags_h = []
