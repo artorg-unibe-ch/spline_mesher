@@ -1061,8 +1061,8 @@ class TrabecularVolume(Mesher):
         n_transverse_cort,
         n_transverse_trab,
         n_radial,
-        ellipsoid_fitting,
         QUAD_REFINEMENT,
+        ellipsoid_fitting,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
@@ -1089,6 +1089,7 @@ class TrabecularVolume(Mesher):
             n_transverse_cort,
             n_transverse_trab,
             n_radial,
+            ellipsoid_fitting,
         )
 
     def principal_axes_length(self, array):
@@ -1169,7 +1170,7 @@ class TrabecularVolume(Mesher):
 
         line_tags_h = []
         for i in range(len(point_tags_c[:, 0])):
-            if self.ellipsoid_fitting:
+            if self.ellipsoid_fitting is True:
                 # * NEW (POS, 05.10.2023)
                 coi_r = self.coi_idx[i].reshape(-1, 3)
                 coi_r_center = np.mean(coi_r, axis=0)

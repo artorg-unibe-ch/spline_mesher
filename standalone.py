@@ -56,9 +56,9 @@ def main():
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 10,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "mesh_order": 1,  # set order of the mesh (1: linear, 2: quadratic)
-        "ellipsoid_fitting": False,  # True: perform ellipsoid fitting
+        "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
         "show_plots": False,  # show plots during construction
-        "show_gmsh": False,  # show gmsh GUI
+        "show_gmsh": True,  # show gmsh GUI
         "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
