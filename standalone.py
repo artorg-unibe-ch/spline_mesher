@@ -50,7 +50,7 @@ def main():
         "interp_points": 350,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
-        "center_square_length_factor": 0.65,  # size ratio of the refinement square: 0 < l_f < 1
+        "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
         "n_elms_longitudinal": 4,  # number of elements in the longitudinal direction
         "n_elms_transverse_trab": 12,  # number of elements in the transverse direction for the trabecular compartment
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment

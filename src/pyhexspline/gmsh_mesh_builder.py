@@ -173,6 +173,30 @@ class Mesher:
             array_lines_tags.append(array_tag)
         return array_lines_tags
 
+    def create_centre_splines(self, i, point_tags_c, CENTER_ARC, signs):
+        coi_r = self.coi_idx[i].reshape(-1, 3)
+        coi_r_center = np.mean(coi_r, axis=0)
+        vectors = coi_r - coi_r_center
+        xx = vectors[0, 0]
+        yy = vectors[2, 1]
+
+        midpoints = []
+        for sign in signs:
+            x = coi_r_center[0] + CENTER_ARC * sign[0] * xx
+            y = coi_r_center[1] + CENTER_ARC * sign[1] * yy
+            point_arc_tag_i = self.factory.addPoint(x, y, coi_r_center[2])
+            midpoints.append(point_arc_tag_i)
+
+        line_tags_s = []
+        for j in range(4):
+            line_tags_s.append(
+                self.factory.addSpline(
+                    [point_tags_c[i][j], midpoints[j], point_tags_c[i][(j + 1) % 4]],
+                    tag=-1,
+                )
+            )
+        return line_tags_s
+
     def insert_ellipse_arcs(self, array: np.ndarray, center_tag: int):
         array_ellipse_tags = []
         for i in range(len(array) - 1):
@@ -1169,17 +1193,14 @@ class TrabecularVolume(Mesher):
         )
 
         line_tags_h = []
+        CENTER_ARC = self.LENGTH_FACTOR * 1.5
+        signs = [(1, -1), (1, 1), (-1, 1), (-1, -1)]
         for i in range(len(point_tags_c[:, 0])):
             if self.ellipsoid_fitting is True:
                 # * NEW (POS, 05.10.2023)
-                coi_r = self.coi_idx[i].reshape(-1, 3)
-                coi_r_center = np.mean(coi_r, axis=0)
-                coi_idx_tag_i = self.gmsh_add_points(
-                    coi_r_center[0], coi_r_center[1], coi_r_center[2]
+                line_tags_s = self.create_centre_splines(
+                    i, point_tags_c, CENTER_ARC, signs
                 )
-                line_tags_s = self.insert_ellipse_arcs(
-                    point_tags_c[i], center_tag=coi_idx_tag_i
-                )  #! check coi_idx, might not be the one
             else:
                 line_tags_s = self.insert_lines(point_tags_c[i])
 
@@ -1188,7 +1209,10 @@ class TrabecularVolume(Mesher):
         surf_tags_h = []
         for i, _ in enumerate(line_tags_h):
             trab_curveloop_h = self.factory.addCurveLoop(line_tags_h[i], tag=-1)
-            trab_tag_h = self.factory.addPlaneSurface([trab_curveloop_h], tag=-1)
+            if self.ellipsoid_fitting is True:
+                trab_tag_h = self.factory.addSurfaceFilling(trab_curveloop_h, tag=-1)
+            else:
+                trab_tag_h = self.factory.addPlaneSurface([trab_curveloop_h], tag=-1)
             surf_tags_h.append(trab_tag_h)
 
         line_tags_v = []
