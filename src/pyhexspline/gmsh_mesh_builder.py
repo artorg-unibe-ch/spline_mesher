@@ -1170,7 +1170,7 @@ class TrabecularVolume(Mesher):
         )  # split every x, y, z coordinate
 
         # sort the sub-arrays in counterclockwise order
-        point_tags_sorted0 = self.sort_ccw(coords_split[0])  # ! HERE
+        point_tags_sorted0 = self.sort_ccw(coords_split[0])
         # for each sub-array point_tags, sort the points with point_tags_sorted0
         point_tags_sorted = [
             point_tags[point_tags_sorted0] for point_tags in point_tags

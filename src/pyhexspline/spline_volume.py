@@ -12,9 +12,13 @@ import scipy.spatial as ss
 import SimpleITK as sitk
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import splev, splprep
+import matplotlib
+
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
+
+matplotlib.use("TkAgg")
 
 
 class OCC_volume:

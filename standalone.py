@@ -4,12 +4,14 @@ Author: Simone Poncioni, MSB
 Date: 09.2022 - Ongoing
 """
 
-import os
 import logging
-from src.pyhexspline.spline_mesher import HexMesh
-import hfe_input_transformer as transformer
+import os
+
 import coloredlogs
 import numpy as np
+
+import hfe_input_transformer as transformer
+from src.pyhexspline.spline_mesher import HexMesh
 
 # flake8: noqa: E501
 
@@ -51,9 +53,9 @@ def main():
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
-        "n_elms_longitudinal": 4,  # number of elements in the longitudinal direction
-        "n_elms_transverse_trab": 12,  # number of elements in the transverse direction for the trabecular compartment
-        "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
+        "n_elms_longitudinal": 3,  # number of elements in the longitudinal direction
+        "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
+        "n_elms_transverse_cort": 4,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 10,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "mesh_order": 1,  # set order of the mesh (1: linear, 2: quadratic)
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
