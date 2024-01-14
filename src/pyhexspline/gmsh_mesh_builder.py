@@ -1,14 +1,15 @@
 import logging
 import math
+import sys
+from itertools import chain
+from pathlib import Path
 
 import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
-import shapely.geometry as shpg
 import scipy.spatial as spatial
+import shapely.geometry as shpg
 from cython_functions import find_closed_curve as fcc
-from itertools import chain
-import sys
 
 # flake8: noqa: E203
 LOGGING_NAME = "MESHING"
@@ -50,7 +51,10 @@ class Mesher:
             plt.plot(ext_arr[:, 0], ext_arr[:, 1], "r")
             plt.plot(int_arr[:, 0], int_arr[:, 1], "b")
             plt.title("Polygon difference failed")
-            plt.show()
+            # makedir if non-existent
+            mesh_dir = Path(self.mesh_file_path).parent
+            mesh_dir.mkdir(parents=True, exist_ok=True)
+            plt.savefig(f"{mesh_dir}/polygon_difference_failed.png")
             self.logger.error("Polygon difference failed")
             sys.exit(99)
         cortex_centroid = (
@@ -614,12 +618,21 @@ class Mesher:
         ]
 
     def query_closest_idx(self, list_1: list, list_2: list):
-        """# TODO: write docstring
+        """
+        This function takes two lists of indices, retrieves the corresponding coordinates from the model,
+        and sorts the second list in a counter-clockwise order based on the coordinates.
 
         Args:
-            coi (list): _description_
-            array (list): _description_
-        """ """"""
+            list_1 (list): A list of indices. Each index corresponds to a coordinate in the model.
+                        This list represents the 'center of inertia' coordinates.
+
+            list_2 (list): A list of indices. Each index corresponds to a coordinate in the model.
+                        This list represents the 'trabecular' coordinates.
+
+        Returns:
+            list_2_sorted (list): The list of 'trabecular' indices sorted in a counter-clockwise order
+                                based on the corresponding coordinates.
+        """
         coi_coords = []
         trab_coords = []
         for i, _ in enumerate(list_1):
@@ -635,11 +648,17 @@ class Mesher:
 
     def trabecular_cortical_connection(self, coi_idx, trab_point_tags):
         """
-        # TODO: write docstring
+        This function creates a connection (line) between each pair of points from two given lists in the model.
+        The connections are created between each 'center of interest' point and the corresponding 'trabecular' point.
 
         Args:
-            coi_idx (list[int]): _description_
-            trab_point_tags (list[int]): _description_
+            coi_idx (list[int]): A list of indices. Each index corresponds to a 'center of inertia' point in the model.
+
+            trab_point_tags (list[int]): A list of indices. Each index corresponds to a 'trabecular' point in the model.
+                                        The order of indices matches with the 'center of inerta' points in coi_idx.
+
+        Returns:
+            trab_cort_line_tags (list): A list of line tags. Each line tag represents a connection (line) created in the model.
         """
         coi_idx = np.array(coi_idx, dtype=int).tolist()
         trab_point_tags = np.array(trab_point_tags, dtype=int).tolist()
