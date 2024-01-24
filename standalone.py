@@ -32,7 +32,7 @@ def main():
     coloredlogs.install(level=logging.INFO, logger=logger)
 
     img_settings = {
-        "img_basefilename": "C0002234",
+        "img_basefilename": "C0003102",
         "img_basepath": f"{os.getcwd()}/01_AIM",
         "meshpath": f"{os.getcwd()}/03_MESH",
         # "meshpath": "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE-ACCURATE/03_MESH",  # This is only to test the pipeline
@@ -59,22 +59,18 @@ def main():
         "n_elms_radial": 10,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "mesh_order": 1,  # set order of the mesh (1: linear, 2: quadratic)
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
-        "show_plots": False,  # show plots during construction
-        "show_gmsh": True,  # show gmsh GUI
+        "show_plots": True,  # show plots during construction
+        "show_gmsh": False,  # show gmsh GUI
         "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
 
-    # sitk_image_s = transformer.hfe_input(
-    #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/03_MESH/C0001406/C0001406_CORTMASK_array.npy"
-    # )
+    sitk_image_s = transformer.hfe_input(
+        path_np_s="/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0003102/C0003102_CORT_MASK_array.npy"
+    )
 
-    # sitk_image_s = transformer.hfe_input(
-    #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/HFE-ACCURATE/99_TEMP/material_mapping_testing/synthetic_tests/constant.npy"
-    # )
-
-    sitk_image_s = None
+    # sitk_image_s = None
 
     mesh = HexMesh(
         meshing_settings,

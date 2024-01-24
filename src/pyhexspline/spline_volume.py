@@ -3,7 +3,9 @@ import sys
 
 import cv2
 import gmsh
+import matplotlib
 
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
@@ -12,13 +14,9 @@ import scipy.spatial as ss
 import SimpleITK as sitk
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import splev, splprep
-import matplotlib
-
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
-
-matplotlib.use("TkAgg")
 
 
 class OCC_volume:
@@ -187,16 +185,19 @@ class OCC_volume:
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
-            # out = np.empty(np.shape(img)) #! BUG HERE
-            out = np.zeros(np.shape(img), dtype=np.uint8)  # * CORRECTED
-            # all contours, in white, with thickness 1
-            contour = cv2.drawContours(out, _contours, -1, 1, 1)
+            out = np.zeros(np.shape(img), dtype=np.uint8)
+            hull_list = [cv2.convexHull(c) for c in _contours]
+            contour = cv2.drawContours(out, hull_list, -1, 1, 1)
         elif loc == "inner":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
             inn = np.zeros(np.shape(img), dtype=np.uint8)
-            contour = cv2.drawContours(inn, _contours, 2, 1, 1)
+            hull_list = [cv2.convexHull(c) for c in _contours]
+            if len(hull_list) > 2:
+                contour = cv2.drawContours(inn, hull_list, 2, 1, 1)
+            else:
+                contour = cv2.drawContours(inn, hull_list, -1, 1, 1)
         else:
             raise ValueError(
                 "The location of the contour is not valid. Please choose between 'outer' and 'inner'."

@@ -3,6 +3,7 @@ import os
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
 import logging
+import pickle
 import time
 from itertools import chain
 from pathlib import Path
@@ -11,11 +12,9 @@ import gmsh
 import numpy as np
 import plotly.io as pio
 from pyhexspline import cortical_sanity as csc
-
 from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
 from pyhexspline.quad_refinement import QuadRefinement
 from pyhexspline.spline_volume import OCC_volume
-import pickle
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "MESHING"
@@ -216,7 +215,9 @@ class HexMesh:
             """
 
             cortex_centroid[i][:-1] = mesher.polygon_tensor_of_inertia(
-                cortical_ext_split[i], cortical_int_sanity_split[i]
+                cortical_ext_split[i],
+                cortical_int_sanity_split[i],
+                true_coi=False,
             )
             cortex_centroid[i][-1] = cortical_ext_split[i][0, -1]
             (
@@ -431,7 +432,8 @@ class HexMesh:
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
-        mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
+        # mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
+        mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
@@ -495,6 +497,7 @@ class HexMesh:
         nb_nodes = len(node_tags_cort) + len(node_tags_trab)
         logger.info(f"Number of nodes in model: {nb_nodes}")
         gmsh_log = gmsh.logger.get()
+        Path(mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
         with open(f"{mesh_file_path}_gmsh.log", "w") as f:
             for line in gmsh_log:
                 f.write(line + "\n")

@@ -41,26 +41,55 @@ class Mesher:
         self.ellipsoid_fitting = ellipsoid_fitting
         self.logger = logging.getLogger(LOGGING_NAME)
 
-    def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
+    def polygon_tensor_of_inertia(
+        self, ext_arr, int_arr, true_coi: bool = True
+    ) -> tuple:
+        """
+        This function calculates the centroid of a polygon, which can be either the true centroid of the cortex
+        or the centroid of the internal contour, based on the 'true_coi' parameter.
+
+        If 'true_coi' is True, the function calculates the true centroid of the cortex by subtracting the internal contours
+        from the external contours. If the subtraction fails, the function logs an error, saves a plot of the polygons,
+        and exits the program.
+
+        If 'true_coi' is False, the function calculates the centroid of the internal contour.
+
+        Args:
+            ext_arr (numpy.ndarray): A 2D array representing the external contour of the polygon.
+
+            int_arr (numpy.ndarray): A 2D array representing the internal contour of the polygon.
+
+            true_coi (bool, optional): A flag indicating whether to calculate the true centroid of the cortex.
+                                    Defaults to True.
+
+        Returns:
+            cortex_centroid (tuple): The coordinates of the calculated centroid.
+        """
         extpol = shpg.polygon.Polygon(ext_arr)
         intpol = shpg.polygon.Polygon(int_arr)
-        try:
-            cortex = extpol.difference(intpol)
-        except Exception:
-            plt.figure(figsize=(5, 5))
-            plt.plot(ext_arr[:, 0], ext_arr[:, 1], "r")
-            plt.plot(int_arr[:, 0], int_arr[:, 1], "b")
-            plt.title("Polygon difference failed")
-            # makedir if non-existent
-            mesh_dir = Path(self.mesh_file_path).parent
-            mesh_dir.mkdir(parents=True, exist_ok=True)
-            plt.savefig(f"{mesh_dir}/polygon_difference_failed.png")
-            self.logger.error("Polygon difference failed")
-            sys.exit(99)
-        cortex_centroid = (
-            cortex.centroid.coords.xy[0][0],
-            cortex.centroid.coords.xy[1][0],
-        )
+        if true_coi:
+            try:
+                cortex = extpol.difference(intpol)
+            except Exception:
+                plt.figure(figsize=(5, 5))
+                plt.plot(ext_arr[:, 0], ext_arr[:, 1], "r")
+                plt.plot(int_arr[:, 0], int_arr[:, 1], "b")
+                plt.title("Polygon difference failed")
+                # makedir if non-existent
+                mesh_dir = Path(self.mesh_file_path).parent
+                mesh_dir.mkdir(parents=True, exist_ok=True)
+                plt.savefig(f"{mesh_dir}/polygon_difference_failed.png")
+                self.logger.error("Polygon difference failed")
+                sys.exit(99)
+            cortex_centroid = (
+                cortex.centroid.coords.xy[0][0],
+                cortex.centroid.coords.xy[1][0],
+            )
+        else:
+            cortex_centroid = (
+                extpol.centroid.coords.xy[0][0],
+                extpol.centroid.coords.xy[1][0],
+            )
         return cortex_centroid
 
     def shapely_line_polygon_intersection(self, poly, line_1):
