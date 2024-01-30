@@ -188,23 +188,41 @@ class OCC_volume:
             out = np.zeros(np.shape(img), dtype=np.uint8)
             for c in _contours:
                 if not cv2.isContourConvex(c):
-                    c = cv2.convexHull(c)
-                cv2.drawContours(out, [c], -1, 1, 1)
-            contour = out
+                    self.logger.warning("Outer contour is not convex (catch 1)")
+                    hull_list = [cv2.convexHull(c) for c in _contours]
+                    contour = cv2.drawContours(out, hull_list, -1, 1, 1)
+                else:
+                    contour = cv2.drawContours(out, _contours, -1, 1, 1)
         elif loc == "inner":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
             inn = np.zeros(np.shape(img), dtype=np.uint8)
             for c in _contours:
-                if not cv2.isContourConvex(c):
-                    c = cv2.convexHull(c)
-                cv2.drawContours(inn, [c], -1, 1, 1)
-            contour = inn
+                # if not cv2.isContourConvex(c):
+                #     self.logger.warning("Inner contour is not convex (catch 2)")
+                #     hull_list = [cv2.convexHull(c) for c in _contours]
+                #     contour = cv2.drawContours(inn, hull_list, -1, 1, 1)
+                # * New, added by POS on 24.01.2024/30.01.2024
+                if len(_contours) > 2:
+                    if not cv2.isContourConvex(c):
+                        self.logger.warning("Inner contour is not convex (catch 3)")
+                        hull_list = [cv2.convexHull(c) for c in _contours]
+                        contour = cv2.drawContours(inn, hull_list, 2, 1, 1)
+                    else:
+                        contour = cv2.drawContours(inn, _contours, 2, 1, 1)
+                else:
+                    if not cv2.isContourConvex(c):
+                        self.logger.warning("Inner contour is not convex (catch 4)")
+                        hull_list = [cv2.convexHull(c) for c in _contours]
+                        contour = cv2.drawContours(inn, hull_list, 1, 1, 1)
+                    else:
+                        contour = cv2.drawContours(inn, _contours, 1, 1, 1)
         else:
             raise ValueError(
-                "The location of the contour is not valid. Please choose between 'outer' and 'inner'."
+                "The location of the contour is not valid. Please choose between 'outer' or 'inner'."
             )
+        contour = contour.astype(np.uint8)
         return contour
 
     def get_binary_contour(self, image):
