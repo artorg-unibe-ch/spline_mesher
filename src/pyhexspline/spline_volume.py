@@ -170,7 +170,7 @@ class OCC_volume:
 
         Args:
             img (numpy.ndarray): The input image as a 2D numpy array.
-            loc (str, optional): The location of the contour. Can be "outer" or "inner". Defaults to "outer".
+            loc (str): The location of the contour. Can be "outer" or "inner". Defaults to "outer".
 
         Returns:
             numpy.ndarray: The contour image as a 2D numpy array.
@@ -180,6 +180,11 @@ class OCC_volume:
 
         Credits to:
             https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour
+
+        Docs:
+            https://docs.opencv.org/2.4/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html
+            https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/
+            https://doi.org/10.1016/0167-8655(82)90016-2
         """
         if loc == "outer":
             _contours, hierarchy = cv2.findContours(
@@ -199,10 +204,6 @@ class OCC_volume:
             )
             inn = np.zeros(np.shape(img), dtype=np.uint8)
             for c in _contours:
-                # if not cv2.isContourConvex(c):
-                #     self.logger.warning("Inner contour is not convex (catch 2)")
-                #     hull_list = [cv2.convexHull(c) for c in _contours]
-                #     contour = cv2.drawContours(inn, hull_list, -1, 1, 1)
                 # * New, added by POS on 24.01.2024/30.01.2024
                 if len(_contours) > 2:
                     if not cv2.isContourConvex(c):
@@ -222,6 +223,7 @@ class OCC_volume:
             raise ValueError(
                 "The location of the contour is not valid. Please choose between 'outer' or 'inner'."
             )
+        # force data type to be uint8 (shapely will thank you later)
         contour = contour.astype(np.uint8)
         return contour
 
