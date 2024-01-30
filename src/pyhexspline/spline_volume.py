@@ -186,18 +186,21 @@ class OCC_volume:
                 img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
             out = np.zeros(np.shape(img), dtype=np.uint8)
-            hull_list = [cv2.convexHull(c) for c in _contours]
-            contour = cv2.drawContours(out, hull_list, -1, 1, 1)
+            for c in _contours:
+                if not cv2.isContourConvex(c):
+                    c = cv2.convexHull(c)
+                cv2.drawContours(out, [c], -1, 1, 1)
+            contour = out
         elif loc == "inner":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
             inn = np.zeros(np.shape(img), dtype=np.uint8)
-            hull_list = [cv2.convexHull(c) for c in _contours]
-            if len(hull_list) > 2:
-                contour = cv2.drawContours(inn, hull_list, 2, 1, 1)
-            else:
-                contour = cv2.drawContours(inn, hull_list, -1, 1, 1)
+            for c in _contours:
+                if not cv2.isContourConvex(c):
+                    c = cv2.convexHull(c)
+                cv2.drawContours(inn, [c], -1, 1, 1)
+            contour = inn
         else:
             raise ValueError(
                 "The location of the contour is not valid. Please choose between 'outer' and 'inner'."
