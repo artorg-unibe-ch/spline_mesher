@@ -7,6 +7,8 @@ import matplotlib
 
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
+import imutils
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
@@ -113,14 +115,15 @@ class OCC_volume:
                 img = self.sitk_image
                 img_view = sitk.GetArrayViewFromImage(img)
 
-            plt.figure(
-                f"Plot MHD slice n.{self.SLICE}",
+            fig, ax = plt.subplots(
                 figsize=(
                     np.shape(img_view)[0] / self.ASPECT,
                     np.shape(img_view)[1] / self.ASPECT,
-                ),
+                )
             )
-            plt.imshow(
+            plt.subplots_adjust(bottom=0.25)
+
+            l = plt.imshow(
                 img_view[self.SLICE, :, :],
                 cmap="cividis",
                 interpolation="nearest",
@@ -128,28 +131,53 @@ class OCC_volume:
             )
             plt.title(f"Slice n. {self.SLICE} of masked object", weight="bold")
 
-            ax = plt.gca()
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="5%", pad=0.1)
-            plt.colorbar(cax=cax)
+            axcolor = "lightgoldenrodyellow"
+            axSlider = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
+            slider = Slider(
+                axSlider,
+                "Slice",
+                0,
+                img_view.shape[0] - 1,
+                valinit=self.SLICE,
+                valstep=1,
+            )
+
+            def update(val):
+                slice_index = int(slider.val)
+                l.set_data(img_view[slice_index, :, :])
+                fig.canvas.draw_idle()
+
+            slider.on_changed(update)
+
             plt.show()
         else:
             self.logger.info(f"MHD slice\t\t\tshow_plots:\t{self.show_plots}")
         return None
 
     def plot_slice(self, image, SLICE, title, ASPECT):
-        plt.figure("Binary contour", figsize=(ASPECT, ASPECT))
-        plt.imshow(
-            sitk.GetArrayViewFromImage(image)[:, :, SLICE],
-            cmap="gray",
-            interpolation="None",
-            aspect="equal",
+        img_view = sitk.GetArrayViewFromImage(image)
+
+        fig, ax = plt.subplots(figsize=(ASPECT, ASPECT))
+        plt.subplots_adjust(bottom=0.25)
+
+        l = plt.imshow(
+            img_view[:, :, SLICE], cmap="gray", interpolation="None", aspect="equal"
         )
         plt.title(title, weight="bold")
-        ax = plt.gca()
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.1)
-        plt.colorbar(cax=cax)
+
+        axcolor = "lightgoldenrodyellow"
+        axSlider = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
+        slider = Slider(
+            axSlider, "Slice", 0, img_view.shape[2] - 1, valinit=SLICE, valstep=1
+        )
+
+        def update(val):
+            slice_index = int(slider.val)
+            l.set_data(img_view[:, :, slice_index])
+            fig.canvas.draw_idle()
+
+        slider.on_changed(update)
+
         plt.show()
         plt.close()
         return None
@@ -164,7 +192,7 @@ class OCC_volume:
         image_thr = btif.Execute(image)
         return image_thr
 
-    def draw_contours(self, img, loc=str("outer")):
+    def draw_contours(self, img, loc=str("outer"), approximation: bool = True):
         """
         Find the contours of an image.
 
@@ -186,45 +214,38 @@ class OCC_volume:
             https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/
             https://doi.org/10.1016/0167-8655(82)90016-2
         """
+        eps = 0.0000001
         if loc == "outer":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
             out = np.zeros(np.shape(img), dtype=np.uint8)
-            for c in _contours:
-                if not cv2.isContourConvex(c):
-                    self.logger.warning("Outer contour is not convex (catch 1)")
-                    hull_list = [cv2.convexHull(c) for c in _contours]
-                    contour = cv2.drawContours(out, hull_list, -1, 1, 1)
-                else:
-                    contour = cv2.drawContours(out, _contours, -1, 1, 1)
+            if approximation is True:
+                cnts = imutils.grab_contours((_contours, hierarchy))
+                c = max(cnts, key=cv2.contourArea)
+                peri = cv2.arcLength(c, True)
+                approx = cv2.approxPolyDP(c, eps * peri, True)
+                contour = cv2.drawContours(out, [approx], -1, 1, 1)
+            else:
+                # all contours, in white, with thickness 1
+                contour = cv2.drawContours(out, _contours, -1, 1, 1)
         elif loc == "inner":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
             inn = np.zeros(np.shape(img), dtype=np.uint8)
-            for c in _contours:
-                # * New, added by POS on 24.01.2024/30.01.2024
-                if len(_contours) > 2:
-                    if not cv2.isContourConvex(c):
-                        self.logger.warning("Inner contour is not convex (catch 3)")
-                        hull_list = [cv2.convexHull(c) for c in _contours]
-                        contour = cv2.drawContours(inn, hull_list, 2, 1, 1)
-                    else:
-                        contour = cv2.drawContours(inn, _contours, 2, 1, 1)
-                else:
-                    if not cv2.isContourConvex(c):
-                        self.logger.warning("Inner contour is not convex (catch 4)")
-                        hull_list = [cv2.convexHull(c) for c in _contours]
-                        contour = cv2.drawContours(inn, hull_list, 1, 1, 1)
-                    else:
-                        contour = cv2.drawContours(inn, _contours, 1, 1, 1)
+            if approximation is True:
+                cnts = imutils.grab_contours((_contours, hierarchy))
+                c = max(cnts, key=cv2.contourArea)
+                peri = cv2.arcLength(c, True)
+                approx = cv2.approxPolyDP(c, eps * peri, True)
+                contour = cv2.drawContours(inn, [approx], -1, 1, 1)
+            else:
+                contour = cv2.drawContours(inn, _contours, 2, 1, 1)
         else:
             raise ValueError(
-                "The location of the contour is not valid. Please choose between 'outer' or 'inner'."
+                "The location of the contour is not valid. Please choose between 'outer' and 'inner'."
             )
-        # force data type to be uint8 (shapely will thank you later)
-        contour = contour.astype(np.uint8)
         return contour
 
     def get_binary_contour(self, image):
@@ -242,7 +263,7 @@ class OCC_volume:
     def get_draw_contour(self, image, loc=str("outer")):
         img_np = np.transpose(sitk.GetArrayFromImage(image), [2, 1, 0])
         contour_np = [
-            self.draw_contours(img_np[z, :, :], loc)
+            self.draw_contours(img_np[z, :, :], loc, approximation=True)
             for z in np.arange(np.shape(img_np)[0])
         ]
         contour_np = np.flip(contour_np, axis=1)

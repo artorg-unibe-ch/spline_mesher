@@ -4,6 +4,7 @@ Author: Simone Poncioni, MSB
 Date: 09.2022 - Ongoing
 """
 
+import cProfile
 import logging
 import os
 
@@ -40,14 +41,14 @@ def main():
     }
     meshing_settings = {
         "aspect": 100,  # aspect ratio of the plots
-        "slice": 1,  # slice of the image to be plotted
+        "slice": 250,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
         "slicing_coefficient": 15,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 20,  # smoothing factor of the spline
+        "s": 25,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 350,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
@@ -59,16 +60,19 @@ def main():
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 15,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
-        "show_plots": False,  # show plots during construction
+        "show_plots": True,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
-        "write_mesh": True,  # write mesh to file
+        "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
 
     sitk_image_s = transformer.hfe_input(
-        path_np_s="/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0003102/C0003102_CORT_MASK_array.npy"
+        path_np_s="/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE-ACCURATE/CORTmask.npy"
     )
+    # sitk_image_s = transformer.hfe_input(
+    #     path_np_s="/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE-ACCURATE/99_TEMP/material_mapping_testing/synthetic_flower_10_12.npy"
+    # )
 
     # sitk_image_s = None
 
@@ -111,4 +115,8 @@ def main():
 
 
 if __name__ == "__main__":
+    profiler = cProfile.Profile()
+    profiler.enable()
     main()
+    profiler.disable()
+    profiler.dump_stats("meshing.prof")

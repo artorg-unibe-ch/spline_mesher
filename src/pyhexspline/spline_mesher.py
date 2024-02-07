@@ -432,8 +432,12 @@ class HexMesh:
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
-        # mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
-        mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
+        if ELM_ORDER == 1:
+            mesher.model.mesh.optimize(method="Relocate3D", force=True)
+            mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
+            mesher.model.mesh.optimize(method="Netgen", force=True)
+        else:
+            mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
