@@ -199,6 +199,7 @@ class OCC_volume:
         Args:
             img (numpy.ndarray): The input image as a 2D numpy array.
             loc (str): The location of the contour. Can be "outer" or "inner". Defaults to "outer".
+            approximation (bool): If True, contour is approximated using the Ramer-Douglas-Peucker (RDP) algorithm. Defaults to True.
 
         Returns:
             numpy.ndarray: The contour image as a 2D numpy array.
