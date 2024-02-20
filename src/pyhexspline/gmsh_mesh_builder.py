@@ -165,7 +165,7 @@ class Mesher:
         3. calculate nearest neighbor of the intersection point
         4. insert the intersection point into the contours
         """
-        radius = 100
+        radius = 150
         intersection_1 = self.shapely_line_polygon_intersection(
             array, self.partition_lines(radius, centroid)[0]
         )
