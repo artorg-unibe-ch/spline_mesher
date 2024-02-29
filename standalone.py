@@ -9,9 +9,8 @@ import logging
 import os
 
 import coloredlogs
-import numpy as np
-
 import hfe_input_transformer as transformer
+import numpy as np
 from src.pyhexspline.spline_mesher import HexMesh
 
 # flake8: noqa: E501
@@ -43,26 +42,26 @@ def main():
         "aspect": 100,  # aspect ratio of the plots
         "slice": 250,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 15,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 6,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 25,  # smoothing factor of the spline
+        "s": 300,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 350,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
         "mesh_order": 1,  # set order of the mesh (1: linear, 2: quadratic)
-        "n_elms_longitudinal": 4,  # number of elements in the longitudinal direction
+        "n_elms_longitudinal": 10,  # number of elements in the longitudinal direction
         "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
-        "n_elms_radial": 15,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
+        "n_elms_radial": 20,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
-        "show_plots": True,  # show plots during construction
-        "show_gmsh": False,  # show gmsh GUI
-        "write_mesh": True,  # write mesh to file
+        "show_plots": False,  # show plots during construction
+        "show_gmsh": True,  # show gmsh GUI
+        "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
@@ -111,6 +110,14 @@ def main():
     )
     logger.info(f"'Radius ROI cort: {radius_roi_cort:.3f} (mm)")
     logger.info(f"'Radius ROI trab: {radius_roi_trab:.3f} (mm)")
+
+    elm_vol = np.concatenate((elm_vol_cort.flatten(), elm_vol_trab.flatten()))
+    min_volume = min(elm_vol)
+    if min_volume < 0:
+        logger.critical(f"Negative volume detected: {min_volume:.3f} (mm^3)")
+    else:
+        logger.info(f"Minimum element volume: {min_volume:.3f} (mm^3)")
+
     print("-" * 150)
 
 

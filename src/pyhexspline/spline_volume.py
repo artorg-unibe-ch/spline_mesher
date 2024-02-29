@@ -625,7 +625,7 @@ class OCC_volume:
         BNDS = 10  # was 5, then 10
         x_bnds, y_bnds = x_copy[BNDS:-BNDS], y_copy[BNDS:-BNDS]
         # find the knot points
-        tckp, u = splprep(
+        tckp, _ = splprep(
             [x_bnds, y_bnds],
             s=self.S,
             k=self.K,
@@ -839,5 +839,8 @@ class OCC_volume:
 
         contour_ext = contour_ext.reshape(-1, 3)
         contour_int = contour_int.reshape(-1, 3)
+        
+        np.save("cortex_outer.npy", contour_ext)
+        np.save("cortex_inner.npy", contour_int)
 
         return contour_ext, contour_int
