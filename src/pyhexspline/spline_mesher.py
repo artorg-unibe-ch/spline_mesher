@@ -427,15 +427,19 @@ class HexMesh:
             phase="cort",
         )
 
-        mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
+        mesher.model.geo.mesh.setRecombine(2, -1)
+
+        tot_vol_tags = [cort_vol_tags, trab_vol_tags]
+        mesher.mesh_generate(dim=3, element_order=ELM_ORDER, vol_tags=tot_vol_tags)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
         if ELM_ORDER == 1:
-            mesher.model.mesh.optimize(method="Relocate3D", force=True)
-            mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
-            mesher.model.mesh.optimize(method="Netgen", force=True)
+            pass
+            # mesher.model.mesh.optimize(method="Relocate3D", force=True)
+            # mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
+            # mesher.model.mesh.optimize(method="Netgen", force=True)
         else:
             mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
 

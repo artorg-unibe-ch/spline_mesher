@@ -5,7 +5,7 @@ import cv2
 import gmsh
 import matplotlib
 
-# matplotlib.use("TkAgg")
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 import imutils
@@ -149,9 +149,9 @@ class OCC_volume:
 
             slider.on_changed(update)
 
-            # if matplotlib.get_backend() == "agg":
+            if matplotlib.get_backend() == "agg":
                 # set the backend to TkAgg
-                # matplotlib.use("TkAgg")
+                matplotlib.use("TkAgg")
             plt.show()
             plt.close()
         else:
@@ -182,9 +182,9 @@ class OCC_volume:
 
         slider.on_changed(update)
 
-        # if matplotlib.get_backend() == "agg":
+        if matplotlib.get_backend() == "agg":
             # set the backend to TkAgg
-            # matplotlib.use("TkAgg")
+            matplotlib.use("TkAgg")
         plt.show()
         plt.close()
         return None

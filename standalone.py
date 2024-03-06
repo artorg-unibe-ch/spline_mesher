@@ -40,9 +40,9 @@ def main():
     }
     meshing_settings = {
         "aspect": 100,  # aspect ratio of the plots
-        "slice": 250,  # slice of the image to be plotted
+        "slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 6,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 8,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
@@ -69,9 +69,9 @@ def main():
     sitk_image_s = transformer.hfe_input(
         path_np_s="/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE-ACCURATE/CORTmask.npy"
     )
-    # sitk_image_s = transformer.hfe_input(
-    #     path_np_s="/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE-ACCURATE/99_TEMP/material_mapping_testing/synthetic_flower_10_12.npy"
-    # )
+
+    # sitk_image_s = sitk_image_s[:, :, :-35]
+    # print(sitk_image_s.GetSize())
 
     # sitk_image_s = None
 
