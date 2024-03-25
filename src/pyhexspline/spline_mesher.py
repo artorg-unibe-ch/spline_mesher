@@ -74,7 +74,7 @@ class HexMesh:
 
         # Spline_volume settings
         ASPECT = int(self.settings_dict["aspect"])
-        SLICE = int(self.settings_dict["slice"])
+        SLICE = int(self.settings_dict["_slice"])
         UNDERSAMPLING = int(self.settings_dict["undersampling"])
         SLICING_COEFFICIENT = int(self.settings_dict["slicing_coefficient"])
         INSIDE_VAL = float(self.settings_dict["inside_val"])

@@ -54,20 +54,20 @@ def main():
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
         "mesh_order": 1,  # set order of the mesh (1: linear, 2: quadratic)
-        "n_elms_longitudinal": 10,  # number of elements in the longitudinal direction
+        "n_elms_longitudinal": 5,  # number of elements in the longitudinal direction
         "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 20,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
         "show_plots": False,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
-        "write_mesh": False,  # write mesh to file
+        "write_mesh": True,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
 
     sitk_image_s = transformer.hfe_input(
-        path_np_s="/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE-ACCURATE/CORTmask.npy"
+        path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/01_AIM/C0003094/C0003094_CORT_MASK_UNCOMP.npy"
     )
 
     # sitk_image_s = sitk_image_s[:, :, :-35]
@@ -122,8 +122,4 @@ def main():
 
 
 if __name__ == "__main__":
-    profiler = cProfile.Profile()
-    profiler.enable()
     main()
-    profiler.disable()
-    profiler.dump_stats("meshing.prof")
