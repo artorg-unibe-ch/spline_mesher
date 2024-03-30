@@ -4,6 +4,7 @@ os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
 import logging
 import pickle
+import sys
 import time
 from itertools import chain
 from pathlib import Path
@@ -470,8 +471,13 @@ class HexMesh:
 
         elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
         elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
-        logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort):.3f}")
-        logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab):.3f}")
+        min_elm_vol = min(elm_vol_cort.min(), elm_vol_trab.min())
+        if min_elm_vol < 0.0:
+            logger.critical(f'Negative element volume detected: {min_elm_vol:.3f} (mm^3), exiting...')
+            sys.exit(1)
+        else:
+            logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort):.3f}")
+            logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab):.3f}")
 
         # get biggest ROI_radius
         radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
