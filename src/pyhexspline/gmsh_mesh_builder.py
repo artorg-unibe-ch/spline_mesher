@@ -974,7 +974,7 @@ class Mesher:
         return bnds_bot, bnds_top
 
     def gmsh_get_reference_point_coord(self, nodes: dict):
-        OFFSET_MM = 2  # RP offset in mm from top surface
+        OFFSET_MM = 0  # RP offset in mm from top surface
         # get the center of mass of the nodes dictionary values
         center_of_mass = np.mean(list(nodes.values()), axis=0)
         max_z = np.max(np.array(list(nodes.values()))[:, 2])
