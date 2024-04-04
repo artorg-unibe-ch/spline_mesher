@@ -1,14 +1,15 @@
 import logging
 import math
+import sys
+from itertools import chain
+from pathlib import Path
 
 import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
-import shapely.geometry as shpg
 import scipy.spatial as spatial
+import shapely.geometry as shpg
 from cython_functions import find_closed_curve as fcc
-from itertools import chain
-import sys
 
 # flake8: noqa: E203
 LOGGING_NAME = "MESHING"
@@ -17,13 +18,14 @@ LOGGING_NAME = "MESHING"
 class Mesher:
     def __init__(
         self,
-        geo_file_path,
-        mesh_file_path,
-        slicing_coefficient,
-        n_longitudinal,
-        n_transverse_cort,
-        n_transverse_trab,
-        n_radial,
+        geo_file_path: str,
+        mesh_file_path: str,
+        slicing_coefficient: int,
+        n_longitudinal: int,
+        n_transverse_cort: int,
+        n_transverse_trab: int,
+        n_radial: int,
+        ellipsoid_fitting: bool = False,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
@@ -36,25 +38,58 @@ class Mesher:
         self.n_transverse_cort = n_transverse_cort
         self.n_transverse_trab = n_transverse_trab
         self.n_radial = n_radial
+        self.ellipsoid_fitting = ellipsoid_fitting
         self.logger = logging.getLogger(LOGGING_NAME)
 
-    def polygon_tensor_of_inertia(self, ext_arr, int_arr) -> tuple:
+    def polygon_tensor_of_inertia(
+        self, ext_arr, int_arr, true_coi: bool = True
+    ) -> tuple:
+        """
+        This function calculates the centroid of a polygon, which can be either the true centroid of the cortex
+        or the centroid of the internal contour, based on the 'true_coi' parameter.
+
+        If 'true_coi' is True, the function calculates the true centroid of the cortex by subtracting the internal contours
+        from the external contours. If the subtraction fails, the function logs an error, saves a plot of the polygons,
+        and exits the program.
+
+        If 'true_coi' is False, the function calculates the centroid of the internal contour.
+
+        Args:
+            ext_arr (numpy.ndarray): A 2D array representing the external contour of the polygon.
+
+            int_arr (numpy.ndarray): A 2D array representing the internal contour of the polygon.
+
+            true_coi (bool, optional): A flag indicating whether to calculate the true centroid of the cortex.
+                                    Defaults to True.
+
+        Returns:
+            cortex_centroid (tuple): The coordinates of the calculated centroid.
+        """
         extpol = shpg.polygon.Polygon(ext_arr)
         intpol = shpg.polygon.Polygon(int_arr)
-        try:
-            cortex = extpol.difference(intpol)
-        except Exception:
-            plt.figure(figsize=(5, 5))
-            plt.plot(ext_arr[:, 0], ext_arr[:, 1], "r")
-            plt.plot(int_arr[:, 0], int_arr[:, 1], "b")
-            plt.title("Polygon difference failed")
-            plt.show()
-            self.logger.error("Polygon difference failed")
-            sys.exit(99)
-        cortex_centroid = (
-            cortex.centroid.coords.xy[0][0],
-            cortex.centroid.coords.xy[1][0],
-        )
+        if true_coi:
+            try:
+                cortex = extpol.difference(intpol)
+            except Exception:
+                plt.figure(figsize=(5, 5))
+                plt.plot(ext_arr[:, 0], ext_arr[:, 1], "r")
+                plt.plot(int_arr[:, 0], int_arr[:, 1], "b")
+                plt.title("Polygon difference failed")
+                # makedir if non-existent
+                mesh_dir = Path(self.mesh_file_path).parent
+                mesh_dir.mkdir(parents=True, exist_ok=True)
+                plt.savefig(f"{mesh_dir}/polygon_difference_failed.png")
+                self.logger.error("Polygon difference failed")
+                sys.exit(99)
+            cortex_centroid = (
+                cortex.centroid.coords.xy[0][0],
+                cortex.centroid.coords.xy[1][0],
+            )
+        else:
+            cortex_centroid = (
+                extpol.centroid.coords.xy[0][0],
+                extpol.centroid.coords.xy[1][0],
+            )
         return cortex_centroid
 
     def shapely_line_polygon_intersection(self, poly, line_1):
@@ -130,7 +165,7 @@ class Mesher:
         3. calculate nearest neighbor of the intersection point
         4. insert the intersection point into the contours
         """
-        radius = 100
+        radius = 150
         intersection_1 = self.shapely_line_polygon_intersection(
             array, self.partition_lines(radius, centroid)[0]
         )
@@ -170,6 +205,44 @@ class Mesher:
             array_tag = self.factory.addLine(array[i], array[i + 1], tag=-1)
             array_lines_tags.append(array_tag)
         return array_lines_tags
+
+    def create_centre_splines(self, i, point_tags_c, CENTER_ARC, signs):
+        coi_r = self.coi_idx[i].reshape(-1, 3)
+        coi_r_center = np.mean(coi_r, axis=0)
+        vectors = coi_r - coi_r_center
+        xx = vectors[0, 0]
+        yy = vectors[2, 1]
+
+        midpoints = []
+        for sign in signs:
+            x = coi_r_center[0] + CENTER_ARC * sign[0] * xx
+            y = coi_r_center[1] + CENTER_ARC * sign[1] * yy
+            point_arc_tag_i = self.factory.addPoint(x, y, coi_r_center[2])
+            midpoints.append(point_arc_tag_i)
+
+        line_tags_s = []
+        for j in range(4):
+            line_tags_s.append(
+                self.factory.addSpline(
+                    [point_tags_c[i][j], midpoints[j], point_tags_c[i][(j + 1) % 4]],
+                    tag=-1,
+                )
+            )
+        return line_tags_s
+
+    def insert_ellipse_arcs(self, array: np.ndarray, center_tag: int):
+        array_ellipse_tags = []
+        for i in range(len(array) - 1):
+            try:
+                array_tag = self.factory.add_ellipse_arc(
+                    array[i], center_tag, array[i], array[i + 1], tag=-1
+                )
+            except Exception:
+                array_tag = self.factory.add_ellipse_arc(
+                    array[i], center_tag, array[i + 1], array[i + 1], tag=-1
+                )
+            array_ellipse_tags.append(array_tag)
+        return array_ellipse_tags
 
     def sort_intersection_points_legacy(self, array):
         """
@@ -502,7 +575,7 @@ class Mesher:
             PROGRESSION_FACTOR = 1.0
         elif phase == "trab":
             n_transverse = self.n_transverse_trab
-            PROGRESSION_FACTOR = 1.05
+            PROGRESSION_FACTOR = 1.0
 
         for ll in longitudinal_line_tags:
             self.model.mesh.setTransfiniteCurve(ll, self.n_longitudinal)
@@ -574,12 +647,21 @@ class Mesher:
         ]
 
     def query_closest_idx(self, list_1: list, list_2: list):
-        """# TODO: write docstring
+        """
+        This function takes two lists of indices, retrieves the corresponding coordinates from the model,
+        and sorts the second list in a counter-clockwise order based on the coordinates.
 
         Args:
-            coi (list): _description_
-            array (list): _description_
-        """ """"""
+            list_1 (list): A list of indices. Each index corresponds to a coordinate in the model.
+                        This list represents the 'center of inertia' coordinates.
+
+            list_2 (list): A list of indices. Each index corresponds to a coordinate in the model.
+                        This list represents the 'trabecular' coordinates.
+
+        Returns:
+            list_2_sorted (list): The list of 'trabecular' indices sorted in a counter-clockwise order
+                                based on the corresponding coordinates.
+        """
         coi_coords = []
         trab_coords = []
         for i, _ in enumerate(list_1):
@@ -595,11 +677,17 @@ class Mesher:
 
     def trabecular_cortical_connection(self, coi_idx, trab_point_tags):
         """
-        # TODO: write docstring
+        This function creates a connection (line) between each pair of points from two given lists in the model.
+        The connections are created between each 'center of interest' point and the corresponding 'trabecular' point.
 
         Args:
-            coi_idx (list[int]): _description_
-            trab_point_tags (list[int]): _description_
+            coi_idx (list[int]): A list of indices. Each index corresponds to a 'center of inertia' point in the model.
+
+            trab_point_tags (list[int]): A list of indices. Each index corresponds to a 'trabecular' point in the model.
+                                        The order of indices matches with the 'center of inerta' points in coi_idx.
+
+        Returns:
+            trab_cort_line_tags (list): A list of line tags. Each line tag represents a connection (line) created in the model.
         """
         coi_idx = np.array(coi_idx, dtype=int).tolist()
         trab_point_tags = np.array(trab_point_tags, dtype=int).tolist()
@@ -807,11 +895,12 @@ class Mesher:
         sorted_indices = angles_idx[sorted_angles]
         return sorted_indices
 
-    def mesh_generate(self, dim: int, element_order: int):
+    def mesh_generate(self, dim: int, element_order: int, vol_tags: list):
         self.option.setNumber("Mesh.RecombineAll", 1)
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
-        self.option.setNumber("Mesh.Recombine3DLevel", 0)
+        self.option.setNumber("Mesh.Recombine3DLevel", 1)
         self.option.setNumber("Mesh.ElementOrder", element_order)
+        self.option.setNumber("Mesh.Smoothing", 1000000000000)
         self.model.mesh.generate(dim)
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:
@@ -863,12 +952,15 @@ class Mesher:
         """
         z_min = float("inf")
         z_max = float("-inf")
-        tol = 0.05
+        tol = 0.01
 
         for arr in nodes.values():
             last_element = arr[-1]
             z_min = min(z_min, last_element)
             z_max = max(z_max, last_element)
+
+        print(f"z_min: {z_min}")
+        print(f"z_max: {z_max}")
 
         # mask the dict to get only the key value pairs with z_min and z_max
         # here z_max and z_min are inverted because of the nature of our csys
@@ -882,10 +974,11 @@ class Mesher:
         return bnds_bot, bnds_top
 
     def gmsh_get_reference_point_coord(self, nodes: dict):
-        OFFSET_MM = 2  # RP offset in mm from top surface
+        OFFSET_MM = 0  # RP offset in mm from top surface
         # get the center of mass of the nodes dictionary values
         center_of_mass = np.mean(list(nodes.values()), axis=0)
         max_z = np.max(np.array(list(nodes.values()))[:, 2])
+
         reference_point_coords = np.array(
             [
                 center_of_mass[0],
@@ -1042,6 +1135,7 @@ class TrabecularVolume(Mesher):
         n_transverse_trab,
         n_radial,
         QUAD_REFINEMENT,
+        ellipsoid_fitting,
     ):
         self.model = gmsh.model
         self.factory = self.model.occ
@@ -1051,6 +1145,7 @@ class TrabecularVolume(Mesher):
         self.n_transverse_cort = n_transverse_cort
         self.n_transverse_trab = n_transverse_trab
         self.n_radial = n_radial
+        self.ellipsoid_fitting = ellipsoid_fitting
         self.logger = logging.getLogger(LOGGING_NAME)
         self.coi_idx = []
         self.line_tags_v = []
@@ -1067,6 +1162,7 @@ class TrabecularVolume(Mesher):
             n_transverse_cort,
             n_transverse_trab,
             n_radial,
+            ellipsoid_fitting,
         )
 
     def principal_axes_length(self, array):
@@ -1123,7 +1219,7 @@ class TrabecularVolume(Mesher):
         )  # split every x, y, z coordinate
 
         # sort the sub-arrays in counterclockwise order
-        point_tags_sorted0 = self.sort_ccw(coords_split[0])  # ! HERE
+        point_tags_sorted0 = self.sort_ccw(coords_split[0])
         # for each sub-array point_tags, sort the points with point_tags_sorted0
         point_tags_sorted = [
             point_tags[point_tags_sorted0] for point_tags in point_tags
@@ -1132,6 +1228,8 @@ class TrabecularVolume(Mesher):
 
     def get_trabecular_vol(self, coi_idx):
         self.coi_idx = coi_idx
+        # ? add point tag to center to create self.ellipse_arcs?
+
         trabecular_points = self.get_trabecular_position()
         point_tags = self.insert_points(trabecular_points)
         point_tags_sorted = self.sort_trab_coords(point_tags.tolist())
@@ -1144,14 +1242,26 @@ class TrabecularVolume(Mesher):
         )
 
         line_tags_h = []
+        CENTER_ARC = self.LENGTH_FACTOR * 1.5
+        signs = [(1, -1), (1, 1), (-1, 1), (-1, -1)]
         for i in range(len(point_tags_c[:, 0])):
-            line_tags_s = self.insert_lines(point_tags_c[i])
+            if self.ellipsoid_fitting is True:
+                # * NEW (POS, 05.10.2023)
+                line_tags_s = self.create_centre_splines(
+                    i, point_tags_c, CENTER_ARC, signs
+                )
+            else:
+                line_tags_s = self.insert_lines(point_tags_c[i])
+
             line_tags_h.append(line_tags_s)
 
         surf_tags_h = []
         for i, _ in enumerate(line_tags_h):
             trab_curveloop_h = self.factory.addCurveLoop(line_tags_h[i], tag=-1)
-            trab_tag_h = self.factory.addPlaneSurface([trab_curveloop_h], tag=-1)
+            if self.ellipsoid_fitting is True:
+                trab_tag_h = self.factory.addSurfaceFilling(trab_curveloop_h, tag=-1)
+            else:
+                trab_tag_h = self.factory.addPlaneSurface([trab_curveloop_h], tag=-1)
             surf_tags_h.append(trab_tag_h)
 
         line_tags_v = []

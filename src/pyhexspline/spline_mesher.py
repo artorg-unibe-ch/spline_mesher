@@ -3,6 +3,8 @@ import os
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
 import logging
+import pickle
+import sys
 import time
 from itertools import chain
 from pathlib import Path
@@ -10,12 +12,10 @@ from pathlib import Path
 import gmsh
 import numpy as np
 import plotly.io as pio
-from src.pyhexspline import cortical_sanity as csc
-
-from src.pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
-from src.pyhexspline.quad_refinement import QuadRefinement
-from src.pyhexspline.spline_volume import OCC_volume
-import pickle
+from pyhexspline import cortical_sanity as csc
+from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
+from pyhexspline.quad_refinement import QuadRefinement
+from pyhexspline.spline_volume import OCC_volume
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "MESHING"
@@ -75,7 +75,7 @@ class HexMesh:
 
         # Spline_volume settings
         ASPECT = int(self.settings_dict["aspect"])
-        SLICE = int(self.settings_dict["slice"])
+        SLICE = int(self.settings_dict["_slice"])
         UNDERSAMPLING = int(self.settings_dict["undersampling"])
         SLICING_COEFFICIENT = int(self.settings_dict["slicing_coefficient"])
         INSIDE_VAL = float(self.settings_dict["inside_val"])
@@ -99,6 +99,7 @@ class HexMesh:
         ELM_ORDER = int(self.settings_dict["mesh_order"])
         QUAD_REFINEMENT = bool(self.settings_dict["trab_refinement"])
         MESH_ANALYSIS = bool(self.settings_dict["mesh_analysis"])
+        ELLIPSOID_FITTING = bool(self.settings_dict["ellipsoid_fitting"])
 
         DEBUG_ORIENTATION = (
             0  # 0: no debug, 1: debug # ! obscured from settings by design
@@ -166,6 +167,7 @@ class HexMesh:
             n_transverse_trab=N_TRANSVERSE_TRAB,
             n_transverse_cort=N_TRANSVERSE_CORT,
             n_radial=N_RADIAL,
+            ellipsoid_fitting=ELLIPSOID_FITTING,
         )
         cortex_centroid = np.zeros((len(cortical_ext_split), 3))
         cortical_int_sanity_split = np.array_split(
@@ -214,7 +216,9 @@ class HexMesh:
             """
 
             cortex_centroid[i][:-1] = mesher.polygon_tensor_of_inertia(
-                cortical_ext_split[i], cortical_int_sanity_split[i]
+                cortical_ext_split[i],
+                cortical_int_sanity_split[i],
+                true_coi=False,
             )
             cortex_centroid[i][-1] = cortical_ext_split[i][0, -1]
             (
@@ -292,6 +296,7 @@ class HexMesh:
             n_transverse_trab=N_TRANSVERSE_TRAB,
             n_radial=N_RADIAL,
             QUAD_REFINEMENT=QUAD_REFINEMENT,
+            ellipsoid_fitting=ELLIPSOID_FITTING,
         )
 
         trabecular_volume.set_length_factor(
@@ -351,6 +356,7 @@ class HexMesh:
                 DIM=2,
                 SQUARE_SIZE_0_MM=1,
                 MAX_SUBDIVISIONS=3,
+                ELMS_THICKNESS=N_LONGITUDINAL,
             )
 
             (
@@ -360,6 +366,7 @@ class HexMesh:
             ) = trab_refinement.exec_quad_refinement(
                 trab_point_tags.tolist()
             )  # , coords_vertices
+            self.logger.info("Trabecular refinement done")
 
         # * meshing
         trab_surfs = list(
@@ -391,7 +398,7 @@ class HexMesh:
             3, cort_vol_tags, name="Cortical_Compartment"
         )
 
-        if quadref_vols[0] is not None:
+        if quadref_vols is not None:
             trab_vol_tags = np.append(trab_vol_tags, quadref_vols[0])
         else:
             pass
@@ -407,7 +414,7 @@ class HexMesh:
         #         3, quadref_vols[0]
         #     )
         print(
-            f"cortical physical group: {cort_physical_group}\ntrabecular physical group: {trab_physical_group}"
+            f"Cortical physical group: {cort_physical_group}\nTrabecular physical group: {trab_physical_group}"
         )
 
         cort_longitudinal_lines = intersection_line_tags
@@ -421,12 +428,21 @@ class HexMesh:
             phase="cort",
         )
 
-        mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
+        mesher.model.geo.mesh.setRecombine(2, -1)
+
+        tot_vol_tags = [cort_vol_tags, trab_vol_tags]
+        mesher.mesh_generate(dim=3, element_order=ELM_ORDER, vol_tags=tot_vol_tags)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
-        mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
+        if ELM_ORDER == 1:
+            pass
+            # mesher.model.mesh.optimize(method="Relocate3D", force=True)
+            # mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
+            # mesher.model.mesh.optimize(method="Netgen", force=True)
+        else:
+            mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
@@ -455,14 +471,18 @@ class HexMesh:
 
         elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
         elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
-        logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort)}")
-        logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab)}")
+        min_elm_vol = min(elm_vol_cort.min(), elm_vol_trab.min())
+        if min_elm_vol < 0.0:
+            logger.critical(f'Negative element volume detected: {min_elm_vol:.3f} (mm^3), exiting...')
+        else:
+            logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort):.3f}")
+            logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab):.3f}")
 
         # get biggest ROI_radius
         radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
         radius_roi_trab = mesher.get_radius_longest_edge(tag_s=entities_trab)
-        logger.info(f"Radius ROI cort:\t{radius_roi_cort} (mm)")
-        logger.info(f"Radius ROI trab:\t{radius_roi_trab} (mm)")
+        logger.info(f"Radius ROI cort:\t{radius_roi_cort:.3f} (mm)")
+        logger.info(f"Radius ROI trab:\t{radius_roi_trab:.3f} (mm)")
 
         assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
             centroids_trab
@@ -479,7 +499,18 @@ class HexMesh:
         centroids_cort_dict, centroids_trab_dict = mesher.split_dict_by_array_len(
             centroids_dict, len(centroids_cort)
         )
+
+        # get number of nodes
+        node_tags_cort, _ = mesher.model.mesh.getNodesForPhysicalGroup(
+            3, cort_physical_group
+        )
+        node_tags_trab, _ = mesher.model.mesh.getNodesForPhysicalGroup(
+            3, trab_physical_group
+        )
+        nb_nodes = len(node_tags_cort) + len(node_tags_trab)
+        logger.info(f"Number of nodes in model: {nb_nodes}")
         gmsh_log = gmsh.logger.get()
+        Path(mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
         with open(f"{mesh_file_path}_gmsh.log", "w") as f:
             for line in gmsh_log:
                 f.write(line + "\n")
@@ -487,60 +518,61 @@ class HexMesh:
 
         gmsh.finalize()
         end = time.time()
-        elapsed = round(end - start, ndigits=3)
+        elapsed = round(end - start, ndigits=1)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
 
-        with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
-            nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
+        #     nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
-            elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
+        #     elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
-            centroids_pkl = pickle.dump(
-                centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
+        #     centroids_pkl = pickle.dump(
+        #         centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
-            centroids_pkl = pickle.dump(
-                centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
+        #     centroids_pkl = pickle.dump(
+        #         centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
-            bnds_bot_pkl = pickle.dump(
-                bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
+        #     bnds_bot_pkl = pickle.dump(
+        #         bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
-            bnds_top_pkl = pickle.dump(
-                bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
-            )
+        # with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
+        #     bnds_top_pkl = pickle.dump(
+        #         bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
+        #     )
 
-        botpath = f"{mesh_file_path}_spline_botnodes.pickle"
-        with open(botpath, "wb") as f:
-            pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # botpath = f"{mesh_file_path}_spline_botnodes.pickle"
+        # with open(botpath, "wb") as f:
+        #     pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        toppath = f"{mesh_file_path}_spline_topnodes.pickle"
-        with open(toppath, "wb") as f:
-            pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # toppath = f"{mesh_file_path}_spline_topnodes.pickle"
+        # with open(toppath, "wb") as f:
+        #     pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
-        with open(cort_dict, "wb") as f:
-            pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
+        # with open(cort_dict, "wb") as f:
+        #     pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
-        with open(trab_dict, "wb") as f:
-            pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
+        # with open(trab_dict, "wb") as f:
+        #     pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
-        np.save(cort_elm_vol_path, elm_vol_cort)
-        trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
-        np.save(trab_elm_vol_path, elm_vol_trab)
+        # cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
+        # np.save(cort_elm_vol_path, elm_vol_cort)
+        # trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
+        # np.save(trab_elm_vol_path, elm_vol_trab)
 
         return (
             nodes,
             elms,
+            nb_nodes,
             centroids_cort_dict,
             centroids_trab_dict,
             elm_vol_cort,
