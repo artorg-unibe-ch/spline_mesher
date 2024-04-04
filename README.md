@@ -124,11 +124,11 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [x] __v0.0.1-pre-alpha__: single execution of radius and tibia mesher
-- [ ] __v0.0.2__: add phase discrimination in order to mesh single phase models (e.g. vertebrae)
+- [x] __v0.0.2__: single execution of radius and tibia mesher
+- [ ] __v0.1.0__: add phase discrimination in order to mesh single phase models (e.g. vertebrae)
 - [ ] __Performance improvements__:
   - [ ] Faster implementation of sorting algorithm
-  - [ ] Faster implementation of cortical sanity check
+  - [x] Faster implementation of cortical sanity check
   - [ ] Implement test robustness over different models
 
 See the [open issues](https://github.com/simoneponcioni/spline-mesher/issues) for a full list of proposed features (and known issues).
