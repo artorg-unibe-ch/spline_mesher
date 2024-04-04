@@ -76,8 +76,6 @@ def main():
     sitk_image_s = sitk.ReadImage(
         "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/454_L_94_F/C0003118_CORTMASK.mhd"
     )
-    # crop first 35 slices
-    sitk_image_s = sitk.Crop(sitk_image_s, [0, 0, 35], [0, 0, 0])
 
     mesh = HexMesh(
         meshing_settings,

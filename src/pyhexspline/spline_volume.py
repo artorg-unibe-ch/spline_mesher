@@ -840,7 +840,4 @@ class OCC_volume:
         contour_ext = contour_ext.reshape(-1, 3)
         contour_int = contour_int.reshape(-1, 3)
 
-        np.save("cortex_outer.npy", contour_ext)
-        np.save("cortex_inner.npy", contour_int)
-
         return contour_ext, contour_int
