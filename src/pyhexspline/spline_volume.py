@@ -3,17 +3,17 @@ import sys
 
 import cv2
 import gmsh
+import imutils
 import matplotlib
 
 # matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
-import imutils
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import scipy.spatial as ss
 import SimpleITK as sitk
+from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import splev, splprep
 
@@ -163,7 +163,6 @@ class OCC_volume:
 
         fig, ax = plt.subplots(figsize=(ASPECT, ASPECT))
         plt.subplots_adjust(bottom=0.25)
-
         l = plt.imshow(
             img_view[:, :, SLICE], cmap="gray", interpolation="None", aspect="equal"
         )
@@ -244,7 +243,7 @@ class OCC_volume:
             inn = np.zeros(np.shape(img), dtype=np.uint8)
             if approximation is True:
                 cnts = imutils.grab_contours((_contours, hierarchy))
-                c = max(cnts, key=cv2.contourArea)
+                c = min(cnts, key=cv2.contourArea)
                 peri = cv2.arcLength(c, True)
                 approx = cv2.approxPolyDP(c, eps * peri, True)
                 contour = cv2.drawContours(inn, [approx], -1, 1, 1)
@@ -318,7 +317,7 @@ class OCC_volume:
 
         image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
 
-        # image_pad = self.pad_image(image_thr, iso_pad_size=10)
+        image_thr = self.pad_image(image_thr, iso_pad_size=10)
 
         if self.show_plots is True:
             self.plot_slice(
@@ -341,21 +340,19 @@ class OCC_volume:
             outer_contour_np = self.get_draw_contour(img_thr_join, loc="outer")
             contour_ext = np.transpose(outer_contour_np, [2, 1, 0])
 
-            if self.phases == 1:
-                if self.show_plots is True:
-                    outer_contour_sitk = sitk.GetImageFromArray(contour_ext)
-                    outer_contour_sitk.CopyInformation(image_thr)
+            if self.show_plots is True:
+                outer_contour_sitk = sitk.GetImageFromArray(contour_ext)
+                outer_contour_sitk.CopyInformation(image_thr)
 
+                if self.phases == 1:
                     self.plot_slice(
                         outer_contour_sitk,
                         SLICE,
                         f"Outer contour on slice n. {SLICE}",
                         ASPECT,
                     )
-                else:
-                    self.logger.info(
-                        f"Binary threshold\t\tshow_plots:\t{self.show_plots}"
-                    )
+            else:
+                self.logger.info(f"Binary threshold\t\tshow_plots:\t{self.show_plots}")
 
         if self.phases == 2:
             inner_contour_np = self.get_draw_contour(img_thr_join, loc="inner")
@@ -364,9 +361,12 @@ class OCC_volume:
             if self.show_plots is True:
                 inner_contour_sitk = sitk.GetImageFromArray(contour_int)
                 inner_contour_sitk.CopyInformation(image_thr)
+                # put together both contours in sitk
+                # contours_sitk = sitk.Compose(outer_contour_sitk, inner_contour_sitk)
 
                 self.plot_slice(
                     inner_contour_sitk,
+                    # contours_sitk,
                     SLICE,
                     f"Inner contour on slice n. {SLICE}",
                     ASPECT,
@@ -839,7 +839,7 @@ class OCC_volume:
 
         contour_ext = contour_ext.reshape(-1, 3)
         contour_int = contour_int.reshape(-1, 3)
-        
+
         np.save("cortex_outer.npy", contour_ext)
         np.save("cortex_inner.npy", contour_int)
 

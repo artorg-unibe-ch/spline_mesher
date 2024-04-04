@@ -11,6 +11,7 @@ import os
 import coloredlogs
 import hfe_input_transformer as transformer
 import numpy as np
+import SimpleITK as sitk
 from src.pyhexspline.spline_mesher import HexMesh
 
 # flake8: noqa: E501
@@ -28,7 +29,6 @@ def main():
     )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    # configure coloredlogs
     coloredlogs.install(level=logging.INFO, logger=logger)
 
     img_settings = {
@@ -40,14 +40,14 @@ def main():
     }
     meshing_settings = {
         "aspect": 100,  # aspect ratio of the plots
-        "slice": 1,  # slice of the image to be plotted
+        "_slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 8,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 10,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 300,  # smoothing factor of the spline
+        "s": 10,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 350,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
@@ -55,9 +55,9 @@ def main():
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
         "mesh_order": 1,  # set order of the mesh (1: linear, 2: quadratic)
         "n_elms_longitudinal": 5,  # number of elements in the longitudinal direction
-        "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
+        "n_elms_transverse_trab": 15,  # number of elements in the transverse direction for the trabecular compartment
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
-        "n_elms_radial": 20,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
+        "n_elms_radial": 15,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
         "show_plots": False,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
@@ -66,14 +66,18 @@ def main():
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
 
-    sitk_image_s = transformer.hfe_input(
-        path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/01_AIM/C0003094/C0003094_CORT_MASK_UNCOMP.npy"
-    )
+    # sitk_image_s = transformer.hfe_input(
+    #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/01_AIM/C0003094/C0003094_CORT_MASK_UNCOMP.npy"
+    # )
 
     # sitk_image_s = sitk_image_s[:, :, :-35]
     # print(sitk_image_s.GetSize())
 
-    # sitk_image_s = None
+    sitk_image_s = sitk.ReadImage(
+        "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/454_L_94_F/C0003118_CORTMASK.mhd"
+    )
+    # crop first 35 slices
+    sitk_image_s = sitk.Crop(sitk_image_s, [0, 0, 35], [0, 0, 0])
 
     mesh = HexMesh(
         meshing_settings,

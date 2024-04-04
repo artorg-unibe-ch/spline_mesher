@@ -1,6 +1,9 @@
 # just a few functions to prepare the input data in the same way as in the pipeline
-import SimpleITK as sitk
+import matplotlib
 import numpy as np
+import SimpleITK as sitk
+
+matplotlib.use("TkAgg")
 
 # flake8: noqa: E501
 
