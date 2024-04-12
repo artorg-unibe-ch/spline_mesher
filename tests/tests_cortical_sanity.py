@@ -1,7 +1,8 @@
 # from spline_mesher import cortical_sanity as cs
-from pyhexspline import cortical_sanity as cs
-import nose.tools as nt
+import math
 import numpy as np
+
+from pyhexspline import cortical_sanity as cs
 
 # Path: 02_CODE/tests/tests_cortical_sanity.py
 
@@ -12,23 +13,29 @@ def test_ccw_angle():
     a1 = np.random.rand(5, 2)
     a2 = np.random.rand(5, 2)
     a = a.ccw_angle(
-        a, array1=a1, array2=a2, idx1=np.arange(len(a1)), idx2=np.arange(len(a2))
+        a,
+        array1=a1,
+        array2=a2,
+        idx1=np.arange(len(a1)),
+        idx2=np.arange(len(a2)),
     )
-    nt.assert_true(0 <= a.all() <= 2 * np.pi)
+    assert 0 <= a.all() <= 2 * np.pi, "CCW angle is not between 0 and 2*pi"
 
 
 def test_convertRadiansToDegrees():
     """Convert to degrees should convert radians to degrees"""
     a = cs.CorticalSanityCheck
     a = a.convertRadiansToDegrees(a, radians=np.pi)
-    nt.assert_almost_equal(a, 180, places=7)
+    assert math.isclose(
+        a, 180, rel_tol=1e-7
+    ), "Radians are not correctly converted to degrees"
 
 
 def test_reset_numpy_index(arr=np.random.rand(100, 2)):
     """Reset numpy index should reset the index to 0"""
     b = cs.CorticalSanityCheck
     b = b.reset_numpy_index(b, arr, (len(arr[:, 0]) - 1))
-    nt.assert_equal(b[0, 0], arr[-1, 0])
+    assert b[0, 0] == arr[-1, 0]
 
 
 def test_roll_numpy_index(arr=np.random.rand(100, 2)):
@@ -37,7 +44,7 @@ def test_roll_numpy_index(arr=np.random.rand(100, 2)):
 
     d = cs.CorticalSanityCheck
     d = d.roll_index(d, arr, (len(arr[:, 0]) - 1))
-    nt.assert_equal(c[0, 0], d[0, 0])
+    assert c[0, 0] == d[0, 0]
 
 
 def test_is_angle_bigger_bool():
@@ -50,7 +57,7 @@ def test_is_angle_bigger_bool():
         for alpha_int, alpha_ext in zip(alpha_int, alpha_ext)
     ]
     print(bool_angle)
-    nt.assert_true(np.asarray(bool_angle).all())
+    assert np.asarray(bool_angle).all()
 
 
 def test_check_min_thickness():
@@ -61,7 +68,7 @@ def test_check_min_thickness():
     idx_arr1 = np.arange(len(arr1[:, 0]))
     idx_arr2 = np.arange(len(arr2[:, 0]))
     a = a.check_min_thickness(a, arr1, arr2, idx_arr1, idx_arr2)
-    nt.assert_true(np.asarray(a).all())
+    assert np.asarray(a).all()
 
 
 def test_check_bigger_thickness():
@@ -71,4 +78,4 @@ def test_check_bigger_thickness():
     idx_arr1 = np.arange(len(arr1[:, 0]))
     idx_arr2 = np.arange(len(arr2[:, 0]))
     b = b.check_min_thickness(b, arr1, arr2, idx_arr1, idx_arr2)
-    nt.assert_false(np.asarray(b).all())
+    assert not np.asarray(b).all()
