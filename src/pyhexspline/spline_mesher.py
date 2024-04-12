@@ -481,8 +481,6 @@ class HexMesh:
         # get biggest ROI_radius
         radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
         radius_roi_trab = mesher.get_radius_longest_edge(tag_s=entities_trab)
-        logger.info(f"Radius ROI cort:\t{radius_roi_cort:.3f} (mm)")
-        logger.info(f"Radius ROI trab:\t{radius_roi_trab:.3f} (mm)")
 
         assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
             centroids_trab

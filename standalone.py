@@ -4,7 +4,6 @@ Author: Simone Poncioni, MSB
 Date: 09.2022 - Ongoing
 """
 
-import cProfile
 import logging
 import os
 
@@ -110,8 +109,8 @@ def main():
     logger.info(
         f"{'Centroids in cort physical group:':<{_w_text}}{len(centroids_cort):>{_w_value}}"
     )
-    logger.info(f"'Radius ROI cort: {radius_roi_cort:.3f} (mm)")
-    logger.info(f"'Radius ROI trab: {radius_roi_trab:.3f} (mm)")
+    logger.info(f"Radius ROI cort: {radius_roi_cort:.3f} (mm)")
+    logger.info(f"Radius ROI trab: {radius_roi_trab:.3f} (mm)")
 
     elm_vol = np.concatenate((elm_vol_cort.flatten(), elm_vol_trab.flatten()))
     min_volume = min(elm_vol)
