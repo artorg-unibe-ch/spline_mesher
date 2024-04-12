@@ -9,7 +9,7 @@ import logging
 import os
 
 import coloredlogs
-import hfe_input_transformer as transformer
+import pyhexspline.futils.hfe_input_transformer as transformer
 import numpy as np
 import SimpleITK as sitk
 from src.pyhexspline.spline_mesher import HexMesh
