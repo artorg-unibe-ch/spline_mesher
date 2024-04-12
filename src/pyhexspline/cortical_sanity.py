@@ -7,6 +7,9 @@ import shapely.geometry as shpg
 import shapely.ops as shpops
 from scipy import spatial
 from shapely.ops import unary_union
+from logging import Logger
+from numpy import ndarray
+from typing import Tuple
 
 
 # plt.style.use('02_CODE/src/spline_mesher/cfgdir/pos_monitor.mplstyle')  # https://github.com/matplotlib/matplotlib/issues/17978
@@ -18,7 +21,7 @@ LOGGING_NAME = "MESHING"
 
 class CorticalSanityCheck:
     def __init__(
-        self, MIN_THICKNESS, ext_contour, int_contour, model, save_plot, logger
+        self, MIN_THICKNESS: float, ext_contour: ndarray, int_contour: ndarray, model: str, save_plot: bool, logger: Logger
     ) -> None:
         self.min_thickness = (
             MIN_THICKNESS  # minimum thickness between internal and external contour
@@ -563,7 +566,7 @@ class CorticalSanityCheck:
         ]
         return xy_interp
 
-    def offset_surface(self, line, offset):
+    def offset_surface(self, line: ndarray, offset: float) -> ndarray:
         """
         Create artificial internal surface based on an offset
         Args:
@@ -699,7 +702,7 @@ class CorticalSanityCheck:
 
     def push_contour(
         self, ext_contour: np.ndarray, int_contour: np.ndarray, offset: float
-    ):
+    ) -> Tuple[ndarray, ndarray]:
         is_inside_shpg = []  # initialise
 
         RESAMPLING = int(1500)
@@ -726,8 +729,8 @@ class CorticalSanityCheck:
         return int_contour, ext_offset
 
     def cortical_sanity_check(
-        self, ext_contour, int_contour, iterator, show_plots: bool = True
-    ):
+        self, ext_contour: ndarray, int_contour: ndarray, iterator: int, show_plots: bool = True
+    ) -> ndarray:
         """
         Check if the internal contour is within the external contour.
 

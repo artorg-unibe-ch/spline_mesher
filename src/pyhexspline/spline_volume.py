@@ -16,6 +16,9 @@ import SimpleITK as sitk
 from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import splev, splprep
+from SimpleITK.SimpleITK import Image
+from numpy import ndarray
+from typing import List, Tuple
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
@@ -24,25 +27,25 @@ LOGGING_NAME = "MESHING"
 class OCC_volume:
     def __init__(
         self,
-        sitk_image,
-        img_path,
-        filepath,
-        filename,
-        ASPECT,
-        SLICE,
-        UNDERSAMPLING,
-        SLICING_COEFFICIENT,
-        INSIDE_VAL,
-        OUTSIDE_VAL,
-        LOWER_THRESH,
-        UPPER_THRESH,
-        S,
-        K,
-        INTERP_POINTS,
-        debug_orientation,
-        show_plots,
-        thickness_tol,
-        phases,
+        sitk_image: Image,
+        img_path: None,
+        filepath: str,
+        filename: str,
+        ASPECT: int,
+        SLICE: int,
+        UNDERSAMPLING: int,
+        SLICING_COEFFICIENT: int,
+        INSIDE_VAL: float,
+        OUTSIDE_VAL: float,
+        LOWER_THRESH: float,
+        UPPER_THRESH: float,
+        S: int,
+        K: int,
+        INTERP_POINTS: int,
+        debug_orientation: int,
+        show_plots: bool,
+        thickness_tol: float,
+        phases: int,
     ):
         """
         Class that imports a voxel-based model and converts it to a geometrical simplified representation
@@ -188,7 +191,7 @@ class OCC_volume:
         plt.close()
         return None
 
-    def exec_thresholding(self, image, THRESHOLD_PARAM):
+    def exec_thresholding(self, image: Image, THRESHOLD_PARAM: List[float]) -> Image:
         # Binary threshold
         btif = sitk.BinaryThresholdImageFilter()
         btif.SetInsideValue(int(THRESHOLD_PARAM[0]))
@@ -198,7 +201,7 @@ class OCC_volume:
         image_thr = btif.Execute(image)
         return image_thr
 
-    def draw_contours(self, img, loc=str("outer"), approximation: bool = True):
+    def draw_contours(self, img: ndarray, loc: str=str("outer"), approximation: bool = True) -> ndarray:
         """
         Find the contours of an image.
 
@@ -255,7 +258,7 @@ class OCC_volume:
             )
         return contour
 
-    def get_binary_contour(self, image):
+    def get_binary_contour(self, image: Image) -> Image:
         # https://itk.org/pipermail/community/2017-August/013464.html
         img_thr_join = sitk.JoinSeries(
             [
@@ -267,7 +270,7 @@ class OCC_volume:
         img_thr_join.SetSpacing(image.GetSpacing())
         return img_thr_join
 
-    def get_draw_contour(self, image, loc=str("outer")):
+    def get_draw_contour(self, image: Image, loc: str=str("outer")) -> ndarray:
         img_np = np.transpose(sitk.GetArrayFromImage(image), [2, 1, 0])
         contour_np = [
             self.draw_contours(img_np[z, :, :], loc, approximation=True)
@@ -276,7 +279,7 @@ class OCC_volume:
         contour_np = np.flip(contour_np, axis=1)
         return contour_np
 
-    def pad_image(self, image, iso_pad_size: int):
+    def pad_image(self, image: Image, iso_pad_size: int) -> Image:
         """
         Pads the input image with a constant value (background value) to increase its size.
         Padding is used to prevent having contours on the edges of the image,
@@ -300,7 +303,7 @@ class OCC_volume:
         )
         return image_thr
 
-    def binary_threshold(self, img_path: str):
+    def binary_threshold(self, img_path: str) -> Tuple[ndarray, ndarray]:
         """
         THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
         """
@@ -397,7 +400,7 @@ class OCC_volume:
         self.coordsY = np.transpose(coordsY, [1, 0])
         return contour_ext, contour_int
 
-    def sort_xy(self, x, y):
+    def sort_xy(self, x: ndarray, y: ndarray) -> Tuple[ndarray, ndarray]:
         # https://stackoverflow.com/questions/58377015/counterclockwise-sorting-of-x-y-data
 
         x0 = np.mean(x)
@@ -485,7 +488,7 @@ class OCC_volume:
         fig.show()
         return fig
 
-    def check_orient(self, x, y, direction=1):
+    def check_orient(self, x: ndarray, y: ndarray, direction: int=1) -> Tuple[ndarray, ndarray]:
         """
         Author: Simone Poncioni, MSB
         Date: 18.08.2022
@@ -563,7 +566,7 @@ class OCC_volume:
     def remove_self_intersections(self, sorted_data):
         pass
 
-    def sort_mahalanobis(self, data):
+    def sort_mahalanobis(self, data: ndarray) -> Tuple[ndarray, ndarray]:
         # Compute pairwise distances between all points in the contour
         dist_matrix = ss.distance.cdist(data.T, data.T)
 
@@ -592,7 +595,7 @@ class OCC_volume:
         # sorted_data = self.remove_self_intersections(sorted_data)
         return sorted_data[0], sorted_data[1]
 
-    def sort_surface(self, image_slice):
+    def sort_surface(self, image_slice: ndarray) -> Tuple[ndarray, ndarray, ndarray]:
         """
         Sort surface points in a clockwise direction and with Mahalanobis distance to add robustness
 
@@ -764,7 +767,7 @@ class OCC_volume:
         a0 = a[-1].reshape(1, -1)  # add the final point and concatenate
         return np.concatenate((*pnts, a0), axis=0)
 
-    def volume_splines(self):
+    def volume_splines(self) -> Tuple[ndarray, ndarray]:
         contour_ext_fig, contour_int_fig = self.binary_threshold(img_path=self.img_path)
 
         self.slice_index = np.linspace(

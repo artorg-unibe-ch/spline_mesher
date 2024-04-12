@@ -1,4 +1,7 @@
 import os
+from SimpleITK.SimpleITK import Image
+from numpy import float64, ndarray, uint64
+from typing import Dict, Optional, Tuple
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
@@ -24,7 +27,7 @@ LOGGING_NAME = "MESHING"
 
 class HexMesh:
     def __init__(
-        self, settings_dict: dict, img_dict: dict, sitk_image=None, logger=None
+        self, settings_dict: dict, img_dict: dict, sitk_image: Optional[Image]=None, logger: Optional[    logging.Logger]=None
     ):
         self.settings_dict = settings_dict
         self.img_dict = img_dict
@@ -34,7 +37,7 @@ class HexMesh:
         else:
             self.sitk_image = None  # reads the image from img_path_ext
 
-    def mesher(self):
+    def mesher(self) -> Tuple[Dict[uint64, ndarray], Dict[uint64, ndarray], int, Dict[int, ndarray], Dict[int, ndarray], ndarray, ndarray, float64, float64, Dict[uint64, ndarray], Dict[uint64, ndarray], ndarray]:
         logger = logging.getLogger(LOGGING_NAME)
         logger.info("Starting meshing script...")
         start = time.time()
