@@ -959,9 +959,6 @@ class Mesher:
             z_min = min(z_min, last_element)
             z_max = max(z_max, last_element)
 
-        print(f"z_min: {z_min}")
-        print(f"z_max: {z_max}")
-
         # mask the dict to get only the key value pairs with z_min and z_max
         # here z_max and z_min are inverted because of the nature of our csys
         # (the most distal part is actually at z=0 and the most proximal at z>0)
