@@ -3,6 +3,7 @@ import math
 import sys
 from itertools import chain
 from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
 import gmsh
 import matplotlib.pyplot as plt
@@ -11,7 +12,6 @@ import scipy.spatial as spatial
 import shapely.geometry as shpg
 from cython_functions import find_closed_curve as fcc
 from numpy import float32, float64, int64, ndarray, uint64
-from typing import Dict, List, Tuple, Union
 
 # flake8: noqa: E203
 LOGGING_NAME = "MESHING"
@@ -902,7 +902,11 @@ class Mesher:
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         self.option.setNumber("Mesh.Recombine3DLevel", 1)
         self.option.setNumber("Mesh.ElementOrder", element_order)
-        self.option.setNumber("Mesh.Smoothing", 1000000000000)
+        # self.model.mesh.setOrder(element_order)
+        for s in self.model.getEntities(2):
+            self.model.mesh.setRecombine(s[0], s[1])
+            self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+
         self.model.mesh.generate(dim)
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:

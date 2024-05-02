@@ -1,7 +1,8 @@
 import os
-from SimpleITK.SimpleITK import Image
-from numpy import float64, ndarray, uint64
 from typing import Dict, Optional, Tuple
+
+from numpy import float64, ndarray, uint64
+from SimpleITK.SimpleITK import Image
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
@@ -27,7 +28,11 @@ LOGGING_NAME = "MESHING"
 
 class HexMesh:
     def __init__(
-        self, settings_dict: dict, img_dict: dict, sitk_image: Optional[Image]=None, logger: Optional[    logging.Logger]=None
+        self,
+        settings_dict: dict,
+        img_dict: dict,
+        sitk_image: Optional[Image] = None,
+        logger: Optional[logging.Logger] = None,
     ):
         self.settings_dict = settings_dict
         self.img_dict = img_dict
@@ -37,7 +42,22 @@ class HexMesh:
         else:
             self.sitk_image = None  # reads the image from img_path_ext
 
-    def mesher(self) -> Tuple[Dict[uint64, ndarray], Dict[uint64, ndarray], int, Dict[int, ndarray], Dict[int, ndarray], ndarray, ndarray, float64, float64, Dict[uint64, ndarray], Dict[uint64, ndarray], ndarray]:
+    def mesher(
+        self,
+    ) -> Tuple[
+        Dict[uint64, ndarray],
+        Dict[uint64, ndarray],
+        int,
+        Dict[int, ndarray],
+        Dict[int, ndarray],
+        ndarray,
+        ndarray,
+        float64,
+        float64,
+        Dict[uint64, ndarray],
+        Dict[uint64, ndarray],
+        ndarray,
+    ]:
         logger = logging.getLogger(LOGGING_NAME)
         logger.info("Starting meshing script...")
         start = time.time()
@@ -441,10 +461,7 @@ class HexMesh:
         mesher.logger.info("Optimising mesh")
         if ELM_ORDER == 1:
             pass
-            # mesher.model.mesh.optimize(method="Relocate3D", force=True)
-            # mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
-            # mesher.model.mesh.optimize(method="Netgen", force=True)
-        else:
+        elif ELM_ORDER > 1:
             mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
 
         if MESH_ANALYSIS:
@@ -476,10 +493,14 @@ class HexMesh:
         elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
         min_elm_vol = min(elm_vol_cort.min(), elm_vol_trab.min())
         if min_elm_vol < 0.0:
-            logger.critical(f'Negative element volume detected: {min_elm_vol:.3f} (mm^3), exiting...')
+            logger.critical(
+                f"Negative element volume detected: {min_elm_vol:.3f} (mm^3), exiting..."
+            )
         else:
             logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort):.3f}")
-            logger.info(f"Minimum trabecular element volume: {np.min(elm_vol_trab):.3f}")
+            logger.info(
+                f"Minimum trabecular element volume: {np.min(elm_vol_trab):.3f}"
+            )
 
         # get biggest ROI_radius
         radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
