@@ -18,8 +18,8 @@ class TestMeshOrder:
         self.factory.synchronize()
 
         # * ######## HERE
-        self.model.mesh.setOrder(self.element_order)
-        # self.option.setNumber("Mesh.ElementOrder", self.element_order)
+        # self.model.mesh.setOrder(self.element_order)
+        self.option.setNumber("Mesh.ElementOrder", self.element_order)
         # * ########
 
         self.model.mesh.generate(3)
