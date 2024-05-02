@@ -8,9 +8,9 @@ import logging
 import os
 
 import coloredlogs
-import src.pyhexspline.futils.hfe_input_transformer as transformer
 import numpy as np
 import SimpleITK as sitk
+import src.pyhexspline.futils.hfe_input_transformer as transformer
 from src.pyhexspline.spline_mesher import HexMesh
 
 # flake8: noqa: E501
@@ -52,7 +52,7 @@ def main():
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
-        "mesh_order": 1,  # set order of the mesh (1: linear, 2: quadratic)
+        "mesh_order": 1,  # set element order (1: linear, 2: quadratic, >2: higher order, not tested)
         "n_elms_longitudinal": 5,  # number of elements in the longitudinal direction
         "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
@@ -67,10 +67,11 @@ def main():
 
     # sitk_image_s = transformer.hfe_input(
     #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/01_AIM/C0003094/C0003094_CORT_MASK_UNCOMP.npy"
-    # )
+    # )
 
-    # sitk_image_s = sitk_image_s[:, :, :-35]
+    # sitk_image_s = sitk_image_s[:, :, 35:-35]
     # print(sitk_image_s.GetSize())
+
 
     sitk_image_s = sitk.ReadImage(
         "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/RADIUS/XCT2_193/C0002228_CORTMASK.mhd"
