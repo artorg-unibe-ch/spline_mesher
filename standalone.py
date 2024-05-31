@@ -41,7 +41,7 @@ def main():
         "aspect": 100,  # aspect ratio of the plots
         "_slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 8,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 5,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
@@ -67,11 +67,10 @@ def main():
 
     # sitk_image_s = transformer.hfe_input(
     #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/01_AIM/C0003094/C0003094_CORT_MASK_UNCOMP.npy"
-    # )
+    # )
 
-    # sitk_image_s = sitk_image_s[:, :, 35:-35]
+    # sitk_image_s = sitk_image_s[:, :, 35:-35]
     # print(sitk_image_s.GetSize())
-
 
     sitk_image_s = sitk.ReadImage(
         "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/RADIUS/XCT2_193/C0002228_CORTMASK.mhd"

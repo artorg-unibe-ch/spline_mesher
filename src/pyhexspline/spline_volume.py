@@ -201,7 +201,9 @@ class OCC_volume:
         image_thr = btif.Execute(image)
         return image_thr
 
-    def draw_contours(self, img: ndarray, loc: str=str("outer"), approximation: bool = True) -> ndarray:
+    def draw_contours(
+        self, img: ndarray, loc: str = str("outer"), approximation: bool = True
+    ) -> ndarray:
         """
         Find the contours of an image.
 
@@ -224,7 +226,8 @@ class OCC_volume:
             https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/
             https://doi.org/10.1016/0167-8655(82)90016-2
         """
-        eps = 0.001
+        # eps = 0.001
+        eps = 0.015
         if loc == "outer":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -270,7 +273,7 @@ class OCC_volume:
         img_thr_join.SetSpacing(image.GetSpacing())
         return img_thr_join
 
-    def get_draw_contour(self, image: Image, loc: str=str("outer")) -> ndarray:
+    def get_draw_contour(self, image: Image, loc: str = str("outer")) -> ndarray:
         img_np = np.transpose(sitk.GetArrayFromImage(image), [2, 1, 0])
         contour_np = [
             self.draw_contours(img_np[z, :, :], loc, approximation=True)
@@ -488,7 +491,9 @@ class OCC_volume:
         fig.show()
         return fig
 
-    def check_orient(self, x: ndarray, y: ndarray, direction: int=1) -> Tuple[ndarray, ndarray]:
+    def check_orient(
+        self, x: ndarray, y: ndarray, direction: int = 1
+    ) -> Tuple[ndarray, ndarray]:
         """
         Author: Simone Poncioni, MSB
         Date: 18.08.2022
