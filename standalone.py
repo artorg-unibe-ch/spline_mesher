@@ -41,7 +41,7 @@ def main():
         "aspect": 100,  # aspect ratio of the plots
         "_slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 5,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 4,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
@@ -60,7 +60,7 @@ def main():
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
         "show_plots": False,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
-        "write_mesh": True,  # write mesh to file
+        "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
@@ -73,7 +73,7 @@ def main():
     # print(sitk_image_s.GetSize())
 
     sitk_image_s = sitk.ReadImage(
-        "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/RADIUS/XCT2_193/C0002228_CORTMASK.mhd"
+        "99_testing_prototyping/repro_sim_errors/C0001417_CORTMASK.mhd"
     )
     print(sitk_image_s.GetSize())
 

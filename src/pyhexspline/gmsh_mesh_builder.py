@@ -294,17 +294,7 @@ class Mesher:
         array_sorted = [subarr[points_sorted] for subarr in array]
         return np.array(array_sorted, dtype=int)
 
-    def insert_intersection_line(
-        self, point_tags: ndarray, idx_list: list
-    ) -> Tuple[ndarray, ndarray]:
-        point_tags = np.array(point_tags).tolist()
-        reshaped_point_tags = np.reshape(point_tags, (len(idx_list), -1))
-        indexed_points = reshaped_point_tags[
-            np.arange(len(idx_list))[:, np.newaxis], idx_list
-        ]
-
-        sorted_indexed_points = self.sort_intersection_points(indexed_points)
-
+    def insert_intersection_line(self, sorted_indexed_points) -> np.ndarray:
         line_tags = []
         for j in range(len(sorted_indexed_points[0, :])):
             for i in range(len(sorted_indexed_points[:, j]) - 1):
@@ -312,7 +302,8 @@ class Mesher:
                     sorted_indexed_points[i][j], sorted_indexed_points[i + 1][j]
                 )
                 line_tags = np.append(line_tags, line)
-        return line_tags, sorted_indexed_points
+        print(f"line tags: {line_tags}")
+        return line_tags
 
     def sort_bspline_cw(self, coords, point_tags):
         coords = np.asarray(coords)
@@ -560,22 +551,38 @@ class Mesher:
     def gmsh_geometry_formulation(
         self, array: np.ndarray, idx_list: np.ndarray
     ) -> Tuple[ndarray, ndarray, ndarray, ndarray]:
+
         array_pts_tags = self.insert_points(array)
 
-        intersection_line_tag, indexed_points_coi = self.insert_intersection_line(
-            array_pts_tags, idx_list
-        )
+        # point_tags == array_pts_tags
+
+        point_tags = np.array(array_pts_tags).tolist()
+        reshaped_point_tags = np.reshape(point_tags, (len(idx_list), -1))
+        indexed_points = reshaped_point_tags[
+            np.arange(len(idx_list))[:, np.newaxis], idx_list
+        ]
+
+        sorted_indexed_points = self.sort_intersection_points(indexed_points)
+
+        """
+        #* ThruSections
+        intersection_line_tag = self.insert_intersection_line(sorted_indexed_points)
+        """
 
         array_bspline, array_split_idx = self.insert_bspline(
-            array, array_pts_tags, indexed_points_coi
+            array, array_pts_tags, sorted_indexed_points
         )
 
+        """
         # create curveloop between array_bspline and intersection_line_tag
         bspline_filling_tags = self.add_bspline_filling(
             array_bspline, intersection_line_tag, self.slicing_coefficient
         )
+        """
+        intersection_line_tag = []
+        bspline_filling_tags = []
         return (
-            indexed_points_coi,
+            sorted_indexed_points,
             array_bspline,
             intersection_line_tag,
             bspline_filling_tags,
@@ -933,20 +940,24 @@ class Mesher:
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         self.option.setNumber("Mesh.Recombine3DLevel", 1)
         self.option.setNumber("Mesh.ElementOrder", element_order)
-        self.option.setNumber("Mesh.Smoothing", 1000000)
+        # self.option.setNumber("Mesh.Smoothing", 1000000)
+        self.option.setNumber("Mesh.Smoothing", 100)
 
         for dim in (1, 2, 3):
             for s in self.model.getEntities(dim):
                 self.model.mesh.setRecombine(s[0], s[1])
-                self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+                # self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+                self.model.mesh.setSmoothing(s[0], s[1], 100)
 
             for s in self.model.getEntities(dim):
                 self.model.mesh.setRecombine(s[0], s[1])
-                self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+                # self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+                self.model.mesh.setSmoothing(s[0], s[1], 100)
 
             for s in self.model.getEntities(dim):
                 self.model.mesh.setRecombine(s[0], s[1])
-                self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+                # self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+                self.model.mesh.setSmoothing(s[0], s[1], 100)
 
         self.model.mesh.generate(dim)
 
@@ -1316,6 +1327,8 @@ class TrabecularVolume(Mesher):
                 trab_tag_h = self.factory.addPlaneSurface([trab_curveloop_h], tag=-1)
             surf_tags_h.append(trab_tag_h)
 
+        """
+        #* ThruSections
         line_tags_v = []
         for j in range(len(point_tags_c[0, :]) - 1):
             line_tags_s = self.insert_lines(point_tags_c[:, j])
@@ -1328,12 +1341,15 @@ class TrabecularVolume(Mesher):
         line_tags_v = np.append(
             line_tags_v, line_tags_v[0, :][None, :], axis=0
         ).tolist()
+        """
 
         line_tags_h = np.array(line_tags_h, dtype=int).reshape((-1, 4))
         line_tags_h = np.concatenate(
             (line_tags_h, line_tags_h[:, 0][:, None]), axis=1
         ).tolist()
 
+        """
+        #* ThruSections
         surf_tags_v = []
         self.logger.debug("Inner trabecular surface")
         self.logger.debug("j, i")
@@ -1354,11 +1370,16 @@ class TrabecularVolume(Mesher):
                 )
                 trab_tag_v = self.factory.addSurfaceFilling(trab_curveloop_v, tag=-1)
                 surf_tags_v.append(trab_tag_v)
+        """
 
         # create volumes
+        """
+        #* ThruSections
         surf_tags_v = np.array(surf_tags_v).reshape((4, -1))
+        """
         surf_tags_h = np.array(surf_tags_h)
 
+        """
         trab_surf_loop_tag = []
         for i in range(3, len(surf_tags_v[:, 0])):
             for j in range(1, len(surf_tags_h)):
@@ -1374,6 +1395,11 @@ class TrabecularVolume(Mesher):
                     tag=-1,
                 )
                 trab_surf_loop_tag.append(trab_surf_loop_s)
+        """
+        # * ThruSections
+        trab_surf_loop_tag = []
+        line_tags_v = []
+        surf_tags_v = []
 
         # make volume
         trab_vol_tag = []

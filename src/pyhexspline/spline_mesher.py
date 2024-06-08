@@ -149,7 +149,7 @@ class HexMesh:
             thickness_tol=THICKNESS_TOL,
             phases=PHASES,
         )
-
+        """
         cortical_v.plot_mhd_slice()
         cortical_ext, cortical_int = cortical_v.volume_splines()
 
@@ -176,6 +176,15 @@ class HexMesh:
             )
             cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
         cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
+
+        np.save("cortical_ext_split.npy", cortical_ext_split)
+        np.save("cortical_int_split.npy", cortical_int_split)
+        np.save("cortical_int_sanity.npy", cortical_int_sanity)
+        """
+
+        cortical_ext_split = np.load("cortical_ext_split.npy")
+        cortical_int_split = np.load("cortical_int_split.npy")
+        cortical_int_sanity = np.load("cortical_int_sanity.npy")
 
         gmsh.initialize()
         gmsh.clear()
@@ -275,17 +284,25 @@ class HexMesh:
             intersection_line_tags_int,
             cortical_int_surfs,
         ) = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
+
         intersurface_line_tags = mesher.add_interslice_segments(
             indices_coi_ext, indices_coi_int
         )
         slices_tags = mesher.add_slice_surfaces(
             cortical_ext_bspline, cortical_int_bspline, intersurface_line_tags
         )
+
+        """
         intersurface_surface_tags = mesher.add_intersurface_planes(
             intersurface_line_tags,
             intersection_line_tags_ext,
             intersection_line_tags_int,
         )
+        """
+        # *ThruSections
+        slices_tags = []
+        intersurface_surface_tags = []
+
         intersection_line_tags = np.append(
             intersection_line_tags_ext, intersection_line_tags_int
         )
@@ -345,7 +362,9 @@ class HexMesh:
             trab_line_tags_h=trab_line_tags_h,
             cort_int_bspline_tags=cortical_int_bspline,
         )
+        """
 
+        #*ThruSections
         trab_plane_inertia_tags = trabecular_volume.trabecular_planes_inertia(
             trab_cort_line_tags, trab_line_tags_v, intersection_line_tags_int
         )
@@ -357,9 +376,15 @@ class HexMesh:
             trab_surfs_v,
         )
 
+
         cort_volume_tags = np.concatenate(
             (cort_vol_tags, cort_trab_vol_tags), axis=None
         )
+        """
+        # *ThruSections
+        trab_plane_inertia_tags = []
+        cort_trab_vol_tags = []
+        trab_slice_surf_tags = []
 
         trab_refinement = None
         quadref_vols = None
@@ -439,7 +464,7 @@ class HexMesh:
         print(
             f"Cortical physical group: {cort_physical_group}\nTrabecular physical group: {trab_physical_group}"
         )
-
+        """
         cort_longitudinal_lines = intersection_line_tags
         cort_transverse_lines = intersurface_line_tags
         mesher.meshing_transfinite(
@@ -474,6 +499,7 @@ class HexMesh:
         elms = mesher.gmsh_get_elms()
         bnds_bot, bnds_top = mesher.gmsh_get_bnds(nodes)
         reference_point_coord = mesher.gmsh_get_reference_point_coord(nodes)
+        """
 
         if SHOW_GMSH:
             gmsh.fltk.run()
