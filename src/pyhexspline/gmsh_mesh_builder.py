@@ -603,7 +603,7 @@ class Mesher:
             PROGRESSION_FACTOR = 1.0
         elif phase == "trab":
             n_transverse = self.n_transverse_trab
-            PROGRESSION_FACTOR = 1.0
+            PROGRESSION_FACTOR = 1.05
 
         for ll in longitudinal_line_tags:
             self.model.mesh.setTransfiniteCurve(ll, self.n_longitudinal)
