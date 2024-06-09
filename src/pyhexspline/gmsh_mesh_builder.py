@@ -949,7 +949,7 @@ class Mesher:
         sorted_indices = angles_idx[sorted_angles]
         return sorted_indices
 
-    def mesh_generate(self, dim: int, element_order: int, vol_tags: list):
+    def mesh_generate(self, dim: int, element_order: int):
         self.option.setNumber("Mesh.RecombineAll", 1)
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         self.option.setNumber("Mesh.Recombine3DLevel", 1)

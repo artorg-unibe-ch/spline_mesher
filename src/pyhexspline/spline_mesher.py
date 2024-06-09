@@ -152,7 +152,6 @@ class HexMesh:
             phases=PHASES,
         )
 
-        """
         cortical_v.plot_mhd_slice()
         cortical_ext, cortical_int = cortical_v.volume_splines()
 
@@ -180,18 +179,17 @@ class HexMesh:
             cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
         cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
 
-        np.save("cortical_ext_split.npy", cortical_ext_split)
-        np.save("cortical_int_split.npy", cortical_int_split)
-        np.save("cortical_int_sanity.npy", cortical_int_sanity)
-        """
+        # np.save("cortical_ext_split.npy", cortical_ext_split)
+        # np.save("cortical_int_split.npy", cortical_int_split)
+        # np.save("cortical_int_sanity.npy", cortical_int_sanity)
 
-        cortical_ext_split = np.load("cortical_ext_split.npy")
-        cortical_int_split = np.load("cortical_int_split.npy")
-        cortical_int_sanity = np.load("cortical_int_sanity.npy")
+        # cortical_ext_split = np.load("cortical_ext_split.npy")
+        # cortical_int_split = np.load("cortical_int_split.npy")
+        # cortical_int_sanity = np.load("cortical_int_sanity.npy")
 
         gmsh.initialize()
         gmsh.clear()
-        gmsh.option.setNumber("General.NumThreads", 6)
+        gmsh.option.setNumber("General.NumThreads", 16)
         gmsh.logger.start()
 
         mesher = Mesher(
@@ -573,7 +571,7 @@ class HexMesh:
         OUTPLANE = 10
         INPLANE = 10
 
-        # ? cleaner.lines_thrusection: cortical elements in radial direction
+        # ? cleaner.lines_to_remove: cortical elements in radial direction
 
         for line in gmsh.model.getEntities(1):
             if line[1] in cleaner.bsplines_thrusection:
@@ -636,12 +634,11 @@ class HexMesh:
         # mesher.model.geo.mesh.setRecombine(2, -1)
 
         # tot_vol_tags = [cort_vol_tags, trab_vol_tags]
-        """
-        tot_vol_tags = [trab_vol_tags]
-        mesher.mesh_generate(dim=3, element_order=ELM_ORDER, vol_tags=tot_vol_tags)
+        # mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
+        """
         # *ThruSections
         mesher.logger.info("Optimising mesh")
         if ELM_ORDER == 1:

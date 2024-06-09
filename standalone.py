@@ -46,7 +46,7 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 50,  # smoothing factor of the spline
+        "s": 100,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 350,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
