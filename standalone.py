@@ -41,7 +41,7 @@ def main():
         "aspect": 100,  # aspect ratio of the plots
         "_slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 4,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 6,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask

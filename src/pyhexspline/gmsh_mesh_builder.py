@@ -335,6 +335,7 @@ class Mesher:
     def gmsh_insert_bspline(self, points: ndarray) -> int:
         points = np.array(points).tolist()
         b_spline = self.factory.addBSpline(points, tag=-1)
+        b_spline = int(b_spline)
         return b_spline
 
     def insert_bspline(
@@ -400,6 +401,7 @@ class Mesher:
             for bspline_indices in array_split_idx_slice:
                 array_bspline_s = self.gmsh_insert_bspline(bspline_indices)
                 array_bspline = np.append(array_bspline, array_bspline_s)
+        array_bspline = np.array(array_bspline, dtype=int)
         return array_bspline, array_split_idx
 
     def add_bspline_filling(
@@ -501,9 +503,10 @@ class Mesher:
         ext_int_tags_l = np.array(ext_int_tags, dtype="int").tolist()
         slices_ext_int_tags = []
         for surf_tag in ext_int_tags_l:
-            slice_tag = self.factory.addSurfaceFilling(surf_tag, tag=-1)
+            # slice_tag = self.factory.addSurfaceFilling(surf_tag, tag=-1)
+            slice_tag = self.factory.addPlaneSurface([surf_tag], tag=-1)
             slices_ext_int_tags.append(slice_tag)
-        return np.array(slices_ext_int_tags)
+        return np.array(slices_ext_int_tags).reshape(-1, 4)
 
     def add_intersurface_planes(
         self,
@@ -574,6 +577,7 @@ class Mesher:
         )
 
         """
+        #* Thrusections
         # create curveloop between array_bspline and intersection_line_tag
         bspline_filling_tags = self.add_bspline_filling(
             array_bspline, intersection_line_tag, self.slicing_coefficient
@@ -602,7 +606,10 @@ class Mesher:
         longitudinal_line_tags = list(map(int, longitudinal_line_tags))
         radial_line_tags = list(map(int, radial_line_tags))
         surface_tags = list(map(int, surface_tags))
-        volume_tags = list(map(int, volume_tags))
+        if isinstance(volume_tags, list):
+            volume_tags = list(map(int, volume_tags))
+        else:
+            volume_tags = [int(volume_tags)]
 
         n_transverse = None
         if phase == "cort":
@@ -628,6 +635,8 @@ class Mesher:
 
         for volume in volume_tags:
             self.model.mesh.setTransfiniteVolume(volume)
+
+        self.model.mesh.setRecombine(2, 1)
 
     def add_volume(
         self,
@@ -806,7 +815,9 @@ class Mesher:
         self.logger.debug("Trabecular slices")
         self.logger.debug("j, i")
         trabecular_slice_surf_tags = []
+        trabecular_slice_curve_loop_tags = []
         for i in range(len(trab_cort_line_tags_np)):
+            cloops = []
             for j in range(1, len(trab_cort_line_tags_np[i])):
                 self.logger.debug(
                     f"{j}, {i}:\t{trab_cort_line_tags_np[i][j-1]} {trab_line_tags_h_np[i][j-1]} {trab_cort_line_tags_np[i][j]} {cort_int_bspline_tags_np[i][j-1]}"
@@ -821,10 +832,13 @@ class Mesher:
                     ],
                     tag=-1,
                 )
-
+                cloops.append(curve_loop)
                 trab_slice = self.factory.addPlaneSurface([curve_loop], tag=-1)
                 trabecular_slice_surf_tags.append(trab_slice)
-        return trabecular_slice_surf_tags
+
+            trabecular_slice_curve_loop_tags.append(cloops)
+
+        return trabecular_slice_surf_tags, trabecular_slice_curve_loop_tags
 
     def get_trabecular_cortical_volume_mesh(
         self,
@@ -1319,10 +1333,13 @@ class TrabecularVolume(Mesher):
             line_tags_h.append(line_tags_s)
 
         surf_tags_h = []
+        trab_curveloop_h_list = []
         for i, _ in enumerate(line_tags_h):
             trab_curveloop_h = self.factory.addCurveLoop(line_tags_h[i], tag=-1)
+            trab_curveloop_h_list.append(trab_curveloop_h)
             if self.ellipsoid_fitting is True:
-                trab_tag_h = self.factory.addSurfaceFilling(trab_curveloop_h, tag=-1)
+                trab_tag_h = self.factory.addPlaneSurface([trab_curveloop_h], tag=-1)
+                # trab_tag_h = self.factory.addSurfaceFilling(trab_curveloop_h, tag=-1)
             else:
                 trab_tag_h = self.factory.addPlaneSurface([trab_curveloop_h], tag=-1)
             surf_tags_h.append(trab_tag_h)
@@ -1421,6 +1438,7 @@ class TrabecularVolume(Mesher):
             self.surf_tags_v,
             self.surf_tags_h,
             self.vol_tags,
+            trab_curveloop_h_list,
         )
 
     def get_vertices_coords(self, vertices_tags):

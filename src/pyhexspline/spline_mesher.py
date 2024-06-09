@@ -20,6 +20,8 @@ from pyhexspline import cortical_sanity as csc
 from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
 from pyhexspline.quad_refinement import QuadRefinement
 from pyhexspline.spline_volume import OCC_volume
+from pyhexspline.geometry_cleaner import GeometryCleaner
+
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "MESHING"
@@ -149,6 +151,7 @@ class HexMesh:
             thickness_tol=THICKNESS_TOL,
             phases=PHASES,
         )
+
         """
         cortical_v.plot_mhd_slice()
         cortical_ext, cortical_int = cortical_v.volume_splines()
@@ -292,16 +295,30 @@ class HexMesh:
             cortical_ext_bspline, cortical_int_bspline, intersurface_line_tags
         )
 
+        # *ThruSections for Cortical Slices
+        gmsh.model.occ.synchronize()
+        cort_slice_surf_thrusections = []
+
+        # Transpose slices_tags to loop over the 'columns' of the list
+        for subset in list(zip(*slices_tags)):
+            # Add ThruSections for cortical slices
+            thrusect = mesher.factory.addThruSections(
+                subset,
+                maxDegree=2,
+                makeSolid=True,
+                continuity="G2",
+                tag=-1,
+            )
+            cort_slice_surf_thrusections.append(thrusect)
+
+        gmsh.model.occ.synchronize()
+
         """
         intersurface_surface_tags = mesher.add_intersurface_planes(
             intersurface_line_tags,
             intersection_line_tags_ext,
             intersection_line_tags_int,
         )
-        """
-        # *ThruSections
-        slices_tags = []
-        intersurface_surface_tags = []
 
         intersection_line_tags = np.append(
             intersection_line_tags_ext, intersection_line_tags_int
@@ -322,6 +339,7 @@ class HexMesh:
             slices_tags,
             intersurface_surface_tags,
         )
+        """
 
         # TODO: check if could be implemented when created (relationship with above functions)
         intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
@@ -350,6 +368,7 @@ class HexMesh:
             trab_surfs_v,
             trab_surfs_h,
             trab_vols,
+            trab_curveloop_h,
         ) = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
 
         # connection between inner trabecular and cortical volumes
@@ -357,11 +376,56 @@ class HexMesh:
             coi_idx=indices_coi_int, trab_point_tags=trab_point_tags
         )
 
-        trab_slice_surf_tags = mesher.trabecular_slices(
-            trab_cort_line_tags=trab_cort_line_tags,
-            trab_line_tags_h=trab_line_tags_h,
-            cort_int_bspline_tags=cortical_int_bspline,
+        trab_slice_surf_tags, trabecular_slice_curve_loop_tags = (
+            mesher.trabecular_slices(
+                trab_cort_line_tags=trab_cort_line_tags,
+                trab_line_tags_h=trab_line_tags_h,
+                cort_int_bspline_tags=cortical_int_bspline,
+            )
         )
+
+        # *ThruSections
+        gmsh.model.occ.synchronize()
+        trab_slice_surf_thrusections = []
+        # transpose it so that you loop over the 'columns' of the list
+        for subset in list(zip(*trabecular_slice_curve_loop_tags)):
+            thrusect = mesher.factory.addThruSections(
+                subset,
+                maxDegree=2,
+                makeSolid=True,
+                continuity="G2",
+                tag=-1,
+            )
+            trab_slice_surf_thrusections.append(thrusect)
+        gmsh.model.occ.synchronize()
+
+        all_surfs_thrusections = []
+        all_tag_arrays = []
+        all_trab_surfs = []
+        for i, section in enumerate(trab_slice_surf_thrusections):
+            dim, tag = section[0][0], section[0][1]
+
+            # Get the adjacencies for the current section
+            _, surfs_thrusections = gmsh.model.getAdjacencies(dim=dim, tag=tag)
+
+            all_surfs_thrusections.extend(surfs_thrusections)
+
+            adjacencies = [
+                gmsh.model.getAdjacencies(dim=2, tag=surf)
+                for surf in surfs_thrusections
+            ]
+            _tag_arrays = [adjacency[1] for adjacency in adjacencies]
+            all_tag_arrays.extend(_tag_arrays)
+
+            trab_surfs_section = np.concatenate(
+                (surfs_thrusections, trab_surfs_h), axis=None
+            )
+            all_trab_surfs.append(trab_surfs_section)
+
+        lines_thrusections = sorted(np.unique(np.concatenate(all_tag_arrays).tolist()))
+        cort_trab_lines_radial = lines_thrusections
+        cort_trab_surf = np.concatenate(all_trab_surfs, axis=None)
+
         """
 
         #*ThruSections
@@ -426,9 +490,48 @@ class HexMesh:
             )
         )
 
+        gmsh.model.occ.synchronize()
+        # trab_vols.append(thrusections_trab_surfs_h[0][1])
+
         trab_lines_longitudinal = trab_line_tags_v
-        trab_lines_transverse = trab_cort_line_tags
+        trab_lines_transverse = np.concatenate(
+            (trab_cort_line_tags, cortical_int_bspline), axis=None
+        )
         trab_lines_radial = trab_line_tags_h
+
+        mesher.factory.synchronize()
+        thrusections_trab_surfs_h = trabecular_volume.factory.addThruSections(
+            trab_curveloop_h,
+            maxDegree=2,
+            makeSolid=True,
+            continuity="G2",
+            # parametrization="Centripetal",
+            tag=-1,
+        )
+        mesher.factory.synchronize()
+
+        _, surfs_thrusections = gmsh.model.getAdjacencies(
+            dim=thrusections_trab_surfs_h[0][0], tag=thrusections_trab_surfs_h[0][1]
+        )
+        # Assuming gmsh.model.getAdjacencies returns a list of tuples
+        adjacencies = [
+            gmsh.model.getAdjacencies(dim=2, tag=surf) for surf in surfs_thrusections
+        ]
+        _tag_arrays = [adjacency[1] for adjacency in adjacencies]
+        lines_thrusections = sorted(np.unique(np.concatenate(_tag_arrays).tolist()))
+
+        trab_lines_radial = np.concatenate(
+            (lines_thrusections, cort_trab_lines_radial), axis=None
+        )
+        trab_surfs = np.concatenate((surfs_thrusections, cort_trab_surf), axis=None)
+
+        trab_slice_surf_thrusections_tags = [
+            i[0][1] for i in trab_slice_surf_thrusections
+        ]
+        trab_vols = np.concatenate(
+            (thrusections_trab_surfs_h[0][1], trab_slice_surf_thrusections_tags),
+            axis=None,
+        ).tolist()
 
         trabecular_volume.meshing_transfinite(
             trab_lines_longitudinal,
@@ -442,9 +545,9 @@ class HexMesh:
         # * physical groups
         mesher.factory.synchronize()
         trab_vol_tags = np.concatenate((trab_vols, cort_trab_vol_tags), axis=None)
-        cort_physical_group = mesher.model.addPhysicalGroup(
-            3, cort_vol_tags, name="Cortical_Compartment"
-        )
+        # cort_physical_group = mesher.model.addPhysicalGroup(
+        #     3, cort_vol_tags, name="Cortical_Compartment"
+        # )
 
         if quadref_vols is not None:
             trab_vol_tags = np.append(trab_vol_tags, quadref_vols[0])
@@ -455,34 +558,91 @@ class HexMesh:
             3, trab_vol_tags, name="Trabecular_Compartment"
         )
 
+        gmsh.model.occ.synchronize()
+
+        # Instantiate GeometryCleaner and identify entities to remove
+        cleaner = GeometryCleaner()
+        cleaner.analyze_geometry()
+
+        # update cleaner.lines_thrusection and remove the lines that are part of the trabecular volume
+        # cleaner.lines_to_remove = np.setdiff1d(
+        #     cleaner.lines_to_remove, cleaner.lines_thrusection
+        # )
+
+        gmsh.model.occ.synchronize()
+        OUTPLANE = 10
+        INPLANE = 10
+
+        # ? cleaner.lines_thrusection: cortical elements in radial direction
+
+        for line in gmsh.model.getEntities(1):
+            if line[1] in cleaner.bsplines_thrusection:
+                gmsh.model.mesh.setTransfiniteCurve(line[1], 30)
+            elif line[1] in cleaner.lines_to_remove:
+                # * OK
+                gmsh.model.mesh.setTransfiniteCurve(line[1], 4)
+            elif line[1] in cleaner.lines_thrusection:
+                gmsh.model.mesh.setTransfiniteCurve(line[1], 10)
+            else:
+                gmsh.model.mesh.setTransfiniteCurve(line[1], 10)
+        gmsh.model.occ.synchronize()
+
+        for surface in gmsh.model.getEntities(2):
+            gmsh.model.mesh.setTransfiniteSurface(surface[1])
+            gmsh.model.mesh.setRecombine(surface[0], surface[1])
+        for volume in gmsh.model.getEntities(3):
+            gmsh.model.mesh.setTransfiniteVolume(volume[1])
+        gmsh.model.occ.synchronize()
+        gmsh.model.mesh.generate(3)
+
+        """
+        # *ThruSections
+        gmsh.model.occ.synchronize()
+        for line in gmsh.model.getEntities(1):
+            if line[1] in intersurface_line_tags:
+                self.logger.info(f"Found line {line[1]} in subset")
+                gmsh.model.mesh.setTransfiniteCurve(line[1], 2)
+            else:
+                gmsh.model.mesh.setTransfiniteCurve(line[1], 15)
+        for surface in gmsh.model.getEntities(2):
+            gmsh.model.mesh.setTransfiniteSurface(surface[1])
+            gmsh.model.mesh.setRecombine(surface[0], surface[1])
+        for volume in gmsh.model.getEntities(3):
+            gmsh.model.mesh.setTransfiniteVolume(volume[1])
+        gmsh.model.occ.synchronize()
+        """
+
+        # *ThruSections
+        cort_volume_tags = []
         # if (
         #     trab_refinement is not None and quadref_vols is not None
         # ):  # same as saying if QUAD_REFINEMENT
         #     quadref_physical_group = trab_refinement.model.addPhysicalGroup(
         #         3, quadref_vols[0]
         #     )
-        print(
-            f"Cortical physical group: {cort_physical_group}\nTrabecular physical group: {trab_physical_group}"
-        )
-        """
-        cort_longitudinal_lines = intersection_line_tags
+        # print(
+        #     f"Cortical physical group: {cort_physical_group}\nTrabecular physical group: {trab_physical_group}"
+        # )
+        # cort_longitudinal_lines = intersection_line_tags
         cort_transverse_lines = intersurface_line_tags
-        mesher.meshing_transfinite(
-            cort_longitudinal_lines,
-            cort_transverse_lines,
-            cortical_bspline_tags,
-            cort_surfs,
-            cort_volume_tags,
-            phase="cort",
-        )
+        # mesher.meshing_transfinite(
+        #     cort_longitudinal_lines,
+        #     cort_transverse_lines,
+        #     cortical_bspline_tags,
+        #     cort_surfs,
+        #     cort_volume_tags,
+        #     phase="cort",
+        # )
+        # mesher.model.geo.mesh.setRecombine(2, -1)
 
-        mesher.model.geo.mesh.setRecombine(2, -1)
-
-        tot_vol_tags = [cort_vol_tags, trab_vol_tags]
+        # tot_vol_tags = [cort_vol_tags, trab_vol_tags]
+        """
+        tot_vol_tags = [trab_vol_tags]
         mesher.mesh_generate(dim=3, element_order=ELM_ORDER, vol_tags=tot_vol_tags)
         mesher.model.mesh.removeDuplicateNodes()
         mesher.model.mesh.removeDuplicateElements()
         mesher.model.occ.synchronize()
+        # *ThruSections
         mesher.logger.info("Optimising mesh")
         if ELM_ORDER == 1:
             mesher.model.mesh.optimize(method="HighOrderElastic", force=True)
@@ -490,11 +650,12 @@ class HexMesh:
         elif ELM_ORDER > 1:
             mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
 
+        """
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
             JAC_NEG = -0.01
             mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
-
+        """
         nodes = mesher.gmsh_get_nodes()
         elms = mesher.gmsh_get_elms()
         bnds_bot, bnds_top = mesher.gmsh_get_bnds(nodes)
