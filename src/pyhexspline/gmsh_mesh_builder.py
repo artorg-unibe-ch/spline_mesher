@@ -450,13 +450,12 @@ class Mesher:
                         array_bspline_sliced[i + 1][j],
                     ],
                     tag=-1,
+                    checkClosed=True,
                 )
 
                 BSplineFilling = self.factory.addBSplineFilling(
                     WIRE, type="Stretch", tag=-1
                 )
-                # BSplineFilling = self.factory.addBSplineFilling(W1, type="Curved", tag=-1)
-
                 BSplineFilling_tags = np.append(BSplineFilling_tags, BSplineFilling)
         return BSplineFilling_tags
 
@@ -934,10 +933,20 @@ class Mesher:
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         self.option.setNumber("Mesh.Recombine3DLevel", 1)
         self.option.setNumber("Mesh.ElementOrder", element_order)
-        # self.model.mesh.setOrder(element_order)
-        for s in self.model.getEntities(2):
-            self.model.mesh.setRecombine(s[0], s[1])
-            self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+        self.option.setNumber("Mesh.Smoothing", 1000000)
+
+        for dim in (1, 2, 3):
+            for s in self.model.getEntities(dim):
+                self.model.mesh.setRecombine(s[0], s[1])
+                self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+
+            for s in self.model.getEntities(dim):
+                self.model.mesh.setRecombine(s[0], s[1])
+                self.model.mesh.setSmoothing(s[0], s[1], 1000000)
+
+            for s in self.model.getEntities(dim):
+                self.model.mesh.setRecombine(s[0], s[1])
+                self.model.mesh.setSmoothing(s[0], s[1], 1000000)
 
         self.model.mesh.generate(dim)
 

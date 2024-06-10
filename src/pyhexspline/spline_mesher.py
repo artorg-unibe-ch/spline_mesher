@@ -460,6 +460,7 @@ class HexMesh:
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
         if ELM_ORDER == 1:
+            mesher.model.mesh.optimize(method="HighOrderElastic", force=True)
             pass
         elif ELM_ORDER > 1:
             mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
