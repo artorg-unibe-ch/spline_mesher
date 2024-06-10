@@ -8,6 +8,7 @@ from itertools import combinations
 class GeometryCleaner:
     def __init__(self):
         self.line_connectivity = {}
+        self.bspline_connectivity = {}
         self.lines_to_remove = []
         self.surfaces_to_remove = set()
         self.volumes_to_remove = set()
@@ -21,11 +22,33 @@ class GeometryCleaner:
         self.identify_lines_to_remove()
         self.identify_surfaces_and_volumes_to_remove()
 
+    def analyze_common_points(self):
+        self.get_lines_from_geometry()
+        self.get_lines_from_thru_section()
+        self.get_line_connectivity()
+        self.get_thru_section_lines_connectivity()
+        # Replace dict1 and dict2 with your actual dictionaries
+        matched_indices = self.match_indices(
+            self.line_connectivity, self.bspline_connectivity
+        )
+        print(matched_indices)
+        lines_to_keep = self.get_thru_section_lines_match(matched_indices)
+        print("test")
+
     def get_lines_from_geometry(self):
         self.lines_rectangles = []
         for rect in gmsh.model.occ.getEntities(2):
             _, lines = gmsh.model.getAdjacencies(dim=2, tag=rect[1])
             self.lines_rectangles.extend(lines)
+
+    def get_thru_section_lines_match(self, matched_indices):
+        # compare matched indices with self.bspline_connectivity and get me a list of the lines that are present
+        lines_to_keep = []
+        for index in matched_indices:
+            for key, value in self.bspline_connectivity.items():
+                if key in index:
+                    lines_to_keep.append(key)
+        return lines_to_keep
 
     def get_lines_from_thru_section(self):
         self.lines_thrusection = []
@@ -42,12 +65,34 @@ class GeometryCleaner:
         self.lines_thrusection = sorted(list(set(self.lines_thrusection)))
 
     def get_line_connectivity(self):
-        for line in self.lines_thrusection:
+        # for line in self.lines_thrusection: #! Modified this !
+        for line in self.lines_rectangles:
             points = gmsh.model.getBoundary([(1, line)])
             p1, p2 = points[0][1], points[1][1]
             x0, y0, z0 = gmsh.model.getValue(0, p1, [])
             x1, y1, z1 = gmsh.model.getValue(0, p2, [])
             self.line_connectivity[line] = [(x0, y0, z0), (x1, y1, z1), p1, p2]
+
+    def get_thru_section_lines_connectivity(self):
+        for line in self.bsplines_thrusection:
+            points = gmsh.model.getBoundary([(1, line)])
+            p1, p2 = points[0][1], points[1][1]
+            x0, y0, z0 = gmsh.model.getValue(0, p1, [])
+            x1, y1, z1 = gmsh.model.getValue(0, p2, [])
+            self.bspline_connectivity[line] = [(x0, y0, z0), (x1, y1, z1), p1, p2]
+
+    def match_indices(self, dict1, dict2):
+        matched_indices = set()
+        unmatched_indices = set()
+        for key1, value1 in dict1.items():
+            for key2, value2 in dict2.items():
+                if set(value1[-2:]) == set(value2[-2:]):
+                    if key1 != key2:
+                        matched_indices.add(tuple(sorted((key1, key2))))
+                    else:
+                        unmatched_indices.add(key1)
+        print(unmatched_indices)
+        return list(matched_indices)
 
     def check_rectangle(self, lines):
         points = []

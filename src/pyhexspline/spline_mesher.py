@@ -21,11 +21,88 @@ from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
 from pyhexspline.quad_refinement import QuadRefinement
 from pyhexspline.spline_volume import OCC_volume
 from pyhexspline.geometry_cleaner import GeometryCleaner
+import matplotlib.pyplot as plt
 
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E402
+
+
+def get_surfaces_and_lines_from_volumes(volume):
+    """
+    Get surfaces and lines from the given volumes using Gmsh operations.
+
+    Parameters:
+    volumes (list): List of volume definitions, each containing dimension and tag.
+    gmsh (module): The gmsh module.
+
+    Returns:
+    dict: Dictionary containing 'surfaces' and 'lines' for each volume.
+    """
+    results = {"surfaces": [], "lines": []}
+    try:
+        dim, tag = volume[0][0], volume[0][1]
+    except TypeError:
+        dim, tag = volume[0], volume[1]
+
+    # Get the adjacencies for the current volume
+    _, surfaces_sections = gmsh.model.getAdjacencies(dim=dim, tag=tag)
+
+    adjacencies = [
+        gmsh.model.getAdjacencies(dim=2, tag=surface) for surface in surfaces_sections
+    ]
+    tag_arrays = [adjacency[1] for adjacency in adjacencies]
+    lines_sections = sorted(np.unique(np.concatenate(tag_arrays).tolist()))
+
+    results["surfaces"].append(surfaces_sections)
+    results["lines"].append(lines_sections)
+    return results
+
+
+def get_curvature_from_entities(lines):
+    ATOL = 1e-9
+    straight_segments = []
+    curved_segments = []
+
+    if isinstance(lines, list):
+        # flatten
+        lines = list(chain.from_iterable(lines))
+    else:
+        pass
+
+    for line in lines:
+        der = gmsh.model.getDerivative(1, line, [0.0, 0.5])
+        if not (
+            np.isclose(der[0], der[3], atol=ATOL)
+            and np.isclose(der[1], der[4], atol=ATOL)
+            and np.isclose(der[2], der[5], atol=ATOL)
+        ):
+            curved_segments.append(line)
+        else:
+            straight_segments.append(line)
+    assert len(straight_segments) + len(curved_segments) == len(lines)
+    return straight_segments, curved_segments
+
+
+def get_radial_longitudinal_lines(splines):
+    # get the point pairs of all the splines (begin, end)
+    radial_lines = []
+    longitudinal_lines = []
+
+    for spl in splines:
+        _, pts = gmsh.model.getAdjacencies(1, spl)
+        _, _, z0 = gmsh.model.getValue(0, pts[0], [])
+        _, _, z1 = gmsh.model.getValue(0, pts[1], [])
+        if z0 != z1:
+            longitudinal_lines.append(spl)
+        else:
+            radial_lines.append(spl)
+    assert len(radial_lines) + len(longitudinal_lines) == len(splines)
+
+    # point_coords: dictionary with key = spline tag, value = (x0, y0, z0), (x1, y1, z1)
+    # point_coords[spl] = [(x0, y0, z0), (x1, y1, z1)]
+    return radial_lines, longitudinal_lines
 
 
 class HexMesh:
@@ -152,6 +229,7 @@ class HexMesh:
             phases=PHASES,
         )
 
+        """
         cortical_v.plot_mhd_slice()
         cortical_ext, cortical_int = cortical_v.volume_splines()
 
@@ -179,13 +257,13 @@ class HexMesh:
             cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
         cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
 
-        # np.save("cortical_ext_split.npy", cortical_ext_split)
-        # np.save("cortical_int_split.npy", cortical_int_split)
-        # np.save("cortical_int_sanity.npy", cortical_int_sanity)
-
-        # cortical_ext_split = np.load("cortical_ext_split.npy")
-        # cortical_int_split = np.load("cortical_int_split.npy")
-        # cortical_int_sanity = np.load("cortical_int_sanity.npy")
+        np.save("cortical_ext_split.npy", cortical_ext_split)
+        np.save("cortical_int_split.npy", cortical_int_split)
+        np.save("cortical_int_sanity.npy", cortical_int_sanity)
+        """
+        cortical_ext_split = np.load("cortical_ext_split.npy")
+        cortical_int_split = np.load("cortical_int_split.npy")
+        cortical_int_sanity = np.load("cortical_int_sanity.npy")
 
         gmsh.initialize()
         gmsh.clear()
@@ -295,8 +373,8 @@ class HexMesh:
 
         # *ThruSections for Cortical Slices
         gmsh.model.occ.synchronize()
-        cort_slice_surf_thrusections = []
-
+        cort_slice_thrusections_volumes = []
+        lines_before_thru = gmsh.model.getEntities(1)
         # Transpose slices_tags to loop over the 'columns' of the list
         for subset in list(zip(*slices_tags)):
             # Add ThruSections for cortical slices
@@ -307,9 +385,23 @@ class HexMesh:
                 continuity="G2",
                 tag=-1,
             )
-            cort_slice_surf_thrusections.append(thrusect)
+            cort_slice_thrusections_volumes.append(thrusect)
 
         gmsh.model.occ.synchronize()
+        cort_slice_thrusection_entities = {"surfaces": [], "lines": []}
+        for _, section in enumerate(cort_slice_thrusections_volumes):
+            thru_entities = get_surfaces_and_lines_from_volumes(section)
+            for key, value in thru_entities.items():
+                cort_slice_thrusection_entities[key].extend(value)
+
+        lines, splines = get_curvature_from_entities(
+            cort_slice_thrusection_entities["lines"]
+        )
+        # ? lines: cortical elements in transverse direction = 3
+        # ? splines: cortical elements in radial and longitudinal directions = 15 / 20 --> separate them
+        splines_radial, splines_longitudinal = get_radial_longitudinal_lines(splines)
+        print(splines_radial)
+        print(splines_longitudinal)
 
         """
         intersurface_surface_tags = mesher.add_intersurface_planes(
@@ -395,34 +487,12 @@ class HexMesh:
                 tag=-1,
             )
             trab_slice_surf_thrusections.append(thrusect)
+
         gmsh.model.occ.synchronize()
-
-        all_surfs_thrusections = []
-        all_tag_arrays = []
-        all_trab_surfs = []
+        trab_slice_thrusection_entities = []
         for i, section in enumerate(trab_slice_surf_thrusections):
-            dim, tag = section[0][0], section[0][1]
-
-            # Get the adjacencies for the current section
-            _, surfs_thrusections = gmsh.model.getAdjacencies(dim=dim, tag=tag)
-
-            all_surfs_thrusections.extend(surfs_thrusections)
-
-            adjacencies = [
-                gmsh.model.getAdjacencies(dim=2, tag=surf)
-                for surf in surfs_thrusections
-            ]
-            _tag_arrays = [adjacency[1] for adjacency in adjacencies]
-            all_tag_arrays.extend(_tag_arrays)
-
-            trab_surfs_section = np.concatenate(
-                (surfs_thrusections, trab_surfs_h), axis=None
-            )
-            all_trab_surfs.append(trab_surfs_section)
-
-        lines_thrusections = sorted(np.unique(np.concatenate(all_tag_arrays).tolist()))
-        cort_trab_lines_radial = lines_thrusections
-        cort_trab_surf = np.concatenate(all_trab_surfs, axis=None)
+            thru_entities = get_surfaces_and_lines_from_volumes(section)
+            trab_slice_thrusection_entities.append(thru_entities)
 
         """
 
@@ -506,30 +576,16 @@ class HexMesh:
             # parametrization="Centripetal",
             tag=-1,
         )
-        mesher.factory.synchronize()
 
-        _, surfs_thrusections = gmsh.model.getAdjacencies(
-            dim=thrusections_trab_surfs_h[0][0], tag=thrusections_trab_surfs_h[0][1]
-        )
-        # Assuming gmsh.model.getAdjacencies returns a list of tuples
-        adjacencies = [
-            gmsh.model.getAdjacencies(dim=2, tag=surf) for surf in surfs_thrusections
-        ]
-        _tag_arrays = [adjacency[1] for adjacency in adjacencies]
-        lines_thrusections = sorted(np.unique(np.concatenate(_tag_arrays).tolist()))
+        gmsh.model.occ.synchronize()
+        thrusections_trab_surfs_h_entities = []
+        for i, section in enumerate(thrusections_trab_surfs_h):
+            thru_entities = get_surfaces_and_lines_from_volumes(section)
+            thrusections_trab_surfs_h_entities.append(thru_entities)
 
-        trab_lines_radial = np.concatenate(
-            (lines_thrusections, cort_trab_lines_radial), axis=None
-        )
-        trab_surfs = np.concatenate((surfs_thrusections, cort_trab_surf), axis=None)
-
-        trab_slice_surf_thrusections_tags = [
-            i[0][1] for i in trab_slice_surf_thrusections
-        ]
-        trab_vols = np.concatenate(
-            (thrusections_trab_surfs_h[0][1], trab_slice_surf_thrusections_tags),
-            axis=None,
-        ).tolist()
+        # print(thrusections_trab_surfs_h_entities)
+        # print(trab_slice_thrusection_entities)
+        # print(cort_slice_thrusection_entities)
 
         trabecular_volume.meshing_transfinite(
             trab_lines_longitudinal,
@@ -559,13 +615,9 @@ class HexMesh:
         gmsh.model.occ.synchronize()
 
         # Instantiate GeometryCleaner and identify entities to remove
-        cleaner = GeometryCleaner()
-        cleaner.analyze_geometry()
-
-        # update cleaner.lines_thrusection and remove the lines that are part of the trabecular volume
-        # cleaner.lines_to_remove = np.setdiff1d(
-        #     cleaner.lines_to_remove, cleaner.lines_thrusection
-        # )
+        # cleaner = GeometryCleaner()
+        # # cleaner.analyze_geometry()
+        # cleaner.analyze_common_points()
 
         gmsh.model.occ.synchronize()
         OUTPLANE = 10
@@ -573,18 +625,35 @@ class HexMesh:
 
         # ? cleaner.lines_to_remove: cortical elements in radial direction
 
-        for line in gmsh.model.getEntities(1):
-            if line[1] in cleaner.bsplines_thrusection:
-                gmsh.model.mesh.setTransfiniteCurve(line[1], 30)
-            elif line[1] in cleaner.lines_to_remove:
-                # * OK
-                gmsh.model.mesh.setTransfiniteCurve(line[1], 4)
-            elif line[1] in cleaner.lines_thrusection:
-                gmsh.model.mesh.setTransfiniteCurve(line[1], 10)
-            else:
-                gmsh.model.mesh.setTransfiniteCurve(line[1], 10)
-        gmsh.model.occ.synchronize()
+        # for line in gmsh.model.getEntities(1):
+        #     if line[1] in cleaner.bsplines_thrusection:
+        #         gmsh.model.mesh.setTransfiniteCurve(line[1], 30)
+        #     elif line[1] in cleaner.lines_to_remove:
+        #         # * OK
+        #         gmsh.model.mesh.setTransfiniteCurve(line[1], 4)
+        #     elif line[1] in cleaner.lines_thrusection:
+        #         gmsh.model.mesh.setTransfiniteCurve(line[1], 10)
+        #     else:
+        #         gmsh.model.mesh.setTransfiniteCurve(line[1], 20)
 
+        # gmsh.model.occ.synchronize()
+        # for surface in gmsh.model.getEntities(2):
+        #     gmsh.model.mesh.setTransfiniteSurface(surface[1])
+        #     gmsh.model.mesh.setRecombine(surface[0], surface[1])
+        # for volume in gmsh.model.getEntities(3):
+        #     gmsh.model.mesh.setTransfiniteVolume(volume[1])
+        # gmsh.model.occ.synchronize()
+
+        # *ThruSections
+        gmsh.model.occ.synchronize()
+        for line in gmsh.model.getEntities(1):
+            gmsh.model.mesh.setTransfiniteCurve(line[1], 15)
+        for line in lines_before_thru:
+            if line[1] in intersurface_line_tags:
+                self.logger.info(f"Found line {line[1]} in subset")
+                gmsh.model.mesh.setTransfiniteCurve(line[1], 2)
+            else:
+                pass
         for surface in gmsh.model.getEntities(2):
             gmsh.model.mesh.setTransfiniteSurface(surface[1])
             gmsh.model.mesh.setRecombine(surface[0], surface[1])
@@ -592,23 +661,6 @@ class HexMesh:
             gmsh.model.mesh.setTransfiniteVolume(volume[1])
         gmsh.model.occ.synchronize()
         gmsh.model.mesh.generate(3)
-
-        """
-        # *ThruSections
-        gmsh.model.occ.synchronize()
-        for line in gmsh.model.getEntities(1):
-            if line[1] in intersurface_line_tags:
-                self.logger.info(f"Found line {line[1]} in subset")
-                gmsh.model.mesh.setTransfiniteCurve(line[1], 2)
-            else:
-                gmsh.model.mesh.setTransfiniteCurve(line[1], 15)
-        for surface in gmsh.model.getEntities(2):
-            gmsh.model.mesh.setTransfiniteSurface(surface[1])
-            gmsh.model.mesh.setRecombine(surface[0], surface[1])
-        for volume in gmsh.model.getEntities(3):
-            gmsh.model.mesh.setTransfiniteVolume(volume[1])
-        gmsh.model.occ.synchronize()
-        """
 
         # *ThruSections
         cort_volume_tags = []

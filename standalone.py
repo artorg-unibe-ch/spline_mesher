@@ -46,7 +46,7 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 100,  # smoothing factor of the spline
+        "s": 50,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 350,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
@@ -69,12 +69,11 @@ def main():
     #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/01_AIM/C0003094/C0003094_CORT_MASK_UNCOMP.npy"
     # )
 
-    # sitk_image_s = sitk_image_s[:, :, 35:-35]
-    # print(sitk_image_s.GetSize())
-
     sitk_image_s = sitk.ReadImage(
-        "99_testing_prototyping/repro_sim_errors/C0001417_CORTMASK.mhd"
+        "/home/simoneponcioni/Documents/01_PHD/04_Output-Reports-Presentations-Publications/HFE-RESULTS/repro-results-ubelix/sim_errors/C0001609_CORTMASK.mhd"
     )
+
+    sitk_image_s = sitk_image_s[:, :, :-25]
     print(sitk_image_s.GetSize())
 
     mesh = HexMesh(
