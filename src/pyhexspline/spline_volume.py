@@ -226,8 +226,8 @@ class OCC_volume:
             https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/
             https://doi.org/10.1016/0167-8655(82)90016-2
         """
-        # eps = 0.001
-        eps = 0.015
+        eps = 0.001
+        # eps = 0.015
         if loc == "outer":
             _contours, hierarchy = cv2.findContours(
                 img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -320,6 +320,9 @@ class OCC_volume:
             image = self.sitk_image
             image = sitk.PermuteAxes(image, [2, 0, 1])
             image.SetSpacing(self.sitk_image.GetSpacing())
+
+        # Subsample the image for faster processing
+        image = sitk.Shrink(image, [1, self.UNDERSAMPLING, self.UNDERSAMPLING])
 
         image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
 
