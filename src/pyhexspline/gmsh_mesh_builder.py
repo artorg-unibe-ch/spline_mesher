@@ -632,11 +632,10 @@ class Mesher:
 
         for surface in surface_tags:
             self.model.mesh.setTransfiniteSurface(surface)
+            self.model.mesh.setRecombine(2, surface)
 
         for volume in volume_tags:
             self.model.mesh.setTransfiniteVolume(volume)
-
-        self.model.mesh.setRecombine(2, 1)
 
     def add_volume(
         self,
@@ -954,26 +953,13 @@ class Mesher:
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         self.option.setNumber("Mesh.Recombine3DLevel", 1)
         self.option.setNumber("Mesh.ElementOrder", element_order)
-        # self.option.setNumber("Mesh.Smoothing", 1000000)
-        self.option.setNumber("Mesh.Smoothing", 100)
-
-        for dim in (1, 2, 3):
-            for s in self.model.getEntities(dim):
-                self.model.mesh.setRecombine(s[0], s[1])
-                # self.model.mesh.setSmoothing(s[0], s[1], 1000000)
-                self.model.mesh.setSmoothing(s[0], s[1], 100)
-
-            for s in self.model.getEntities(dim):
-                self.model.mesh.setRecombine(s[0], s[1])
-                # self.model.mesh.setSmoothing(s[0], s[1], 1000000)
-                self.model.mesh.setSmoothing(s[0], s[1], 100)
-
-            for s in self.model.getEntities(dim):
-                self.model.mesh.setRecombine(s[0], s[1])
-                # self.model.mesh.setSmoothing(s[0], s[1], 1000000)
-                self.model.mesh.setSmoothing(s[0], s[1], 100)
+        self.option.setNumber("Mesh.Smoothing", 100000)
 
         self.model.mesh.generate(dim)
+        self.model.mesh.removeDuplicateNodes()
+        self.model.mesh.removeDuplicateElements()
+        self.model.occ.synchronize()
+        return None
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:
         self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)

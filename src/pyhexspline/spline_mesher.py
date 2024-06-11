@@ -229,7 +229,6 @@ class HexMesh:
             phases=PHASES,
         )
 
-        """
         cortical_v.plot_mhd_slice()
         cortical_ext, cortical_int = cortical_v.volume_splines()
 
@@ -260,10 +259,9 @@ class HexMesh:
         np.save("cortical_ext_split.npy", cortical_ext_split)
         np.save("cortical_int_split.npy", cortical_int_split)
         np.save("cortical_int_sanity.npy", cortical_int_sanity)
-        """
-        cortical_ext_split = np.load("cortical_ext_split.npy")
-        cortical_int_split = np.load("cortical_int_split.npy")
-        cortical_int_sanity = np.load("cortical_int_sanity.npy")
+        # cortical_ext_split = np.load("cortical_ext_split.npy")
+        # cortical_int_split = np.load("cortical_int_split.npy")
+        # cortical_int_sanity = np.load("cortical_int_sanity.npy")
 
         gmsh.initialize()
         gmsh.clear()
@@ -383,6 +381,7 @@ class HexMesh:
                 maxDegree=2,
                 makeSolid=True,
                 continuity="G2",
+                parametrization="IsoParametric",
                 tag=-1,
             )
             cort_slice_thrusections_volumes.append(thrusect)
@@ -394,14 +393,29 @@ class HexMesh:
             for key, value in thru_entities.items():
                 cort_slice_thrusection_entities[key].extend(value)
 
-        lines, splines = get_curvature_from_entities(
+        cort_lines, splines = get_curvature_from_entities(
             cort_slice_thrusection_entities["lines"]
         )
         # ? lines: cortical elements in transverse direction = 3
         # ? splines: cortical elements in radial and longitudinal directions = 15 / 20 --> separate them
-        splines_radial, splines_longitudinal = get_radial_longitudinal_lines(splines)
-        print(splines_radial)
-        print(splines_longitudinal)
+        cort_splines_radial, cort_splines_longitudinal = get_radial_longitudinal_lines(
+            splines
+        )
+
+        # make intersurface_line_tags a list of integers
+        intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
+        cort_lines.extend(intersurface_line_tags)
+
+        transverse_lines = []
+        radial_lines = cort_splines_radial
+        longitudinal_lines = cort_splines_longitudinal
+
+        # TODO: validate this:
+        radial_lines.extend(cortical_ext_bspline)
+        radial_lines.extend(cortical_int_bspline)
+
+        # intersurface_line_tags = intersurface_line_tags.astype(int).tolist()
+        # radial_lines.extend(intersurface_line_tags)
 
         """
         intersurface_surface_tags = mesher.add_intersurface_planes(
@@ -431,8 +445,8 @@ class HexMesh:
         )
         """
 
-        # TODO: check if could be implemented when created (relationship with above functions)
-        intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
+        # # TODO: check if could be implemented when created (relationship with above functions)
+        # intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
 
         # Trabecular meshing
         trabecular_volume = TrabecularVolume(
@@ -484,15 +498,38 @@ class HexMesh:
                 maxDegree=2,
                 makeSolid=True,
                 continuity="G2",
+                parametrization="IsoParametric",
                 tag=-1,
             )
             trab_slice_surf_thrusections.append(thrusect)
 
+        # gmsh.model.occ.synchronize()
+        # trab_slice_thrusection_entities = []
+        # for i, section in enumerate(trab_slice_surf_thrusections):
+        #     thru_entities = get_surfaces_and_lines_from_volumes(section)
+        #     trab_slice_thrusection_entities.append(thru_entities)
+
         gmsh.model.occ.synchronize()
-        trab_slice_thrusection_entities = []
-        for i, section in enumerate(trab_slice_surf_thrusections):
+        trab_slice_thrusection_entities = {"surfaces": [], "lines": []}
+        for _, section in enumerate(trab_slice_surf_thrusections):
             thru_entities = get_surfaces_and_lines_from_volumes(section)
-            trab_slice_thrusection_entities.append(thru_entities)
+            for key, value in thru_entities.items():
+                trab_slice_thrusection_entities[key].extend(value)
+
+        trab_lines, trab_splines = get_curvature_from_entities(
+            trab_slice_thrusection_entities["lines"]
+        )
+
+        trab_splines_radial, trab_splines_longitudinal = get_radial_longitudinal_lines(
+            trab_splines
+        )
+
+        # TODO validate this:
+        transverse_lines.extend(trab_lines)
+        radial_lines.extend(trab_line_tags_h)
+        radial_lines.extend(trab_splines_radial)
+        longitudinal_lines.extend(trab_cort_line_tags)
+        longitudinal_lines.extend(trab_splines_longitudinal)
 
         """
 
@@ -573,15 +610,29 @@ class HexMesh:
             maxDegree=2,
             makeSolid=True,
             continuity="G2",
-            # parametrization="Centripetal",
+            parametrization="IsoParametric",
             tag=-1,
         )
 
         gmsh.model.occ.synchronize()
-        thrusections_trab_surfs_h_entities = []
-        for i, section in enumerate(thrusections_trab_surfs_h):
+        thrusections_trab_surfs_h_entities = {"surfaces": [], "lines": []}
+        for _, section in enumerate(thrusections_trab_surfs_h):
             thru_entities = get_surfaces_and_lines_from_volumes(section)
-            thrusections_trab_surfs_h_entities.append(thru_entities)
+            for key, value in thru_entities.items():
+                thrusections_trab_surfs_h_entities[key].extend(value)
+
+        trab_h_lines, trab_h_splines = get_curvature_from_entities(
+            thrusections_trab_surfs_h_entities["lines"]
+        )
+
+        trab_h_splines_radial, trab_h_splines_longitudinal = (
+            get_radial_longitudinal_lines(trab_h_splines)
+        )
+
+        # transverse_lines.extend(trab_h_lines)
+        radial_lines.extend(trab_h_splines_radial)
+        radial_lines.extend(trab_h_lines)
+        longitudinal_lines.extend(trab_h_splines_longitudinal)
 
         # print(thrusections_trab_surfs_h_entities)
         # print(trab_slice_thrusection_entities)
@@ -612,55 +663,40 @@ class HexMesh:
             3, trab_vol_tags, name="Trabecular_Compartment"
         )
 
-        gmsh.model.occ.synchronize()
-
+        # gmsh.model.occ.synchronize()
         # Instantiate GeometryCleaner and identify entities to remove
         # cleaner = GeometryCleaner()
         # # cleaner.analyze_geometry()
         # cleaner.analyze_common_points()
 
+        ######################################################################
+        # TRANSFINITE CURVES - LONGITUDINAL, CORTICAL, TRANSVERSE, RADIAL
+
+        LONGITUDINAL = 30
+        CORT = 3
+        TRANSVERSE = 15
+        RADIAL = 20
+
         gmsh.model.occ.synchronize()
-        OUTPLANE = 10
-        INPLANE = 10
+        for line in longitudinal_lines:
+            mesher.model.mesh.setTransfiniteCurve(line, LONGITUDINAL)
+        for line in cort_lines:
+            mesher.model.mesh.setTransfiniteCurve(line, CORT)
+        for line in transverse_lines:
+            mesher.model.mesh.setTransfiniteCurve(line, TRANSVERSE)
+        for line in radial_lines:
+            mesher.model.mesh.setTransfiniteCurve(line, RADIAL)
 
-        # ? cleaner.lines_to_remove: cortical elements in radial direction
-
-        # for line in gmsh.model.getEntities(1):
-        #     if line[1] in cleaner.bsplines_thrusection:
-        #         gmsh.model.mesh.setTransfiniteCurve(line[1], 30)
-        #     elif line[1] in cleaner.lines_to_remove:
-        #         # * OK
-        #         gmsh.model.mesh.setTransfiniteCurve(line[1], 4)
-        #     elif line[1] in cleaner.lines_thrusection:
-        #         gmsh.model.mesh.setTransfiniteCurve(line[1], 10)
-        #     else:
-        #         gmsh.model.mesh.setTransfiniteCurve(line[1], 20)
-
-        # gmsh.model.occ.synchronize()
-        # for surface in gmsh.model.getEntities(2):
-        #     gmsh.model.mesh.setTransfiniteSurface(surface[1])
-        #     gmsh.model.mesh.setRecombine(surface[0], surface[1])
-        # for volume in gmsh.model.getEntities(3):
-        #     gmsh.model.mesh.setTransfiniteVolume(volume[1])
-        # gmsh.model.occ.synchronize()
-
-        # *ThruSections
         gmsh.model.occ.synchronize()
-        for line in gmsh.model.getEntities(1):
-            gmsh.model.mesh.setTransfiniteCurve(line[1], 15)
-        for line in lines_before_thru:
-            if line[1] in intersurface_line_tags:
-                self.logger.info(f"Found line {line[1]} in subset")
-                gmsh.model.mesh.setTransfiniteCurve(line[1], 2)
-            else:
-                pass
-        for surface in gmsh.model.getEntities(2):
-            gmsh.model.mesh.setTransfiniteSurface(surface[1])
-            gmsh.model.mesh.setRecombine(surface[0], surface[1])
-        for volume in gmsh.model.getEntities(3):
-            gmsh.model.mesh.setTransfiniteVolume(volume[1])
+        for surf in gmsh.model.getEntities(2):
+            mesher.model.mesh.setTransfiniteSurface(surf[1])
+            mesher.model.geo.mesh.setRecombine(2, surf[1])
+            mesher.model.mesh.setSmoothing(surf[0], surf[1], 100000)
+        for vol in gmsh.model.getEntities(3):
+            mesher.model.mesh.setTransfiniteVolume(vol[1])
         gmsh.model.occ.synchronize()
-        gmsh.model.mesh.generate(3)
+        mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
+        ######################################################################
 
         # *ThruSections
         cort_volume_tags = []
@@ -674,7 +710,18 @@ class HexMesh:
         #     f"Cortical physical group: {cort_physical_group}\nTrabecular physical group: {trab_physical_group}"
         # )
         # cort_longitudinal_lines = intersection_line_tags
+        cort_longitudinal_lines = []
         cort_transverse_lines = intersurface_line_tags
+        cortical_bspline_tags = np.append(cortical_ext_bspline, cortical_int_bspline)
+        cort_surfs = np.concatenate(
+            (
+                cortical_ext_surfs,
+                cortical_int_surfs,
+                slices_tags,
+            ),
+            axis=None,
+        )
+
         # mesher.meshing_transfinite(
         #     cort_longitudinal_lines,
         #     cort_transverse_lines,
@@ -687,23 +734,18 @@ class HexMesh:
 
         # tot_vol_tags = [cort_vol_tags, trab_vol_tags]
         # mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
-        mesher.model.mesh.removeDuplicateNodes()
-        mesher.model.mesh.removeDuplicateElements()
-        mesher.model.occ.synchronize()
-        """
-        # *ThruSections
-        mesher.logger.info("Optimising mesh")
-        if ELM_ORDER == 1:
-            mesher.model.mesh.optimize(method="HighOrderElastic", force=True)
-            pass
-        elif ELM_ORDER > 1:
-            mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
+        # mesher.logger.info("Optimising mesh")
+        # if ELM_ORDER == 1:
+        #     mesher.model.mesh.optimize(method="HighOrderElastic", force=True)
+        #     pass
+        # elif ELM_ORDER > 1:
+        #     mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
 
-        """
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
             JAC_NEG = -0.01
             mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
+
         """
         nodes = mesher.gmsh_get_nodes()
         elms = mesher.gmsh_get_elms()
@@ -780,53 +822,6 @@ class HexMesh:
         elapsed = round(end - start, ndigits=1)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
-
-        # with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
-        #     nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
-        #     elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
-        #     centroids_pkl = pickle.dump(
-        #         centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
-        #     )
-
-        # with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
-        #     centroids_pkl = pickle.dump(
-        #         centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
-        #     )
-
-        # with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
-        #     bnds_bot_pkl = pickle.dump(
-        #         bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
-        #     )
-
-        # with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
-        #     bnds_top_pkl = pickle.dump(
-        #         bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
-        #     )
-
-        # botpath = f"{mesh_file_path}_spline_botnodes.pickle"
-        # with open(botpath, "wb") as f:
-        #     pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # toppath = f"{mesh_file_path}_spline_topnodes.pickle"
-        # with open(toppath, "wb") as f:
-        #     pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
-        # with open(cort_dict, "wb") as f:
-        #     pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
-        # with open(trab_dict, "wb") as f:
-        #     pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
-        # np.save(cort_elm_vol_path, elm_vol_cort)
-        # trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
-        # np.save(trab_elm_vol_path, elm_vol_trab)
 
         return (
             nodes,
