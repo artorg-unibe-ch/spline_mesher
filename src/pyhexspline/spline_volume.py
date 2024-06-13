@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import List, Tuple
 
 import cv2
 import gmsh
@@ -15,10 +16,9 @@ import scipy.spatial as ss
 import SimpleITK as sitk
 from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from numpy import ndarray
 from scipy.interpolate import splev, splprep
 from SimpleITK.SimpleITK import Image
-from numpy import ndarray
-from typing import List, Tuple
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
@@ -772,12 +772,33 @@ class OCC_volume:
         a0 = a[-1].reshape(1, -1)  # add the final point and concatenate
         return np.concatenate((*pnts, a0), axis=0)
 
+    def generate_decreasing_step_series(self, start, stop, initial_step):
+        series = [start]
+        current = start
+        step = initial_step
+
+        while current + step < stop:
+            current += step
+            series.append(current)
+            step /= 2
+
+        return np.array(series, dtype=int)
+
     def volume_splines(self) -> Tuple[ndarray, ndarray]:
         contour_ext_fig, contour_int_fig = self.binary_threshold(img_path=self.img_path)
 
         self.slice_index = np.linspace(
             1, len(contour_ext_fig[0, 0, :]) - 1, self.SLICING_COEFFICIENT, dtype=int
         )
+
+        # self.slice_index = np.geomspace(
+        #     1,
+        #     len(contour_ext_fig[0, 0, :]) - 1,
+        #     num=self.SLICING_COEFFICIENT,
+        #     dtype=int,
+        # )
+
+        # self.slice_index = self.generate_decreasing_step_series(1, len(contour_ext_fig[0, 0, :]) - 1, self.SLICING_COEFFICIENT)
 
         if self.show_plots is True:
             fig = go.Figure(layout=self.layout)

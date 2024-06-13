@@ -14,19 +14,39 @@ from itertools import chain
 from pathlib import Path
 
 import gmsh
+import matplotlib.pyplot as plt
 import numpy as np
 import plotly.io as pio
 from pyhexspline import cortical_sanity as csc
+from pyhexspline.geometry_cleaner import GeometryCleaner
 from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
 from pyhexspline.quad_refinement import QuadRefinement
 from pyhexspline.spline_volume import OCC_volume
-from pyhexspline.geometry_cleaner import GeometryCleaner
-import matplotlib.pyplot as plt
-
 
 pio.renderers.default = "browser"
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E402
+
+
+def delete_unused_entities(arr: list):
+    # make sure that the values inside the list are integers
+    gmsh.model.occ.synchronize()
+    lines_before = gmsh.model.occ.getEntities(1)
+    arr = np.array(arr, dtype=int).tolist()
+    surfs_to_delete = []
+    for ll in arr:
+        surf, _ = gmsh.model.getAdjacencies(1, ll)
+        surfs_to_delete.extend(surf)
+        gmsh.model.occ.synchronize()
+    surfs_to_delete = set(surfs_to_delete)
+    for ss in surfs_to_delete:
+        gmsh.model.occ.remove([(2, ss)])
+    for ll in arr:
+        gmsh.model.occ.remove([(1, ll)])
+    gmsh.model.occ.synchronize()
+    lines_after = gmsh.model.occ.getEntities(1)
+    print(f"Deleted {len(lines_before) - len(lines_after)} entities")
+    return None
 
 
 def get_surfaces_and_lines_from_volumes(volume):
@@ -228,7 +248,6 @@ class HexMesh:
             thickness_tol=THICKNESS_TOL,
             phases=PHASES,
         )
-
         cortical_v.plot_mhd_slice()
         cortical_ext, cortical_int = cortical_v.volume_splines()
 
@@ -256,9 +275,10 @@ class HexMesh:
             cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
         cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
 
-        np.save("cortical_ext_split.npy", cortical_ext_split)
-        np.save("cortical_int_split.npy", cortical_int_split)
-        np.save("cortical_int_sanity.npy", cortical_int_sanity)
+        # np.save("cortical_ext_split.npy", cortical_ext_split)
+        # np.save("cortical_int_split.npy", cortical_int_split)
+        # np.save("cortical_int_sanity.npy", cortical_int_sanity)
+
         # cortical_ext_split = np.load("cortical_ext_split.npy")
         # cortical_int_split = np.load("cortical_int_split.npy")
         # cortical_int_sanity = np.load("cortical_int_sanity.npy")
@@ -376,12 +396,11 @@ class HexMesh:
         # Transpose slices_tags to loop over the 'columns' of the list
         for subset in list(zip(*slices_tags)):
             # Add ThruSections for cortical slices
-            thrusect = mesher.factory.addThruSections(
+            thrusect = gmsh.model.occ.addThruSections(
                 subset,
                 maxDegree=2,
                 makeSolid=True,
                 continuity="G2",
-                parametrization="IsoParametric",
                 tag=-1,
             )
             cort_slice_thrusections_volumes.append(thrusect)
@@ -403,16 +422,19 @@ class HexMesh:
         )
 
         # make intersurface_line_tags a list of integers
-        intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
-        cort_lines.extend(intersurface_line_tags)
+        # intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
+        # cort_lines.extend(intersurface_line_tags)
+        delete_unused_entities(intersurface_line_tags)
 
         transverse_lines = []
-        radial_lines = cort_splines_radial
+        radial_lines = []
+        radial_lines.extend(cort_splines_radial)
         longitudinal_lines = cort_splines_longitudinal
 
         # TODO: validate this:
-        radial_lines.extend(cortical_ext_bspline)
-        radial_lines.extend(cortical_int_bspline)
+        # radial_lines.extend(cortical_ext_bspline)
+        # radial_lines.extend(cortical_int_bspline)
+        # delete_unused_entities(cortical_ext_bspline)
 
         # intersurface_line_tags = intersurface_line_tags.astype(int).tolist()
         # radial_lines.extend(intersurface_line_tags)
@@ -493,12 +515,11 @@ class HexMesh:
         trab_slice_surf_thrusections = []
         # transpose it so that you loop over the 'columns' of the list
         for subset in list(zip(*trabecular_slice_curve_loop_tags)):
-            thrusect = mesher.factory.addThruSections(
+            thrusect = gmsh.model.occ.addThruSections(
                 subset,
                 maxDegree=2,
                 makeSolid=True,
                 continuity="G2",
-                parametrization="IsoParametric",
                 tag=-1,
             )
             trab_slice_surf_thrusections.append(thrusect)
@@ -526,9 +547,11 @@ class HexMesh:
 
         # TODO validate this:
         transverse_lines.extend(trab_lines)
-        radial_lines.extend(trab_line_tags_h)
+        # radial_lines.extend(trab_line_tags_h)
+        delete_unused_entities(trab_line_tags_h)
         radial_lines.extend(trab_splines_radial)
-        longitudinal_lines.extend(trab_cort_line_tags)
+        # longitudinal_lines.extend(trab_cort_line_tags)
+        delete_unused_entities(trab_cort_line_tags)
         longitudinal_lines.extend(trab_splines_longitudinal)
 
         """
@@ -603,14 +626,17 @@ class HexMesh:
             (trab_cort_line_tags, cortical_int_bspline), axis=None
         )
         trab_lines_radial = trab_line_tags_h
+        delete_unused_entities(cortical_ext_bspline)
+        delete_unused_entities(cortical_int_bspline)
 
         mesher.factory.synchronize()
-        thrusections_trab_surfs_h = trabecular_volume.factory.addThruSections(
+        thrusections_trab_surfs_h = gmsh.model.occ.addThruSections(
             trab_curveloop_h,
             maxDegree=2,
             makeSolid=True,
             continuity="G2",
-            parametrization="IsoParametric",
+            # parametrization="IsoParametric",
+            # smoothing=True,
             tag=-1,
         )
 
@@ -638,14 +664,14 @@ class HexMesh:
         # print(trab_slice_thrusection_entities)
         # print(cort_slice_thrusection_entities)
 
-        trabecular_volume.meshing_transfinite(
-            trab_lines_longitudinal,
-            trab_lines_transverse,
-            trab_lines_radial,
-            trab_surfs,
-            trab_vols,
-            phase="trab",
-        )
+        # trabecular_volume.meshing_transfinite(
+        #     trab_lines_longitudinal,
+        #     trab_lines_transverse,
+        #     trab_lines_radial,
+        #     trab_surfs,
+        #     trab_vols,
+        #     phase="trab",
+        # )
 
         # * physical groups
         mesher.factory.synchronize()
@@ -672,10 +698,10 @@ class HexMesh:
         ######################################################################
         # TRANSFINITE CURVES - LONGITUDINAL, CORTICAL, TRANSVERSE, RADIAL
 
-        LONGITUDINAL = 30
+        LONGITUDINAL = 40
         CORT = 3
         TRANSVERSE = 15
-        RADIAL = 20
+        RADIAL = 40
 
         gmsh.model.occ.synchronize()
         for line in longitudinal_lines:
@@ -736,7 +762,8 @@ class HexMesh:
         # mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
         # mesher.logger.info("Optimising mesh")
         # if ELM_ORDER == 1:
-        #     mesher.model.mesh.optimize(method="HighOrderElastic", force=True)
+        #     mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
+        #     # mesher.model.mesh.optimize(method="HighOrderFastCurving", force=True)
         #     pass
         # elif ELM_ORDER > 1:
         #     mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)

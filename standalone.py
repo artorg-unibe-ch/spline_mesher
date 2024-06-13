@@ -46,9 +46,9 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 100,  # smoothing factor of the spline
+        "s": 5,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
-        "interp_points": 350,  # number of points to interpolate the spline
+        "interp_points": 500,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
@@ -70,10 +70,10 @@ def main():
     # )
 
     sitk_image_s = sitk.ReadImage(
-        "/home/simoneponcioni/Documents/01_PHD/04_Output-Reports-Presentations-Publications/HFE-RESULTS/repro-results-ubelix/sim_errors/C0001643_CORTMASK.mhd"
+        "99_testing_prototyping/repro_sim_errors/C0001643_CORTMASK.mhd"
     )
 
-    sitk_image_s = sitk_image_s[:, :, :-10]
+    sitk_image_s = sitk_image_s[:, :, :-20]
     print(sitk_image_s.GetSize())
 
     mesh = HexMesh(
