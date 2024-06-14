@@ -226,7 +226,7 @@ class OCC_volume:
             https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/
             https://doi.org/10.1016/0167-8655(82)90016-2
         """
-        eps = 0.005
+        eps = 0.0035
         # eps = 0.015
         if loc == "outer":
             _contours, hierarchy = cv2.findContours(

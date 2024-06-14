@@ -41,24 +41,24 @@ def main():
         "aspect": 100,  # aspect ratio of the plots
         "_slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 5,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 10,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
         "s": 5,  # smoothing factor of the spline
-        "k": 3,  # degree of the spline
+        "k": 2,  # degree of the spline
         "interp_points": 500,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
         "mesh_order": 1,  # set element order (1: linear, 2: quadratic, >2: higher order, not tested)
-        "n_elms_longitudinal": 5,  # number of elements in the longitudinal direction
-        "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
+        "n_elms_longitudinal": 60,  # number of elements in the longitudinal direction
+        "n_elms_transverse_trab": 15,  # number of elements in the transverse direction for the trabecular compartment
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 20,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
-        "show_plots": False,  # show plots during construction
+        "show_plots": True,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
         "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
@@ -69,11 +69,15 @@ def main():
     #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/01_AIM/C0003094/C0003094_CORT_MASK_UNCOMP.npy"
     # )
 
+    # sitk_image_s = sitk.ReadImage(
+    #     "99_testing_prototyping/repro_sim_errors/C0001643_CORTMASK.mhd"
+    # )
+
     sitk_image_s = sitk.ReadImage(
-        "99_testing_prototyping/repro_sim_errors/C0001643_CORTMASK.mhd"
+        "/home/simoneponcioni/Desktop/repro-to-remesh/1810/C0001810_CORTMASK.mhd"
     )
 
-    sitk_image_s = sitk_image_s[:, :, :-20]
+    sitk_image_s = sitk_image_s[:, :, :]
     print(sitk_image_s.GetSize())
 
     mesh = HexMesh(

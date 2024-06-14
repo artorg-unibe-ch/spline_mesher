@@ -28,24 +28,51 @@ LOGGING_NAME = "MESHING"
 # flake8: noqa: E402
 
 
-def delete_unused_entities(arr: list):
+def make_thrusection_compound(thrusection_volumes):
+    cort_slice_thrusections_compound_surfs = []
+    for subvol in thrusection_volumes:
+        _, surf_cortvol = gmsh.model.getAdjacencies(3, subvol[0][1])
+        cort_slice_thrusections_compound_surfs.append(surf_cortvol)
+
+    for surf in list(zip(*cort_slice_thrusections_compound_surfs)):
+        print(surf)
+        gmsh.model.mesh.setCompound(2, surf)
+
+    compound_volumes = []
+    for subvol in thrusection_volumes:
+        compound_volumes.append(subvol[0][1])
+
+    gmsh.model.mesh.setCompound(3, compound_volumes)
+    gmsh.model.occ.synchronize()
+    return None
+
+
+def delete_unused_entities(dim, arr: list):
     # make sure that the values inside the list are integers
     gmsh.model.occ.synchronize()
     lines_before = gmsh.model.occ.getEntities(1)
     arr = np.array(arr, dtype=int).tolist()
     surfs_to_delete = []
-    for ll in arr:
-        surf, _ = gmsh.model.getAdjacencies(1, ll)
-        surfs_to_delete.extend(surf)
+    if dim == 1:
+        for ll in arr:
+            surf, _ = gmsh.model.getAdjacencies(1, ll)
+            surfs_to_delete.extend(surf)
+            gmsh.model.occ.synchronize()
+            surfs_to_delete = set(surfs_to_delete)
+        for ss in surfs_to_delete:
+            gmsh.model.occ.remove([(2, ss)])
+        for ll in arr:
+            gmsh.model.occ.remove([(1, ll)])
         gmsh.model.occ.synchronize()
-    surfs_to_delete = set(surfs_to_delete)
-    for ss in surfs_to_delete:
-        gmsh.model.occ.remove([(2, ss)])
-    for ll in arr:
-        gmsh.model.occ.remove([(1, ll)])
-    gmsh.model.occ.synchronize()
-    lines_after = gmsh.model.occ.getEntities(1)
-    print(f"Deleted {len(lines_before) - len(lines_after)} entities")
+        lines_after = gmsh.model.occ.getEntities(1)
+        print(f"Deleted {len(lines_before) - len(lines_after)} entities")
+
+    elif dim == 2:
+        surfs_before = gmsh.model.occ.getEntities(2)
+        for ss in arr:
+            gmsh.model.occ.remove([(2, ss)])
+        surfs_after = gmsh.model.occ.getEntities(2)
+        print(f"Deleted {len(surfs_before) - len(surfs_after)} entities")
     return None
 
 
@@ -248,6 +275,7 @@ class HexMesh:
             thickness_tol=THICKNESS_TOL,
             phases=PHASES,
         )
+
         cortical_v.plot_mhd_slice()
         cortical_ext, cortical_int = cortical_v.volume_splines()
 
@@ -275,9 +303,9 @@ class HexMesh:
             cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
         cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
 
-        # np.save("cortical_ext_split.npy", cortical_ext_split)
-        # np.save("cortical_int_split.npy", cortical_int_split)
-        # np.save("cortical_int_sanity.npy", cortical_int_sanity)
+        np.save("cortical_ext_split.npy", cortical_ext_split)
+        np.save("cortical_int_split.npy", cortical_int_split)
+        np.save("cortical_int_sanity.npy", cortical_int_sanity)
 
         # cortical_ext_split = np.load("cortical_ext_split.npy")
         # cortical_int_split = np.load("cortical_int_split.npy")
@@ -322,28 +350,6 @@ class HexMesh:
         intersections_int = np.zeros((len(cortical_ext_split), 2, 2, 3), dtype=float)
 
         for i, _ in enumerate(cortical_ext_split):
-            """
-            # Ensure that cortical_ext_split[i] is unique and closed
-            unique_ext, idx_ext = np.unique(
-                cortical_ext_split[i], axis=0, return_index=True
-            )
-            if not np.allclose(unique_ext[0], unique_ext[-1]):
-                idx_ext[-1] = idx_ext[0]
-                cortical_ext_split[i] = unique_ext[np.argsort(idx_ext)]
-            else:
-                cortical_ext_split[i] = unique_ext
-
-            # Ensure that cortical_int_sanity_split[i] is unique and closed
-            unique_int, idx_int = np.unique(
-                cortical_int_sanity_split[i], axis=0, return_index=True
-            )
-            if not np.allclose(unique_int[0], unique_int[-1]):
-                idx_int[-1] = idx_int[0]
-                cortical_int_sanity_split[i] = unique_int[np.argsort(idx_int)]
-            else:
-                cortical_int_sanity_split[i] = unique_int
-            """
-
             cortex_centroid[i][:-1] = mesher.polygon_tensor_of_inertia(
                 cortical_ext_split[i],
                 cortical_int_sanity_split[i],
@@ -369,6 +375,12 @@ class HexMesh:
 
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
+
+        np.save("cortical_ext_msh.npy", cortical_ext_msh)
+        np.save("cortical_int_msh.npy", cortical_int_msh)
+        np.save("idx_list_ext.npy", idx_list_ext)
+        np.save("idx_list_int.npy", idx_list_int)
+
         (
             indices_coi_ext,
             cortical_ext_bspline,
@@ -389,10 +401,15 @@ class HexMesh:
             cortical_ext_bspline, cortical_int_bspline, intersurface_line_tags
         )
 
+        # delete all surfaces
+        # surfs before deletion
+        surfs_before = gmsh.model.getEntities(2)
+        delete_unused_entities(2, surfs_before)
+        surfs_after = gmsh.model.getEntities(2)
+        print(f"Deleted {len(surfs_before) - len(surfs_after)} surfaces")
         # *ThruSections for Cortical Slices
         gmsh.model.occ.synchronize()
         cort_slice_thrusections_volumes = []
-        lines_before_thru = gmsh.model.getEntities(1)
         # Transpose slices_tags to loop over the 'columns' of the list
         for subset in list(zip(*slices_tags)):
             # Add ThruSections for cortical slices
@@ -424,425 +441,55 @@ class HexMesh:
         # make intersurface_line_tags a list of integers
         # intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
         # cort_lines.extend(intersurface_line_tags)
-        delete_unused_entities(intersurface_line_tags)
+        # TODO: delete all entities that are not created by ThruSections
+        # get ThruSection entities
+        all_line_entities = gmsh.model.getEntities(1)
+
+        # only keep tag
+        all_line_entities = [line[1] for line in all_line_entities]
+        lines_to_delete = [
+            line for line in all_line_entities if line not in thru_entities["lines"]
+        ]
+
+        # delete_unused_entities(intersurface_line_tags)
+        [gmsh.model.occ.remove([(1, line)]) for line in lines_to_delete]
 
         transverse_lines = []
         radial_lines = []
         radial_lines.extend(cort_splines_radial)
         longitudinal_lines = cort_splines_longitudinal
 
-        # TODO: validate this:
-        # radial_lines.extend(cortical_ext_bspline)
-        # radial_lines.extend(cortical_int_bspline)
-        # delete_unused_entities(cortical_ext_bspline)
-
-        # intersurface_line_tags = intersurface_line_tags.astype(int).tolist()
-        # radial_lines.extend(intersurface_line_tags)
-
-        """
-        intersurface_surface_tags = mesher.add_intersurface_planes(
-            intersurface_line_tags,
-            intersection_line_tags_ext,
-            intersection_line_tags_int,
-        )
-
-        intersection_line_tags = np.append(
-            intersection_line_tags_ext, intersection_line_tags_int
-        )
-        cortical_bspline_tags = np.append(cortical_ext_bspline, cortical_int_bspline)
-        cort_surfs = np.concatenate(
-            (
-                cortical_ext_surfs,
-                cortical_int_surfs,
-                slices_tags,
-                intersurface_surface_tags,
-            ),
-            axis=None,
-        )
-        cort_vol_tags = mesher.add_volume(
-            cortical_ext_surfs,
-            cortical_int_surfs,
-            slices_tags,
-            intersurface_surface_tags,
-        )
-        """
-
-        # # TODO: check if could be implemented when created (relationship with above functions)
-        # intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
-
-        # Trabecular meshing
-        trabecular_volume = TrabecularVolume(
-            geo_unrolled_filename,
-            mesh_file_path,
-            slicing_coefficient=cortical_v.SLICING_COEFFICIENT,
-            n_longitudinal=N_LONGITUDINAL,
-            n_transverse_cort=N_TRANSVERSE_CORT,
-            n_transverse_trab=N_TRANSVERSE_TRAB,
-            n_radial=N_RADIAL,
-            QUAD_REFINEMENT=QUAD_REFINEMENT,
-            ellipsoid_fitting=ELLIPSOID_FITTING,
-        )
-
-        trabecular_volume.set_length_factor(
-            float(self.settings_dict["center_square_length_factor"])
-        )
-
-        (
-            trab_point_tags,
-            trab_line_tags_v,
-            trab_line_tags_h,
-            trab_surfs_v,
-            trab_surfs_h,
-            trab_vols,
-            trab_curveloop_h,
-        ) = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
-
-        # connection between inner trabecular and cortical volumes
-        trab_cort_line_tags = mesher.trabecular_cortical_connection(
-            coi_idx=indices_coi_int, trab_point_tags=trab_point_tags
-        )
-
-        trab_slice_surf_tags, trabecular_slice_curve_loop_tags = (
-            mesher.trabecular_slices(
-                trab_cort_line_tags=trab_cort_line_tags,
-                trab_line_tags_h=trab_line_tags_h,
-                cort_int_bspline_tags=cortical_int_bspline,
-            )
-        )
-
-        # *ThruSections
-        gmsh.model.occ.synchronize()
-        trab_slice_surf_thrusections = []
-        # transpose it so that you loop over the 'columns' of the list
-        for subset in list(zip(*trabecular_slice_curve_loop_tags)):
-            thrusect = gmsh.model.occ.addThruSections(
-                subset,
-                maxDegree=2,
-                makeSolid=True,
-                continuity="G2",
-                tag=-1,
-            )
-            trab_slice_surf_thrusections.append(thrusect)
-
-        # gmsh.model.occ.synchronize()
-        # trab_slice_thrusection_entities = []
-        # for i, section in enumerate(trab_slice_surf_thrusections):
-        #     thru_entities = get_surfaces_and_lines_from_volumes(section)
-        #     trab_slice_thrusection_entities.append(thru_entities)
-
-        gmsh.model.occ.synchronize()
-        trab_slice_thrusection_entities = {"surfaces": [], "lines": []}
-        for _, section in enumerate(trab_slice_surf_thrusections):
-            thru_entities = get_surfaces_and_lines_from_volumes(section)
-            for key, value in thru_entities.items():
-                trab_slice_thrusection_entities[key].extend(value)
-
-        trab_lines, trab_splines = get_curvature_from_entities(
-            trab_slice_thrusection_entities["lines"]
-        )
-
-        trab_splines_radial, trab_splines_longitudinal = get_radial_longitudinal_lines(
-            trab_splines
-        )
-
-        # TODO validate this:
-        transverse_lines.extend(trab_lines)
-        # radial_lines.extend(trab_line_tags_h)
-        delete_unused_entities(trab_line_tags_h)
-        radial_lines.extend(trab_splines_radial)
-        # longitudinal_lines.extend(trab_cort_line_tags)
-        delete_unused_entities(trab_cort_line_tags)
-        longitudinal_lines.extend(trab_splines_longitudinal)
-
-        """
-
-        #*ThruSections
-        trab_plane_inertia_tags = trabecular_volume.trabecular_planes_inertia(
-            trab_cort_line_tags, trab_line_tags_v, intersection_line_tags_int
-        )
-
-        cort_trab_vol_tags = mesher.get_trabecular_cortical_volume_mesh(
-            trab_slice_surf_tags,
-            trab_plane_inertia_tags,
-            cortical_int_surfs,
-            trab_surfs_v,
-        )
-
-
-        cort_volume_tags = np.concatenate(
-            (cort_vol_tags, cort_trab_vol_tags), axis=None
-        )
-        """
-        # *ThruSections
-        trab_plane_inertia_tags = []
-        cort_trab_vol_tags = []
-        trab_slice_surf_tags = []
-
-        trab_refinement = None
-        quadref_vols = None
-        if trabecular_volume.QUAD_REFINEMENT:
-            self.logger.info(
-                "Starting quad refinement procedure (this might take some time)"
-            )
-
-            # get coords of trab_point_tags
-            coords_vertices = []
-            for subset in trab_point_tags:
-                coords = trabecular_volume.get_vertices_coords(subset)
-                coords_vertices.append(coords)
-
-            trab_refinement = QuadRefinement(
-                nb_layers=1,
-                DIM=2,
-                SQUARE_SIZE_0_MM=1,
-                MAX_SUBDIVISIONS=3,
-                ELMS_THICKNESS=N_LONGITUDINAL,
-            )
-
-            (
-                quadref_line_tags_intersurf,
-                quadref_surfs,
-                quadref_vols,
-            ) = trab_refinement.exec_quad_refinement(
-                trab_point_tags.tolist()
-            )  # , coords_vertices
-            self.logger.info("Trabecular refinement done")
-
-        # * meshing
-        trab_surfs = list(
-            chain(
-                trab_surfs_v,
-                trab_surfs_h,
-                trab_slice_surf_tags,
-                trab_plane_inertia_tags,
-            )
-        )
-
-        gmsh.model.occ.synchronize()
-        # trab_vols.append(thrusections_trab_surfs_h[0][1])
-
-        trab_lines_longitudinal = trab_line_tags_v
-        trab_lines_transverse = np.concatenate(
-            (trab_cort_line_tags, cortical_int_bspline), axis=None
-        )
-        trab_lines_radial = trab_line_tags_h
-        delete_unused_entities(cortical_ext_bspline)
-        delete_unused_entities(cortical_int_bspline)
-
-        mesher.factory.synchronize()
-        thrusections_trab_surfs_h = gmsh.model.occ.addThruSections(
-            trab_curveloop_h,
-            maxDegree=2,
-            makeSolid=True,
-            continuity="G2",
-            # parametrization="IsoParametric",
-            # smoothing=True,
-            tag=-1,
-        )
-
-        gmsh.model.occ.synchronize()
-        thrusections_trab_surfs_h_entities = {"surfaces": [], "lines": []}
-        for _, section in enumerate(thrusections_trab_surfs_h):
-            thru_entities = get_surfaces_and_lines_from_volumes(section)
-            for key, value in thru_entities.items():
-                thrusections_trab_surfs_h_entities[key].extend(value)
-
-        trab_h_lines, trab_h_splines = get_curvature_from_entities(
-            thrusections_trab_surfs_h_entities["lines"]
-        )
-
-        trab_h_splines_radial, trab_h_splines_longitudinal = (
-            get_radial_longitudinal_lines(trab_h_splines)
-        )
-
-        # transverse_lines.extend(trab_h_lines)
-        radial_lines.extend(trab_h_splines_radial)
-        radial_lines.extend(trab_h_lines)
-        longitudinal_lines.extend(trab_h_splines_longitudinal)
-
-        # print(thrusections_trab_surfs_h_entities)
-        # print(trab_slice_thrusection_entities)
-        # print(cort_slice_thrusection_entities)
-
-        # trabecular_volume.meshing_transfinite(
-        #     trab_lines_longitudinal,
-        #     trab_lines_transverse,
-        #     trab_lines_radial,
-        #     trab_surfs,
-        #     trab_vols,
-        #     phase="trab",
-        # )
-
-        # * physical groups
-        mesher.factory.synchronize()
-        trab_vol_tags = np.concatenate((trab_vols, cort_trab_vol_tags), axis=None)
-        # cort_physical_group = mesher.model.addPhysicalGroup(
-        #     3, cort_vol_tags, name="Cortical_Compartment"
-        # )
-
-        if quadref_vols is not None:
-            trab_vol_tags = np.append(trab_vol_tags, quadref_vols[0])
-        else:
-            pass
-
-        trab_physical_group = mesher.model.addPhysicalGroup(
-            3, trab_vol_tags, name="Trabecular_Compartment"
-        )
-
-        # gmsh.model.occ.synchronize()
-        # Instantiate GeometryCleaner and identify entities to remove
-        # cleaner = GeometryCleaner()
-        # # cleaner.analyze_geometry()
-        # cleaner.analyze_common_points()
-
         ######################################################################
         # TRANSFINITE CURVES - LONGITUDINAL, CORTICAL, TRANSVERSE, RADIAL
 
-        LONGITUDINAL = 40
-        CORT = 3
-        TRANSVERSE = 15
-        RADIAL = 40
-
         gmsh.model.occ.synchronize()
         for line in longitudinal_lines:
-            mesher.model.mesh.setTransfiniteCurve(line, LONGITUDINAL)
+            mesher.model.mesh.setTransfiniteCurve(line, N_LONGITUDINAL)
         for line in cort_lines:
-            mesher.model.mesh.setTransfiniteCurve(line, CORT)
+            mesher.model.mesh.setTransfiniteCurve(line, N_TRANSVERSE_CORT)
         for line in transverse_lines:
-            mesher.model.mesh.setTransfiniteCurve(line, TRANSVERSE)
+            mesher.model.mesh.setTransfiniteCurve(line, N_TRANSVERSE_TRAB)
         for line in radial_lines:
-            mesher.model.mesh.setTransfiniteCurve(line, RADIAL)
+            mesher.model.mesh.setTransfiniteCurve(line, N_RADIAL)
 
-        gmsh.model.occ.synchronize()
         for surf in gmsh.model.getEntities(2):
             mesher.model.mesh.setTransfiniteSurface(surf[1])
-            mesher.model.geo.mesh.setRecombine(2, surf[1])
+            mesher.model.mesh.setRecombine(2, surf[1])
             mesher.model.mesh.setSmoothing(surf[0], surf[1], 100000)
         for vol in gmsh.model.getEntities(3):
             mesher.model.mesh.setTransfiniteVolume(vol[1])
+
+        gmsh.model.occ.synchronize()
+        # make_thrusection_compound(cort_slice_thrusections_volumes)
         gmsh.model.occ.synchronize()
         mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
         ######################################################################
 
-        # *ThruSections
-        cort_volume_tags = []
-        # if (
-        #     trab_refinement is not None and quadref_vols is not None
-        # ):  # same as saying if QUAD_REFINEMENT
-        #     quadref_physical_group = trab_refinement.model.addPhysicalGroup(
-        #         3, quadref_vols[0]
-        #     )
-        # print(
-        #     f"Cortical physical group: {cort_physical_group}\nTrabecular physical group: {trab_physical_group}"
-        # )
-        # cort_longitudinal_lines = intersection_line_tags
-        cort_longitudinal_lines = []
-        cort_transverse_lines = intersurface_line_tags
-        cortical_bspline_tags = np.append(cortical_ext_bspline, cortical_int_bspline)
-        cort_surfs = np.concatenate(
-            (
-                cortical_ext_surfs,
-                cortical_int_surfs,
-                slices_tags,
-            ),
-            axis=None,
-        )
-
-        # mesher.meshing_transfinite(
-        #     cort_longitudinal_lines,
-        #     cort_transverse_lines,
-        #     cortical_bspline_tags,
-        #     cort_surfs,
-        #     cort_volume_tags,
-        #     phase="cort",
-        # )
-        # mesher.model.geo.mesh.setRecombine(2, -1)
-
-        # tot_vol_tags = [cort_vol_tags, trab_vol_tags]
-        # mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
-        # mesher.logger.info("Optimising mesh")
-        # if ELM_ORDER == 1:
-        #     mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
-        #     # mesher.model.mesh.optimize(method="HighOrderFastCurving", force=True)
-        #     pass
-        # elif ELM_ORDER > 1:
-        #     mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
-
-        if MESH_ANALYSIS:
-            JAC_FULL = 999.9  # 999.9 if you want to see all the elements
-            JAC_NEG = -0.01
-            mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
-
-        """
-        nodes = mesher.gmsh_get_nodes()
-        elms = mesher.gmsh_get_elms()
-        bnds_bot, bnds_top = mesher.gmsh_get_bnds(nodes)
-        reference_point_coord = mesher.gmsh_get_reference_point_coord(nodes)
-        """
-
         if SHOW_GMSH:
             gmsh.fltk.run()
 
-        if WRITE_MESH:
-            Path(mesher.mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
-            gmsh.write(f"{mesher.mesh_file_path}.msh")
-            gmsh.write(f"{mesher.mesh_file_path}.inp")
-            gmsh.write(f"{mesher.mesh_file_path}.vtk")
-
-        entities_cort = mesher.model.getEntitiesForPhysicalGroup(3, cort_physical_group)
-        entities_trab = mesher.model.getEntitiesForPhysicalGroup(3, trab_physical_group)
-
-        centroids_cort = mesher.get_barycenters(tag_s=entities_cort)
-        centroids_trab = mesher.get_barycenters(tag_s=entities_trab)
-
-        elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
-        elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
-        min_elm_vol = min(elm_vol_cort.min(), elm_vol_trab.min())
-        if min_elm_vol < 0.0:
-            logger.critical(
-                f"Negative element volume detected: {min_elm_vol:.3f} (mm^3), exiting..."
-            )
-        else:
-            logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort):.3f}")
-            logger.info(
-                f"Minimum trabecular element volume: {np.min(elm_vol_trab):.3f}"
-            )
-
-        # get biggest ROI_radius
-        radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
-        radius_roi_trab = mesher.get_radius_longest_edge(tag_s=entities_trab)
-
-        assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
-            centroids_trab
-        ), "The number of volumes and centroids does not match."
-
-        # i.e., if cort_physical_group is 1 and trab_physical_group is 2:
-        if cort_physical_group < trab_physical_group:
-            centroids_c = np.concatenate((centroids_cort, centroids_trab))
-        else:
-            centroids_c = np.concatenate((centroids_trab, centroids_cort))
-
-        centroids_dict = mesher.get_centroids_dict(centroids_c)
-        # split centroids_dict into cort and trab
-        centroids_cort_dict, centroids_trab_dict = mesher.split_dict_by_array_len(
-            centroids_dict, len(centroids_cort)
-        )
-
-        # get number of nodes
-        node_tags_cort, _ = mesher.model.mesh.getNodesForPhysicalGroup(
-            3, cort_physical_group
-        )
-        node_tags_trab, _ = mesher.model.mesh.getNodesForPhysicalGroup(
-            3, trab_physical_group
-        )
-        nb_nodes = len(node_tags_cort) + len(node_tags_trab)
-        logger.info(f"Number of nodes in model: {nb_nodes}")
-        gmsh_log = gmsh.logger.get()
-        Path(mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(f"{mesh_file_path}_gmsh.log", "w") as f:
-            for line in gmsh_log:
-                f.write(line + "\n")
-        gmsh.logger.stop()
+        print("Done")
+        return None
 
         gmsh.finalize()
         end = time.time()
