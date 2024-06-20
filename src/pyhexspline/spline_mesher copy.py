@@ -365,7 +365,7 @@ class HexMesh:
         intersurface_line_tags = mesher.add_interslice_segments(
             indices_coi_ext, indices_coi_int
         )
-        slices_tags = mesher.add_slice_surfaces(
+        slices_tags = mesher.add_slice_curveloops(
             cortical_ext_bspline, cortical_int_bspline, intersurface_line_tags
         )
 

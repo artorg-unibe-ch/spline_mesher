@@ -467,7 +467,7 @@ class Mesher:
 
         return interslice_seg_tag
 
-    def add_slice_surfaces(
+    def add_slice_curveloops(
         self, ext_tags: ndarray, int_tags: ndarray, interslice_seg_tags: ndarray
     ) -> ndarray:
         ext_r = ext_tags.reshape((self.slicing_coefficient, -1)).astype(int)
@@ -506,14 +506,7 @@ class Mesher:
                     tag=-1,
                 )
                 ext_int_tags = np.append(ext_int_tags, ext_int_tags_s).astype(int)
-
-        ext_int_tags_l = np.array(ext_int_tags, dtype="int").tolist()
-        slices_ext_int_tags = []
-        for surf_tag in ext_int_tags_l:
-            # slice_tag = self.factory.addSurfaceFilling(surf_tag, tag=-1)
-            slice_tag = self.factory.addPlaneSurface([surf_tag], tag=-1)
-            slices_ext_int_tags.append(slice_tag)
-        return np.array(slices_ext_int_tags).reshape(-1, 4)
+        return np.array(ext_int_tags).reshape(-1, 4)
 
     def add_intersurface_planes(
         self,
@@ -969,6 +962,12 @@ class Mesher:
         self.model.mesh.removeDuplicateNodes()
         self.model.mesh.removeDuplicateElements()
         self.model.occ.synchronize()
+
+        if element_order == 1:
+            self.logger.info("Optimising mesh")
+            self.model.mesh.optimize(method="HighOrderElastic", force=True)
+        elif element_order > 1:
+            self.model.mesh.optimize(method="HighOrderFastCurving", force=False)
         return None
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:
@@ -1217,7 +1216,6 @@ class TrabecularVolume(Mesher):
         self.ellipsoid_fitting = ellipsoid_fitting
         self.logger = logging.getLogger(LOGGING_NAME)
         self.coi_idx = []
-        self.line_tags_v = []
         self.line_tags_h = []
         self.surf_tags = []
         self.vol_tags = []
@@ -1341,7 +1339,7 @@ class TrabecularVolume(Mesher):
 
         self.line_tags_h = list(map(int, np.unique(line_tags_h)))
 
-        return (point_tags_r, self.line_tags_v, self.line_tags_h, trab_curveloop_h_list)
+        return (point_tags_r, self.line_tags_h, trab_curveloop_h_list)
 
     def get_vertices_coords(self, vertices_tags):
         self.factory.synchronize()

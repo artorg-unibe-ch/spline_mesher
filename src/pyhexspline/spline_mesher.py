@@ -403,7 +403,7 @@ class HexMesh:
             indices_coi_ext, indices_coi_int
         )
 
-        slices_tags = mesher.add_slice_surfaces(
+        slices_tags = mesher.add_slice_curveloops(
             cortical_ext_bspline, cortical_int_bspline, intersurface_line_tags
         )
 
@@ -415,20 +415,6 @@ class HexMesh:
         cort_lines, cort_splines_radial, cort_splines_longitudinal = (
             self.split_thrusection_entities(cort_slice_thrusections_volumes)
         )
-
-        # make intersurface_line_tags a list of integers
-        # intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
-        # cort_lines.extend(intersurface_line_tags)
-        # TODO: delete all entities that are not created by ThruSections
-        # get ThruSection entities
-        all_line_entities = gmsh.model.getEntities(1)
-
-        # only keep tag
-        all_line_entities = [line[1] for line in all_line_entities]
-        lines_to_delete = [line for line in all_line_entities if line not in cort_lines]
-
-        print(f"Deleting {len(lines_to_delete)} entities")
-        [gmsh.model.occ.remove([(1, line)]) for line in lines_to_delete]
 
         transverse_lines = []
         radial_lines = []
@@ -456,7 +442,6 @@ class HexMesh:
         # * ThruSection for Inner Trabecular Volume
         (
             trab_point_tags,
-            trab_line_tags_v,
             trab_line_tags_h,
             trab_curveloop_h_list,
         ) = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
@@ -500,10 +485,24 @@ class HexMesh:
         )
 
         transverse_lines.extend(trab_lines)
-        radial_lines.extend(trab_line_tags_h)
         radial_lines.extend(trab_splines_radial)
-        longitudinal_lines.extend(trab_cort_line_tags)
         longitudinal_lines.extend(trab_splines_longitudinal)
+
+        # mesher.factory.synchronize()
+        # all_line_entities = gmsh.model.getEntities(1)
+        # all_line_entities = [line[1] for line in all_line_entities]
+        # lines_to_delete = [
+        #     line
+        #     for line in all_line_entities
+        #     if line not in transverse_lines
+        #     or line not in radial_lines
+        #     or line not in longitudinal_lines
+        #     or line not in cort_lines
+        # ]
+        # print(f"Deleting {len(lines_to_delete)} entities")
+        # [gmsh.model.occ.remove([(1, line)]) for line in lines_to_delete]
+        # # [gmsh.model.occ.remove([(1, line)]) for line in all_line_entities]
+        # mesher.factory.synchronize()
 
         trab_refinement = None
         quadref_vols = None
@@ -569,11 +568,22 @@ class HexMesh:
         )
 
         mesher.factory.synchronize()
+        gmsh.model.geo.removeAllDuplicates()
         mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
-        ######################################################################
+
+        if MESH_ANALYSIS:
+            JAC_FULL = 999.9  # 999.9 if you want to see all the elements
+            JAC_NEG = -0.01
+            mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
+
+        nodes = mesher.gmsh_get_nodes()
+        elms = mesher.gmsh_get_elms()
+        bnds_bot, bnds_top = mesher.gmsh_get_bnds(nodes)
+        reference_point_coord = mesher.gmsh_get_reference_point_coord(nodes)
 
         if SHOW_GMSH:
             gmsh.fltk.run()
+
         if WRITE_MESH:
             Path(mesher.mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
             gmsh.write(f"{mesher.mesh_file_path}.msh")
