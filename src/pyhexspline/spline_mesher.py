@@ -28,130 +28,6 @@ LOGGING_NAME = "MESHING"
 # flake8: noqa: E402
 
 
-def make_thrusection_compound(thrusection_volumes):
-    cort_slice_thrusections_compound_surfs = []
-    for subvol in thrusection_volumes:
-        _, surf_cortvol = gmsh.model.getAdjacencies(3, subvol[0][1])
-        cort_slice_thrusections_compound_surfs.append(surf_cortvol)
-
-    for surf in list(zip(*cort_slice_thrusections_compound_surfs)):
-        print(surf)
-        gmsh.model.mesh.setCompound(2, surf)
-
-    compound_volumes = []
-    for subvol in thrusection_volumes:
-        compound_volumes.append(subvol[0][1])
-
-    gmsh.model.mesh.setCompound(3, compound_volumes)
-    gmsh.model.occ.synchronize()
-    return None
-
-
-def delete_unused_entities(dim, arr: list):
-    # make sure that the values inside the list are integers
-    gmsh.model.occ.synchronize()
-    lines_before = gmsh.model.occ.getEntities(1)
-    arr = np.array(arr, dtype=int).tolist()
-    surfs_to_delete = []
-    if dim == 1:
-        for ll in arr:
-            surf, _ = gmsh.model.getAdjacencies(1, ll)
-            surfs_to_delete.extend(surf)
-            gmsh.model.occ.synchronize()
-            surfs_to_delete = set(surfs_to_delete)
-        for ss in surfs_to_delete:
-            gmsh.model.occ.remove([(2, ss)])
-        for ll in arr:
-            gmsh.model.occ.remove([(1, ll)])
-        gmsh.model.occ.synchronize()
-        lines_after = gmsh.model.occ.getEntities(1)
-        print(f"Deleted {len(lines_before) - len(lines_after)} entities")
-
-    elif dim == 2:
-        surfs_before = gmsh.model.occ.getEntities(2)
-        for ss in arr:
-            gmsh.model.occ.remove([(2, ss)])
-        surfs_after = gmsh.model.occ.getEntities(2)
-        print(f"Deleted {len(surfs_before) - len(surfs_after)} entities")
-    return None
-
-
-def get_surfaces_and_lines_from_volumes(volume):
-    """
-    Get surfaces and lines from the given volumes using Gmsh operations.
-
-    Parameters:
-    volumes (list): List of volume definitions, each containing dimension and tag.
-    gmsh (module): The gmsh module.
-
-    Returns:
-    dict: Dictionary containing 'surfaces' and 'lines' for each volume.
-    """
-    results = {"surfaces": [], "lines": []}
-    try:
-        dim, tag = volume[0][0], volume[0][1]
-    except TypeError:
-        dim, tag = volume[0], volume[1]
-
-    # Get the adjacencies for the current volume
-    _, surfaces_sections = gmsh.model.getAdjacencies(dim=dim, tag=tag)
-
-    adjacencies = [
-        gmsh.model.getAdjacencies(dim=2, tag=surface) for surface in surfaces_sections
-    ]
-    tag_arrays = [adjacency[1] for adjacency in adjacencies]
-    lines_sections = sorted(np.unique(np.concatenate(tag_arrays).tolist()))
-
-    results["surfaces"].append(surfaces_sections)
-    results["lines"].append(lines_sections)
-    return results
-
-
-def get_curvature_from_entities(lines):
-    ATOL = 1e-9
-    straight_segments = []
-    curved_segments = []
-
-    if isinstance(lines, list):
-        # flatten
-        lines = list(chain.from_iterable(lines))
-    else:
-        pass
-
-    for line in lines:
-        der = gmsh.model.getDerivative(1, line, [0.0, 0.5])
-        if not (
-            np.isclose(der[0], der[3], atol=ATOL)
-            and np.isclose(der[1], der[4], atol=ATOL)
-            and np.isclose(der[2], der[5], atol=ATOL)
-        ):
-            curved_segments.append(line)
-        else:
-            straight_segments.append(line)
-    assert len(straight_segments) + len(curved_segments) == len(lines)
-    return straight_segments, curved_segments
-
-
-def get_radial_longitudinal_lines(splines):
-    # get the point pairs of all the splines (begin, end)
-    radial_lines = []
-    longitudinal_lines = []
-
-    for spl in splines:
-        _, pts = gmsh.model.getAdjacencies(1, spl)
-        _, _, z0 = gmsh.model.getValue(0, pts[0], [])
-        _, _, z1 = gmsh.model.getValue(0, pts[1], [])
-        if z0 != z1:
-            longitudinal_lines.append(spl)
-        else:
-            radial_lines.append(spl)
-    assert len(radial_lines) + len(longitudinal_lines) == len(splines)
-
-    # point_coords: dictionary with key = spline tag, value = (x0, y0, z0), (x1, y1, z1)
-    # point_coords[spl] = [(x0, y0, z0), (x1, y1, z1)]
-    return radial_lines, longitudinal_lines
-
-
 class HexMesh:
     def __init__(
         self,
@@ -167,6 +43,176 @@ class HexMesh:
             self.sitk_image = sitk_image  # imports the image
         else:
             self.sitk_image = None  # reads the image from img_path_ext
+
+    def make_thrusection_compound(self, thrusection_volumes):
+        thrusections_compound_surfs = []
+        for subvol in thrusection_volumes:
+            _, surf_cortvol = gmsh.model.getAdjacencies(3, subvol[0][1])
+            thrusections_compound_surfs.append(surf_cortvol)
+
+        for surf in list(zip(*thrusections_compound_surfs)):
+            print(surf)
+            gmsh.model.mesh.setCompound(2, surf)
+
+        compound_volumes = []
+        for subvol in thrusection_volumes:
+            compound_volumes.append(subvol[0][1])
+
+        gmsh.model.mesh.setCompound(3, compound_volumes)
+        gmsh.model.occ.synchronize()
+        return None
+
+    def delete_unused_entities(self, dim, arr: list):
+        # make sure that the values inside the list are integers
+        gmsh.model.occ.synchronize()
+        lines_before = gmsh.model.occ.getEntities(1)
+        arr = np.array(arr, dtype=int).tolist()
+        surfs_to_delete = []
+        if dim == 1:
+            for ll in arr:
+                surf, _ = gmsh.model.getAdjacencies(1, ll)
+                surfs_to_delete.extend(surf)
+                gmsh.model.occ.synchronize()
+                surfs_to_delete = set(surfs_to_delete)
+            for ss in surfs_to_delete:
+                gmsh.model.occ.remove([(2, ss)])
+            for ll in arr:
+                gmsh.model.occ.remove([(1, ll)])
+            gmsh.model.occ.synchronize()
+            lines_after = gmsh.model.occ.getEntities(1)
+            print(f"Deleted {len(lines_before) - len(lines_after)} entities")
+
+        elif dim == 2:
+            surfs_before = gmsh.model.occ.getEntities(2)
+            for ss in arr:
+                gmsh.model.occ.remove([(2, ss)])
+            surfs_after = gmsh.model.occ.getEntities(2)
+            print(f"Deleted {len(surfs_before) - len(surfs_after)} entities")
+        return None
+
+    def get_surfaces_and_lines_from_volumes(self, volume):
+        """
+        Get surfaces and lines from the given volumes using Gmsh operations.
+
+        Parameters:
+        volumes (list): List of volume definitions, each containing dimension and tag.
+        gmsh (module): The gmsh module.
+
+        Returns:
+        dict: Dictionary containing 'surfaces' and 'lines' for each volume.
+        """
+        results = {"surfaces": [], "lines": []}
+        try:
+            dim, tag = volume[0][0], volume[0][1]
+        except TypeError:
+            dim, tag = volume[0], volume[1]
+
+        # Get the adjacencies for the current volume
+        _, surfaces_sections = gmsh.model.getAdjacencies(dim=dim, tag=tag)
+
+        adjacencies = [
+            gmsh.model.getAdjacencies(dim=2, tag=surface)
+            for surface in surfaces_sections
+        ]
+        tag_arrays = [adjacency[1] for adjacency in adjacencies]
+        lines_sections = sorted(np.unique(np.concatenate(tag_arrays).tolist()))
+
+        results["surfaces"].append(surfaces_sections)
+        results["lines"].append(lines_sections)
+        return results
+
+    def get_curvature_from_entities(self, lines):
+        ATOL = 1e-9
+        straight_segments = []
+        curved_segments = []
+
+        if isinstance(lines, list):
+            # flatten
+            lines = list(chain.from_iterable(lines))
+        else:
+            pass
+
+        for line in lines:
+            der = gmsh.model.getDerivative(1, line, [0.0, 0.5])
+            if not (
+                np.isclose(der[0], der[3], atol=ATOL)
+                and np.isclose(der[1], der[4], atol=ATOL)
+                and np.isclose(der[2], der[5], atol=ATOL)
+            ):
+                curved_segments.append(line)
+            else:
+                straight_segments.append(line)
+        assert len(straight_segments) + len(curved_segments) == len(lines)
+        return straight_segments, curved_segments
+
+    def get_radial_longitudinal_lines(self, splines):
+        # get the point pairs of all the splines (begin, end)
+        radial_lines = []
+        longitudinal_lines = []
+
+        for spl in splines:
+            _, pts = gmsh.model.getAdjacencies(1, spl)
+            _, _, z0 = gmsh.model.getValue(0, pts[0], [])
+            _, _, z1 = gmsh.model.getValue(0, pts[1], [])
+            if z0 != z1:
+                longitudinal_lines.append(spl)
+            else:
+                radial_lines.append(spl)
+        assert len(radial_lines) + len(longitudinal_lines) == len(splines)
+
+        # point_coords: dictionary with key = spline tag, value = (x0, y0, z0), (x1, y1, z1)
+        # point_coords[spl] = [(x0, y0, z0), (x1, y1, z1)]
+        return radial_lines, longitudinal_lines
+
+    # ******
+
+    def split_thrusection_entities(self, thrusections_tags):
+        thrusection_entities = {"surfaces": [], "lines": []}
+        for _, section in enumerate(thrusections_tags):
+            thru_entities = self.get_surfaces_and_lines_from_volumes(section)
+            for key, value in thru_entities.items():
+                thrusection_entities[key].extend(value)
+
+        lines, splines = self.get_curvature_from_entities(thrusection_entities["lines"])
+        # ? lines: cortical elements in transverse direction = 3
+        # ? splines: cortical elements in radial and longitudinal directions = 15 / 20
+        splines_radial, splines_longitudinal = self.get_radial_longitudinal_lines(
+            splines
+        )
+        return lines, splines_radial, splines_longitudinal
+
+    def add_thrusection(
+        self,
+        surf_tags,
+        MAX_DEGREE=2,
+        MAKE_SOLID=True,
+        CONTINUITY="G2",
+    ):
+        gmsh.model.occ.synchronize()
+        thrusections_volumes = []
+        # Transpose slices_tags to loop over the 'columns' of the list
+        if all(isinstance(item, int) for item in surf_tags):
+            thrusect = gmsh.model.occ.addThruSections(
+                surf_tags,
+                maxDegree=MAX_DEGREE,
+                makeSolid=MAKE_SOLID,
+                continuity=CONTINUITY,
+                tag=-1,
+            )
+            thrusections_volumes.append(thrusect)
+        else:
+            for subset in list(zip(*surf_tags)):
+                # Add ThruSections for cortical slices
+                thrusect = gmsh.model.occ.addThruSections(
+                    subset,
+                    maxDegree=MAX_DEGREE,
+                    makeSolid=MAKE_SOLID,
+                    continuity=CONTINUITY,
+                    tag=-1,
+                )
+                thrusections_volumes.append(thrusect)
+        gmsh.model.occ.synchronize()
+        return thrusections_volumes
 
     def mesher(
         self,
@@ -277,39 +323,9 @@ class HexMesh:
         )
 
         cortical_v.plot_mhd_slice()
-        cortical_ext, cortical_int = cortical_v.volume_splines()
-
-        # Cortical surface sanity check
-        cortex = csc.CorticalSanityCheck(
-            MIN_THICKNESS=cortical_v.MIN_THICKNESS,
-            ext_contour=cortical_ext,
-            int_contour=cortical_int,
-            model=cortical_v.filename,
-            save_plot=False,
-            logger=logger,
+        cortical_ext_split, cortical_int_split, cortical_int_sanity = (
+            cortical_v.volume_spline_fast_implementation()
         )
-        z_unique = np.unique(cortical_ext[:, 2])
-        cortical_ext_split = np.array_split(cortical_ext, len(z_unique))
-        cortical_int_split = np.array_split(cortical_int, len(z_unique))
-        cortical_int_sanity = np.zeros(np.shape(cortical_int_split))
-
-        for i, _ in enumerate(cortical_ext_split):
-            cortical_int_sanity[i][:, :-1] = cortex.cortical_sanity_check(
-                ext_contour=cortical_ext_split[i],
-                int_contour=cortical_int_split[i],
-                iterator=i,
-                show_plots=False,
-            )
-            cortical_int_sanity[i][:, -1] = cortical_int_split[i][:, -1]
-        cortical_int_sanity = cortical_int_sanity.reshape(-1, 3)
-
-        np.save("cortical_ext_split.npy", cortical_ext_split)
-        np.save("cortical_int_split.npy", cortical_int_split)
-        np.save("cortical_int_sanity.npy", cortical_int_sanity)
-
-        # cortical_ext_split = np.load("cortical_ext_split.npy")
-        # cortical_int_split = np.load("cortical_int_split.npy")
-        # cortical_int_sanity = np.load("cortical_int_sanity.npy")
 
         gmsh.initialize()
         gmsh.clear()
@@ -376,66 +392,30 @@ class HexMesh:
         cortical_ext_msh = np.reshape(cortical_ext_centroid, (-1, 3))
         cortical_int_msh = np.reshape(cortical_int_centroid, (-1, 3))
 
-        np.save("cortical_ext_msh.npy", cortical_ext_msh)
-        np.save("cortical_int_msh.npy", cortical_int_msh)
-        np.save("idx_list_ext.npy", idx_list_ext)
-        np.save("idx_list_int.npy", idx_list_int)
-
         (
             indices_coi_ext,
             cortical_ext_bspline,
-            intersection_line_tags_ext,
-            cortical_ext_surfs,
         ) = mesher.gmsh_geometry_formulation(cortical_ext_msh, idx_list_ext)
         (
             indices_coi_int,
             cortical_int_bspline,
-            intersection_line_tags_int,
-            cortical_int_surfs,
         ) = mesher.gmsh_geometry_formulation(cortical_int_msh, idx_list_int)
 
         intersurface_line_tags = mesher.add_interslice_segments(
             indices_coi_ext, indices_coi_int
         )
+
         slices_tags = mesher.add_slice_surfaces(
             cortical_ext_bspline, cortical_int_bspline, intersurface_line_tags
         )
 
-        # delete all surfaces
-        # surfs before deletion
-        surfs_before = gmsh.model.getEntities(2)
-        delete_unused_entities(2, surfs_before)
-        surfs_after = gmsh.model.getEntities(2)
-        print(f"Deleted {len(surfs_before) - len(surfs_after)} surfaces")
         # *ThruSections for Cortical Slices
-        gmsh.model.occ.synchronize()
-        cort_slice_thrusections_volumes = []
-        # Transpose slices_tags to loop over the 'columns' of the list
-        for subset in list(zip(*slices_tags)):
-            # Add ThruSections for cortical slices
-            thrusect = gmsh.model.occ.addThruSections(
-                subset,
-                maxDegree=2,
-                makeSolid=True,
-                continuity="G2",
-                tag=-1,
-            )
-            cort_slice_thrusections_volumes.append(thrusect)
-
-        gmsh.model.occ.synchronize()
-        cort_slice_thrusection_entities = {"surfaces": [], "lines": []}
-        for _, section in enumerate(cort_slice_thrusections_volumes):
-            thru_entities = get_surfaces_and_lines_from_volumes(section)
-            for key, value in thru_entities.items():
-                cort_slice_thrusection_entities[key].extend(value)
-
-        cort_lines, splines = get_curvature_from_entities(
-            cort_slice_thrusection_entities["lines"]
+        cort_slice_thrusections_volumes = self.add_thrusection(
+            slices_tags, MAX_DEGREE=2, MAKE_SOLID=True, CONTINUITY="G2"
         )
-        # ? lines: cortical elements in transverse direction = 3
-        # ? splines: cortical elements in radial and longitudinal directions = 15 / 20 --> separate them
-        cort_splines_radial, cort_splines_longitudinal = get_radial_longitudinal_lines(
-            splines
+
+        cort_lines, cort_splines_radial, cort_splines_longitudinal = (
+            self.split_thrusection_entities(cort_slice_thrusections_volumes)
         )
 
         # make intersurface_line_tags a list of integers
@@ -447,17 +427,132 @@ class HexMesh:
 
         # only keep tag
         all_line_entities = [line[1] for line in all_line_entities]
-        lines_to_delete = [
-            line for line in all_line_entities if line not in thru_entities["lines"]
-        ]
+        lines_to_delete = [line for line in all_line_entities if line not in cort_lines]
 
-        # delete_unused_entities(intersurface_line_tags)
+        print(f"Deleting {len(lines_to_delete)} entities")
         [gmsh.model.occ.remove([(1, line)]) for line in lines_to_delete]
 
         transverse_lines = []
         radial_lines = []
         radial_lines.extend(cort_splines_radial)
         longitudinal_lines = cort_splines_longitudinal
+
+        # *ThruSections for Cortical-Trabecular Interface
+        # Trabecular meshing
+        trabecular_volume = TrabecularVolume(
+            geo_unrolled_filename,
+            mesh_file_path,
+            slicing_coefficient=cortical_v.SLICING_COEFFICIENT,
+            n_longitudinal=N_LONGITUDINAL,
+            n_transverse_cort=N_TRANSVERSE_CORT,
+            n_transverse_trab=N_TRANSVERSE_TRAB,
+            n_radial=N_RADIAL,
+            QUAD_REFINEMENT=QUAD_REFINEMENT,
+            ellipsoid_fitting=ELLIPSOID_FITTING,
+        )
+
+        trabecular_volume.set_length_factor(
+            float(self.settings_dict["center_square_length_factor"])
+        )
+
+        # * ThruSection for Inner Trabecular Volume
+        (
+            trab_point_tags,
+            trab_line_tags_v,
+            trab_line_tags_h,
+            trab_curveloop_h_list,
+        ) = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
+
+        trab_inner_surf_thrusection = self.add_thrusection(
+            trab_curveloop_h_list,
+            MAX_DEGREE=2,
+            MAKE_SOLID=True,
+            CONTINUITY="G2",
+        )
+
+        trab_inner_lines, trab_inner_splines_radial, trab_inner_splines_longitudinal = (
+            self.split_thrusection_entities(trab_inner_surf_thrusection)
+        )
+        # TODO validate this:
+        transverse_lines.extend(trab_inner_lines)
+        radial_lines.extend(trab_inner_splines_radial)
+        longitudinal_lines.extend(trab_inner_splines_longitudinal)
+
+        # connection between inner trabecular and cortical volumes
+        trab_cort_line_tags = mesher.trabecular_cortical_connection(
+            coi_idx=indices_coi_int, trab_point_tags=trab_point_tags
+        )
+
+        trabecular_slice_curve_loop_tags = mesher.trabecular_slices(
+            trab_cort_line_tags=trab_cort_line_tags,
+            trab_line_tags_h=trab_line_tags_h,
+            cort_int_bspline_tags=cortical_int_bspline,
+        )
+
+        # add thrusection
+        trab_slice_surf_thrusections = self.add_thrusection(
+            trabecular_slice_curve_loop_tags,
+            MAX_DEGREE=2,
+            MAKE_SOLID=True,
+            CONTINUITY="G2",
+        )
+        # split entities
+        trab_lines, trab_splines_radial, trab_splines_longitudinal = (
+            self.split_thrusection_entities(trab_slice_surf_thrusections)
+        )
+
+        # TODO validate this:
+        transverse_lines.extend(trab_lines)
+        radial_lines.extend(trab_line_tags_h)
+        radial_lines.extend(trab_splines_radial)
+        longitudinal_lines.extend(trab_cort_line_tags)
+        longitudinal_lines.extend(trab_splines_longitudinal)
+
+        trab_refinement = None
+        quadref_vols = None
+        if trabecular_volume.QUAD_REFINEMENT:
+            self.logger.info(
+                "Starting quad refinement procedure (this might take some time)"
+            )
+
+            # get coords of trab_point_tags
+            coords_vertices = []
+            for subset in trab_point_tags:
+                coords = trabecular_volume.get_vertices_coords(subset)
+                coords_vertices.append(coords)
+
+            trab_refinement = QuadRefinement(
+                nb_layers=1,
+                DIM=2,
+                SQUARE_SIZE_0_MM=1,
+                MAX_SUBDIVISIONS=3,
+                ELMS_THICKNESS=N_LONGITUDINAL,
+            )
+
+            (
+                quadref_line_tags_intersurf,
+                quadref_surfs,
+                quadref_vols,
+            ) = trab_refinement.exec_quad_refinement(
+                trab_point_tags.tolist()
+            )  # , coords_vertices
+            self.logger.info("Trabecular refinement done")
+
+        # * meshing
+        trab_surfs = list(
+            chain(
+                trab_slice_surf_thrusections,
+            )
+        )
+
+        trab_lines_longitudinal = trab_line_tags_v
+        trab_lines_transverse = np.concatenate(
+            (trab_cort_line_tags, cortical_int_bspline), axis=None
+        )
+        trab_lines_radial = trab_line_tags_h
+        radial_lines.extend(trab_lines_radial)
+
+        mesher.factory.synchronize()
 
         ######################################################################
         # TRANSFINITE CURVES - LONGITUDINAL, CORTICAL, TRANSVERSE, RADIAL
@@ -487,9 +582,8 @@ class HexMesh:
 
         if SHOW_GMSH:
             gmsh.fltk.run()
-
-        print("Done")
-        return None
+        if WRITE_MESH:
+            gmsh.write(str(Path(mesh_file_path + ".msh")))
 
         gmsh.finalize()
         end = time.time()

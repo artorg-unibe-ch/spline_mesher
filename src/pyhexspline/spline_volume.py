@@ -20,6 +20,12 @@ from numpy import ndarray
 from scipy.interpolate import splev, splprep
 from SimpleITK.SimpleITK import Image
 
+from skimage.measure import find_contours
+
+from shapely import Polygon
+import shapely.geometry as shpg
+
+
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
 
@@ -87,6 +93,9 @@ class OCC_volume:
 
         self.MIN_THICKNESS = float(thickness_tol)
         self.phases = int(phases)
+
+        # * newly added
+        self.simplify_tolerance = int(30)
 
         # Figure layout
         self.layout = go.Layout(
@@ -772,33 +781,12 @@ class OCC_volume:
         a0 = a[-1].reshape(1, -1)  # add the final point and concatenate
         return np.concatenate((*pnts, a0), axis=0)
 
-    def generate_decreasing_step_series(self, start, stop, initial_step):
-        series = [start]
-        current = start
-        step = initial_step
-
-        while current + step < stop:
-            current += step
-            series.append(current)
-            step /= 2
-
-        return np.array(series, dtype=int)
-
     def volume_splines(self) -> Tuple[ndarray, ndarray]:
         contour_ext_fig, contour_int_fig = self.binary_threshold(img_path=self.img_path)
 
         self.slice_index = np.linspace(
             1, len(contour_ext_fig[0, 0, :]) - 1, self.SLICING_COEFFICIENT, dtype=int
         )
-
-        # self.slice_index = np.geomspace(
-        #     1,
-        #     len(contour_ext_fig[0, 0, :]) - 1,
-        #     num=self.SLICING_COEFFICIENT,
-        #     dtype=int,
-        # )
-
-        # self.slice_index = self.generate_decreasing_step_series(1, len(contour_ext_fig[0, 0, :]) - 1, self.SLICING_COEFFICIENT)
 
         if self.show_plots is True:
             fig = go.Figure(layout=self.layout)
@@ -870,3 +858,97 @@ class OCC_volume:
         contour_int = contour_int.reshape(-1, 3)
 
         return contour_ext, contour_int
+
+    def process_slice(self, mask, slice_idx):
+        # Extract and classify contours
+        outer_contour, inner_contour = self.classify_contours(mask, slice_idx)
+
+        # Process outer contour
+        outer_simplified = self.simplify_contour(outer_contour)
+        outer_bspline = self.evaluate_bspline(outer_simplified)
+        outer_with_index = self.append_slice_index(outer_bspline, slice_idx)
+
+        # Calculate offset for outer contour
+        outer_offset_polygon = self.calculate_offset_polygon(outer_bspline)
+
+        # Process inner contour
+        inner_simplified = self.simplify_contour(inner_contour)
+        inner_bspline = self.evaluate_bspline(inner_simplified)
+        inner_sanitized = self.sanitize_inner_contour(
+            outer_offset_polygon, inner_bspline
+        )
+        inner_with_index = self.append_slice_index(inner_sanitized, slice_idx)
+
+        return outer_with_index, inner_with_index
+
+    def classify_contours(self, mask, slice_idx):
+        """Classify and extract outer and inner contours from the mask."""
+        contours = find_contours(mask[slice_idx, :, :], level=0.5)
+        outer_contour = contours[0] if contours else None
+        inner_contour = contours[1] if len(contours) > 1 else None
+        return outer_contour, inner_contour
+
+    def simplify_contour(self, contour):
+        """Simplify the contour using a polygon and return its coordinates."""
+        polygon = Polygon(contour)
+        simplified_polygon = polygon.simplify(
+            self.simplify_tolerance, preserve_topology=True
+        )
+        return np.array(simplified_polygon.exterior.coords)
+
+    def evaluate_bspline(self, contour_coords):
+        """Generate a B-spline from the contour coordinates and return evaluated points."""
+        tckp, _ = splprep(
+            [contour_coords[:, 0], contour_coords[:, 1]],
+            s=self.S,
+            k=3,
+            per=1,
+        )
+        x_new, y_new = splev(np.linspace(0, 1, self.INTERP_POINTS_S), tckp)
+        return np.column_stack((x_new, y_new))
+
+    def append_slice_index(self, contour_coords, slice_idx):
+        """Append the slice index to each point in the contour coordinates."""
+        return np.column_stack(
+            (contour_coords, np.full(contour_coords.shape[0], slice_idx))
+        )
+
+    def calculate_offset_polygon(self, contour_coords):
+        """Calculate the offset polygon for the outer contour."""
+        outer_polygon = Polygon(contour_coords)
+        offset_distance = self.MIN_THICKNESS / self.spacing[1]
+        offset_polygon = outer_polygon.buffer(-offset_distance)
+        return offset_polygon
+
+    def sanitize_inner_contour(self, outer_polygon, inner_contour):
+        """Ensure the inner contour is within the outer offset polygon."""
+        outer_coords = np.array(outer_polygon.exterior.coords)
+        tree = ss.KDTree(outer_coords)
+        for i, point in enumerate(inner_contour):
+            if not shpg.Point(point).within(outer_polygon):
+                closest_point_idx = tree.query(point)[1]
+                inner_contour[i] = outer_coords[closest_point_idx]
+        return inner_contour
+
+    def volume_spline_fast_implementation(self):
+        self.spacing = self.sitk_image.GetSpacing()
+        imnp = sitk.GetArrayFromImage(self.sitk_image)
+        height = imnp.shape[0]
+        self.logger.debug(f"Height:\t{height}")
+
+        # Get number of slices / ThruSections
+        total_slices = np.linspace(0, height - 1, self.SLICING_COEFFICIENT, dtype=int)
+
+        results = []
+        for slice_idx in total_slices:
+            result = self.process_slice(imnp, slice_idx)
+            results.append(result)
+
+        outer_contours, inner_contours = zip(*results)
+
+        out_arr_mm = np.array(outer_contours).reshape(-1, 3) * 0.061
+        inn_arr_mm = np.array(inner_contours).reshape(-1, 3) * 0.061
+        z_unique = np.unique(out_arr_mm[:, 2])
+        cortical_ext_split = np.array_split(out_arr_mm, len(z_unique))
+        cortical_int_split = np.array_split(inn_arr_mm, len(z_unique))
+        return cortical_ext_split, cortical_int_split, inn_arr_mm

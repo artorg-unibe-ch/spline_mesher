@@ -605,6 +605,8 @@ class HexMesh:
         trab_lines_radial = trab_line_tags_h
 
         mesher.factory.synchronize()
+
+        # **** This part is missing in the original code (POS, 20.06.2024) ****
         thrusections_trab_surfs_h = trabecular_volume.factory.addThruSections(
             trab_curveloop_h,
             maxDegree=2,

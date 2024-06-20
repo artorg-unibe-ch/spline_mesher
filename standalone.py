@@ -20,9 +20,9 @@ def main():
     LOGGING_NAME = "MESHING"
     # configure the logger
     logger = logging.getLogger(LOGGING_NAME)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
@@ -41,13 +41,13 @@ def main():
         "aspect": 100,  # aspect ratio of the plots
         "_slice": 1,  # slice of the image to be plotted
         "undersampling": 1,  # undersampling factor of the image
-        "slicing_coefficient": 10,  # using every nth slice of the image for the spline reconstruction
+        "slicing_coefficient": 15,  # using every nth slice of the image for the spline reconstruction
         "inside_val": int(0),  # threshold value for the inside of the mask
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 5,  # smoothing factor of the spline
-        "k": 2,  # degree of the spline
+        "s": 1000,  # smoothing factor of the spline
+        "k": 3,  # degree of the spline
         "interp_points": 500,  # number of points to interpolate the spline
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
@@ -58,9 +58,9 @@ def main():
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 20,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
-        "show_plots": True,  # show plots during construction
+        "show_plots": False,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
-        "write_mesh": False,  # write mesh to file
+        "write_mesh": True,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
@@ -74,10 +74,10 @@ def main():
     # )
 
     sitk_image_s = sitk.ReadImage(
-        "/home/simoneponcioni/Desktop/repro-to-remesh/1810/C0001810_CORTMASK.mhd"
+        "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/437_R_90_F/C0003095_CORTMASK.mhd"
     )
 
-    sitk_image_s = sitk_image_s[:, :, :]
+    sitk_image_s = sitk_image_s[:, :, :-25]
     print(sitk_image_s.GetSize())
 
     mesh = HexMesh(
