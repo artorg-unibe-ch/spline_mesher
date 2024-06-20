@@ -13,18 +13,15 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import scipy.spatial as ss
+import shapely.geometry as shpg
 import SimpleITK as sitk
 from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import ndarray
 from scipy.interpolate import splev, splprep
-from SimpleITK.SimpleITK import Image
-
-from skimage.measure import find_contours
-
 from shapely import Polygon
-import shapely.geometry as shpg
-
+from SimpleITK.SimpleITK import Image
+from skimage.measure import find_contours
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
@@ -340,7 +337,9 @@ class OCC_volume:
             )
         else:
             self.logger.info(f"Padded Image\t\t\tshow_plots:\t{self.show_plots}")
+        return image_thr
 
+        """
         img_thr_join = self.get_binary_contour(image_thr)
         self.spacing = image.GetSpacing()
 
@@ -351,6 +350,7 @@ class OCC_volume:
         else:
             self.logger.info(f"Binary threshold\t\tshow_plots:\t{self.show_plots}")
 
+        #* PREVIOUS IMPLEMENTATION
         if self.phases >= 1:
             outer_contour_np = self.get_draw_contour(img_thr_join, loc="outer")
             contour_ext = np.transpose(outer_contour_np, [2, 1, 0])
@@ -411,6 +411,7 @@ class OCC_volume:
         self.coordsX = np.transpose(coordsX, [1, 0])
         self.coordsY = np.transpose(coordsY, [1, 0])
         return contour_ext, contour_int
+        """
 
     def sort_xy(self, x: ndarray, y: ndarray) -> Tuple[ndarray, ndarray]:
         # https://stackoverflow.com/questions/58377015/counterclockwise-sorting-of-x-y-data
@@ -883,7 +884,7 @@ class OCC_volume:
 
     def classify_contours(self, mask, slice_idx):
         """Classify and extract outer and inner contours from the mask."""
-        contours = find_contours(mask[slice_idx, :, :], level=0.5)
+        contours = find_contours(mask[:, :, slice_idx], level=0.5)
         outer_contour = contours[0] if contours else None
         inner_contour = contours[1] if len(contours) > 1 else None
         return outer_contour, inner_contour
@@ -930,10 +931,13 @@ class OCC_volume:
                 inner_contour[i] = outer_coords[closest_point_idx]
         return inner_contour
 
-    def volume_spline_fast_implementation(self):
-        self.spacing = self.sitk_image.GetSpacing()
-        imnp = sitk.GetArrayFromImage(self.sitk_image)
-        height = imnp.shape[0]
+    def volume_spline_fast_implementation(
+        self, imsitk_pad: Image
+    ) -> Tuple[ndarray, ndarray]:
+        imnp = sitk.GetArrayFromImage(imsitk_pad)
+        imnp = np.transpose(imnp, [2, 1, 0])
+        imnp = np.flip(imnp, axis=1)
+        height = imnp.shape[2]
         self.logger.debug(f"Height:\t{height}")
 
         # Get number of slices / ThruSections

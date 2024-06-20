@@ -321,8 +321,9 @@ class HexMesh:
         )
 
         cortical_v.plot_mhd_slice()
+        image_pad = cortical_v.binary_threshold()
         cortical_ext_split, cortical_int_split, cortical_int_sanity = (
-            cortical_v.volume_spline_fast_implementation()
+            cortical_v.volume_spline_fast_implementation(image_pad)
         )
 
         gmsh.initialize()
@@ -641,13 +642,14 @@ class HexMesh:
         )
         nb_nodes = len(node_tags_cort) + len(node_tags_trab)
         logger.info(f"Number of nodes in model: {nb_nodes}")
+        '''
         gmsh_log = gmsh.logger.get()
         Path(mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
         with open(f"{mesh_file_path}_gmsh.log", "w") as f:
             for line in gmsh_log:
                 f.write(line + "\n")
         gmsh.logger.stop()
-
+        '''
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=1)
