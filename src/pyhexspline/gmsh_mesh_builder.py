@@ -964,9 +964,11 @@ class Mesher:
         self.model.occ.synchronize()
 
         if element_order == 1:
-            self.logger.info("Optimising mesh")
-            self.model.mesh.optimize(method="HighOrderElastic", force=True)
+            pass
+            # self.logger.info("Optimising mesh")
+            # self.model.mesh.optimize(method="HighOrderElastic", force=True)
         elif element_order > 1:
+            self.logger.info("Optimising mesh")
             self.model.mesh.optimize(method="HighOrderFastCurving", force=False)
         return None
 

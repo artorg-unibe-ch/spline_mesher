@@ -409,7 +409,10 @@ class HexMesh:
 
         # *ThruSections for Cortical Slices
         cort_slice_thrusections_volumes = self.add_thrusection(
-            slices_tags, MAX_DEGREE=2, MAKE_SOLID=True, CONTINUITY="G2"
+            slices_tags,
+            MAX_DEGREE=2,
+            MAKE_SOLID=True,
+            CONTINUITY="G2",
         )
 
         cort_lines, cort_splines_radial, cort_splines_longitudinal = (
