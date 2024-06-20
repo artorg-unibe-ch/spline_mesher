@@ -45,14 +45,14 @@ class HexMesh:
             self.sitk_image = None  # reads the image from img_path_ext
 
     def make_thrusection_compound(self, thrusection_volumes):
-        thrusections_compound_surfs = []
-        for subvol in thrusection_volumes:
-            _, surf_cortvol = gmsh.model.getAdjacencies(3, subvol[0][1])
-            thrusections_compound_surfs.append(surf_cortvol)
+        gmsh.model.occ.synchronize()
+        # thrusections_compound_surfs = []
+        # for subvol in thrusection_volumes:
+        #     _, surf_cortvol = gmsh.model.getAdjacencies(3, subvol[0][1])
+        #     thrusections_compound_surfs.append(surf_cortvol)
 
-        for surf in list(zip(*thrusections_compound_surfs)):
-            print(surf)
-            gmsh.model.mesh.setCompound(2, surf)
+        # for surf in list(zip(*thrusections_compound_surfs)):
+        #     gmsh.model.mesh.setCompound(2, surf)
 
         compound_volumes = []
         for subvol in thrusection_volumes:
@@ -163,8 +163,6 @@ class HexMesh:
         # point_coords: dictionary with key = spline tag, value = (x0, y0, z0), (x1, y1, z1)
         # point_coords[spl] = [(x0, y0, z0), (x1, y1, z1)]
         return radial_lines, longitudinal_lines
-
-    # ******
 
     def split_thrusection_entities(self, thrusections_tags):
         thrusection_entities = {"surfaces": [], "lines": []}
@@ -463,7 +461,7 @@ class HexMesh:
             trab_curveloop_h_list,
         ) = trabecular_volume.get_trabecular_vol(coi_idx=intersections_int)
 
-        trab_inner_surf_thrusection = self.add_thrusection(
+        trab_inner_vol_thrusection = self.add_thrusection(
             trab_curveloop_h_list,
             MAX_DEGREE=2,
             MAKE_SOLID=True,
@@ -471,9 +469,9 @@ class HexMesh:
         )
 
         trab_inner_lines, trab_inner_splines_radial, trab_inner_splines_longitudinal = (
-            self.split_thrusection_entities(trab_inner_surf_thrusection)
+            self.split_thrusection_entities(trab_inner_vol_thrusection)
         )
-        # TODO validate this:
+
         transverse_lines.extend(trab_inner_lines)
         radial_lines.extend(trab_inner_splines_radial)
         longitudinal_lines.extend(trab_inner_splines_longitudinal)
@@ -490,7 +488,7 @@ class HexMesh:
         )
 
         # add thrusection
-        trab_slice_surf_thrusections = self.add_thrusection(
+        trab_slice_vol_thrusections = self.add_thrusection(
             trabecular_slice_curve_loop_tags,
             MAX_DEGREE=2,
             MAKE_SOLID=True,
@@ -498,10 +496,9 @@ class HexMesh:
         )
         # split entities
         trab_lines, trab_splines_radial, trab_splines_longitudinal = (
-            self.split_thrusection_entities(trab_slice_surf_thrusections)
+            self.split_thrusection_entities(trab_slice_vol_thrusections)
         )
 
-        # TODO validate this:
         transverse_lines.extend(trab_lines)
         radial_lines.extend(trab_line_tags_h)
         radial_lines.extend(trab_splines_radial)
@@ -539,51 +536,104 @@ class HexMesh:
             self.logger.info("Trabecular refinement done")
 
         # * meshing
-        trab_surfs = list(
+        trab_vols = list(
             chain(
-                trab_slice_surf_thrusections,
+                trab_inner_vol_thrusection,
+                trab_slice_vol_thrusections,
             )
         )
 
-        trab_lines_longitudinal = trab_line_tags_v
-        trab_lines_transverse = np.concatenate(
-            (trab_cort_line_tags, cortical_int_bspline), axis=None
+        # * Make ThruSection Compound
+        self.make_thrusection_compound(cort_slice_thrusections_volumes)
+        self.make_thrusection_compound(trab_slice_vol_thrusections)
+
+        # * make transfinite
+        mesher.make_thrusections_transfinite(
+            longitudinal_lines,
+            cort_lines,
+            transverse_lines,
+            radial_lines,
         )
-        trab_lines_radial = trab_line_tags_h
-        radial_lines.extend(trab_lines_radial)
+
+        trab_vol_tags = list([item[0][1] for item in trab_slice_vol_thrusections])
+        trab_vol_tags.extend([item[0][1] for item in trab_inner_vol_thrusection])
+
+        cort_vol_tags = list([item[0][1] for item in cort_slice_thrusections_volumes])
+
+        # * Physical Groups
+        trab_physical_group = mesher.model.addPhysicalGroup(
+            3, trab_vol_tags, name="Trabecular_Compartment"
+        )
+        cort_physical_group = mesher.model.addPhysicalGroup(
+            3, cort_vol_tags, name="Cortical_Compartment"
+        )
 
         mesher.factory.synchronize()
-
-        ######################################################################
-        # TRANSFINITE CURVES - LONGITUDINAL, CORTICAL, TRANSVERSE, RADIAL
-
-        gmsh.model.occ.synchronize()
-        for line in longitudinal_lines:
-            mesher.model.mesh.setTransfiniteCurve(line, N_LONGITUDINAL)
-        for line in cort_lines:
-            mesher.model.mesh.setTransfiniteCurve(line, N_TRANSVERSE_CORT)
-        for line in transverse_lines:
-            mesher.model.mesh.setTransfiniteCurve(line, N_TRANSVERSE_TRAB)
-        for line in radial_lines:
-            mesher.model.mesh.setTransfiniteCurve(line, N_RADIAL)
-
-        for surf in gmsh.model.getEntities(2):
-            mesher.model.mesh.setTransfiniteSurface(surf[1])
-            mesher.model.mesh.setRecombine(2, surf[1])
-            mesher.model.mesh.setSmoothing(surf[0], surf[1], 100000)
-        for vol in gmsh.model.getEntities(3):
-            mesher.model.mesh.setTransfiniteVolume(vol[1])
-
-        gmsh.model.occ.synchronize()
-        # make_thrusection_compound(cort_slice_thrusections_volumes)
-        gmsh.model.occ.synchronize()
         mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
         ######################################################################
 
         if SHOW_GMSH:
             gmsh.fltk.run()
         if WRITE_MESH:
-            gmsh.write(str(Path(mesh_file_path + ".msh")))
+            Path(mesher.mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
+            gmsh.write(f"{mesher.mesh_file_path}.msh")
+            gmsh.write(f"{mesher.mesh_file_path}.inp")
+            gmsh.write(f"{mesher.mesh_file_path}.vtk")
+
+        entities_cort = mesher.model.getEntitiesForPhysicalGroup(3, cort_physical_group)
+        entities_trab = mesher.model.getEntitiesForPhysicalGroup(3, trab_physical_group)
+
+        centroids_cort = mesher.get_barycenters(tag_s=entities_cort)
+        centroids_trab = mesher.get_barycenters(tag_s=entities_trab)
+
+        elm_vol_cort = mesher.get_elm_volume(tag_s=entities_cort)
+        elm_vol_trab = mesher.get_elm_volume(tag_s=entities_trab)
+        min_elm_vol = min(elm_vol_cort.min(), elm_vol_trab.min())
+        if min_elm_vol < 0.0:
+            logger.critical(
+                f"Negative element volume detected: {min_elm_vol:.3f} (mm^3), exiting..."
+            )
+        else:
+            logger.info(f"Minimum cortical element volume: {np.min(elm_vol_cort):.3f}")
+            logger.info(
+                f"Minimum trabecular element volume: {np.min(elm_vol_trab):.3f}"
+            )
+
+        # get biggest ROI_radius
+        radius_roi_cort = mesher.get_radius_longest_edge(tag_s=entities_cort)
+        radius_roi_trab = mesher.get_radius_longest_edge(tag_s=entities_trab)
+
+        assert len(elm_vol_cort) + len(elm_vol_trab) == len(centroids_cort) + len(
+            centroids_trab
+        ), "The number of volumes and centroids does not match."
+
+        # i.e., if cort_physical_group is 1 and trab_physical_group is 2:
+        if cort_physical_group < trab_physical_group:
+            centroids_c = np.concatenate((centroids_cort, centroids_trab))
+        else:
+            centroids_c = np.concatenate((centroids_trab, centroids_cort))
+
+        centroids_dict = mesher.get_centroids_dict(centroids_c)
+        # split centroids_dict into cort and trab
+        centroids_cort_dict, centroids_trab_dict = mesher.split_dict_by_array_len(
+            centroids_dict, len(centroids_cort)
+        )
+
+        # get number of nodes
+        node_tags_cort, _ = mesher.model.mesh.getNodesForPhysicalGroup(
+            3, cort_physical_group
+        )
+        node_tags_trab, _ = mesher.model.mesh.getNodesForPhysicalGroup(
+            3, trab_physical_group
+        )
+        nb_nodes = len(node_tags_cort) + len(node_tags_trab)
+        logger.info(f"Number of nodes in model: {nb_nodes}")
+        gmsh_log = gmsh.logger.get()
+        Path(mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(f"{mesh_file_path}_gmsh.log", "w") as f:
+            for line in gmsh_log:
+                f.write(line + "\n")
+        gmsh.logger.stop()
 
         gmsh.finalize()
         end = time.time()

@@ -934,6 +934,30 @@ class Mesher:
         sorted_indices = angles_idx[sorted_angles]
         return sorted_indices
 
+    def make_thrusections_transfinite(
+        self, longitudinal_lines, cort_lines, trab_transverse_lines, radial_lines
+    ):
+        ######################################################################
+        # TRANSFINITE CURVES - LONGITUDINAL, CORTICAL, TRANSVERSE, RADIAL
+        self.factory.synchronize()
+        for line in longitudinal_lines:
+            self.model.mesh.setTransfiniteCurve(line, self.n_longitudinal)
+        for line in cort_lines:
+            self.model.mesh.setTransfiniteCurve(line, self.n_transverse_cort)
+        for line in trab_transverse_lines:
+            self.model.mesh.setTransfiniteCurve(line, self.n_transverse_trab)
+        for line in radial_lines:
+            self.model.mesh.setTransfiniteCurve(line, self.n_radial)
+
+        for surf in self.model.getEntities(2):
+            self.model.mesh.setTransfiniteSurface(surf[1])
+            self.model.mesh.setRecombine(2, surf[1])
+            self.model.mesh.setSmoothing(surf[0], surf[1], 100000)
+        for vol in self.model.getEntities(3):
+            self.model.mesh.setTransfiniteVolume(vol[1])
+        self.factory.synchronize()
+        return None
+
     def mesh_generate(self, dim: int, element_order: int):
         self.option.setNumber("Mesh.RecombineAll", 1)
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
@@ -941,7 +965,7 @@ class Mesher:
         self.option.setNumber("Mesh.ElementOrder", element_order)
         self.option.setNumber("Mesh.Smoothing", 100000)
 
-        # self.model.mesh.generate(dim)
+        self.model.mesh.generate(dim)
         self.model.mesh.removeDuplicateNodes()
         self.model.mesh.removeDuplicateElements()
         self.model.occ.synchronize()
