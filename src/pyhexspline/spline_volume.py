@@ -6,7 +6,6 @@ import cv2
 import gmsh
 import imutils
 import matplotlib
-
 # matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -306,8 +305,8 @@ class OCC_volume:
         constant = int(sitk.GetArrayFromImage(image).min())
         image_thr = sitk.ConstantPad(
             image,
-            (0, iso_pad_size, iso_pad_size),
-            (0, iso_pad_size, iso_pad_size),
+            (iso_pad_size, iso_pad_size, 0),
+            (iso_pad_size, iso_pad_size, 0),
             constant,
         )
         return image_thr
@@ -324,20 +323,22 @@ class OCC_volume:
             image = sitk.ReadImage(img_path)
         else:
             image = self.sitk_image
-            image = sitk.PermuteAxes(image, [2, 0, 1])
-            image.SetSpacing(self.sitk_image.GetSpacing())
+            # image = sitk.PermuteAxes(image, [2, 0, 1])
+            # image.SetSpacing(self.sitk_image.GetSpacing())
 
-        image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
+        # image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
 
-        image_thr = self.pad_image(image_thr, iso_pad_size=10)
+        image_pad = self.pad_image(image, iso_pad_size=10)
 
         if self.show_plots is True:
             self.plot_slice(
-                image_thr, SLICE, f"Padded Image on slice n. {SLICE}", ASPECT
+                image_pad, SLICE, f"Padded Image on slice n. {SLICE}", ASPECT
             )
         else:
             self.logger.info(f"Padded Image\t\t\tshow_plots:\t{self.show_plots}")
-        return image_thr
+            
+        print(f'Image size after padding: {image_pad.GetSize()}')
+        return image_pad
 
         """
         img_thr_join = self.get_binary_contour(image_thr)
@@ -884,7 +885,7 @@ class OCC_volume:
 
     def classify_contours(self, mask, slice_idx):
         """Classify and extract outer and inner contours from the mask."""
-        contours = find_contours(mask[:, :, slice_idx], level=0.5)
+        contours = find_contours(mask[:, :, slice_idx]) #, level=127)
         outer_contour = contours[0] if contours else None
         inner_contour = contours[1] if len(contours) > 1 else None
         return outer_contour, inner_contour
@@ -935,10 +936,13 @@ class OCC_volume:
         self, imsitk_pad: Image
     ) -> Tuple[ndarray, ndarray]:
         imnp = sitk.GetArrayFromImage(imsitk_pad)
+        self.spacing = imsitk_pad.GetSpacing()
         imnp = np.transpose(imnp, [2, 1, 0])
         imnp = np.flip(imnp, axis=1)
         height = imnp.shape[2]
         self.logger.debug(f"Height:\t{height}")
+        
+        print(f'Image size of numpy array inside volume_spline_fast_implementation(): {imnp.shape}')
 
         # Get number of slices / ThruSections
         total_slices = np.linspace(0, height - 1, self.SLICING_COEFFICIENT, dtype=int)
