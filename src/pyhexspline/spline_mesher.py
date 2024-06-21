@@ -44,21 +44,15 @@ class HexMesh:
         else:
             self.sitk_image = None  # reads the image from img_path_ext
 
-    def make_thrusection_compound(self, thrusection_volumes):
+    def make_compound(self, dim: int, tags: list):
         gmsh.model.occ.synchronize()
-        # thrusections_compound_surfs = []
-        # for subvol in thrusection_volumes:
-        #     _, surf_cortvol = gmsh.model.getAdjacencies(3, subvol[0][1])
-        #     thrusections_compound_surfs.append(surf_cortvol)
+        # get a list of the tags of the entities to be combined
+        compound = []
+        for entity in tags:
+            compound.append(entity[0][1])
 
-        # for surf in list(zip(*thrusections_compound_surfs)):
-        #     gmsh.model.mesh.setCompound(2, surf)
-
-        compound_volumes = []
-        for subvol in thrusection_volumes:
-            compound_volumes.append(subvol[0][1])
-
-        gmsh.model.mesh.setCompound(3, compound_volumes)
+        # make compound of size 'dim' and tags 'compound'
+        gmsh.model.mesh.setCompound(dim, compound)
         gmsh.model.occ.synchronize()
         return None
 
@@ -547,8 +541,11 @@ class HexMesh:
         )
 
         # * Make ThruSection Compound
-        self.make_thrusection_compound(cort_slice_thrusections_volumes)
-        self.make_thrusection_compound(trab_slice_vol_thrusections)
+        self.make_compound(1, cortical_ext_bspline)
+        self.make_compound(1, cortical_int_bspline)
+        self.make_compound(2, trab_surfs)
+        self.make_compound(3, cort_slice_thrusections_volumes)
+        # self.make_compound(3, trab_slice_vol_thrusections)
 
         # * make transfinite
         mesher.make_thrusections_transfinite(
@@ -642,14 +639,14 @@ class HexMesh:
         )
         nb_nodes = len(node_tags_cort) + len(node_tags_trab)
         logger.info(f"Number of nodes in model: {nb_nodes}")
-        '''
+        """
         gmsh_log = gmsh.logger.get()
         Path(mesh_file_path).parent.mkdir(parents=True, exist_ok=True)
         with open(f"{mesh_file_path}_gmsh.log", "w") as f:
             for line in gmsh_log:
                 f.write(line + "\n")
         gmsh.logger.stop()
-        '''
+        """
         gmsh.finalize()
         end = time.time()
         elapsed = round(end - start, ndigits=1)
