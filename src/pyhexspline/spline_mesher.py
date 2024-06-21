@@ -315,7 +315,9 @@ class HexMesh:
         )
 
         cortical_v.plot_mhd_slice()
-        image_pad = cortical_v.binary_threshold()
+        print(f'Image size before entering binary_threshold(): {cortical_v.sitk_image.GetSize()}')
+        image_pad = cortical_v.binary_threshold(img_path=cortical_v.img_path)
+        print(f'Image size after entering binary_threshold(): {image_pad.GetSize()}')
         cortical_ext_split, cortical_int_split, cortical_int_sanity = (
             cortical_v.volume_spline_fast_implementation(image_pad)
         )
