@@ -957,18 +957,19 @@ class Mesher:
         self.option.setNumber("Mesh.Recombine3DLevel", 1)
         self.option.setNumber("Mesh.ElementOrder", element_order)
         self.option.setNumber("Mesh.Smoothing", 100000)
+        self.option.setNumber("Geometry.Tolerance", 1e-3)
 
         self.model.mesh.generate(dim)
         self.model.mesh.removeDuplicateNodes()
         self.model.mesh.removeDuplicateElements()
         self.model.occ.synchronize()
 
+        self.logger.info("Optimising mesh")
         if element_order == 1:
-            pass
-            # self.logger.info("Optimising mesh")
-            # self.model.mesh.optimize(method="HighOrderElastic", force=True)
+            self.model.mesh.optimize(
+                method="UntangleMeshGeometry", niter=20, force=True
+            )
         elif element_order > 1:
-            self.logger.info("Optimising mesh")
             self.model.mesh.optimize(method="HighOrderFastCurving", force=False)
         return None
 
@@ -981,6 +982,7 @@ class Mesher:
         return None
 
     def gmsh_get_nodes(self) -> Dict[uint64, ndarray]:
+        self.factory.synchronize()
         nTagsCoord_dict = {}
         for physical_group in self.model.getPhysicalGroups():
             nTags_s, nCoord_s = self.model.mesh.getNodesForPhysicalGroup(
@@ -994,6 +996,7 @@ class Mesher:
         return nTagsCoord_dict
 
     def gmsh_get_elms(self) -> Dict[uint64, ndarray]:
+        self.factory.synchronize()
         elms_dict = {}
         nodeTags = None
         for vol in self.model.getEntities(3):

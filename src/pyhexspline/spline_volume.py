@@ -903,7 +903,7 @@ class OCC_volume:
         tckp, _ = splprep(
             [contour_coords[:, 0], contour_coords[:, 1]],
             s=self.S,
-            k=3,
+            k=self.K,
             per=1,
         )
         x_new, y_new = splev(np.linspace(0, 1, self.INTERP_POINTS_S), tckp)

@@ -46,13 +46,24 @@ class HexMesh:
 
     def make_compound(self, dim: int, tags: list):
         gmsh.model.occ.synchronize()
-        # get a list of the tags of the entities to be combined
-        compound = []
-        for entity in tags:
-            compound.append(entity[0][1])
+        # make sure that tags is a list of integers or numpy array of integers
+        if all(isinstance(item, int) for item in tags) or all(
+            isinstance(item, (int, np.integer)) for item in tags
+        ):
+            compound = tags
+        else:
+            # get a list of the tags of the entities to be combined
+            compound = []
+            for entity in tags:
+                compound.append(entity[0][1])
 
         # make compound of size 'dim' and tags 'compound'
-        gmsh.model.mesh.setCompound(dim, compound)
+        if dim == 1:
+            subcompounds = np.array_split(compound, 10)  # TODO: generalise this
+            for subcomp in subcompounds:
+                gmsh.model.mesh.setCompound(dim, subcomp)
+        else:
+            gmsh.model.mesh.setCompound(dim, compound)
         gmsh.model.occ.synchronize()
         return None
 
@@ -176,9 +187,9 @@ class HexMesh:
     def add_thrusection(
         self,
         surf_tags,
-        MAX_DEGREE=2,
+        MAX_DEGREE=1,
         MAKE_SOLID=True,
-        CONTINUITY="G2",
+        CONTINUITY="G0",
     ):
         gmsh.model.occ.synchronize()
         thrusections_volumes = []
@@ -315,9 +326,11 @@ class HexMesh:
         )
 
         cortical_v.plot_mhd_slice()
-        print(f'Image size before entering binary_threshold(): {cortical_v.sitk_image.GetSize()}')
+        print(
+            f"Image size before entering binary_threshold(): {cortical_v.sitk_image.GetSize()}"
+        )
         image_pad = cortical_v.binary_threshold(img_path=cortical_v.img_path)
-        print(f'Image size after entering binary_threshold(): {image_pad.GetSize()}')
+        print(f"Image size after entering binary_threshold(): {image_pad.GetSize()}")
         cortical_ext_split, cortical_int_split, cortical_int_sanity = (
             cortical_v.volume_spline_fast_implementation(image_pad)
         )
@@ -407,11 +420,10 @@ class HexMesh:
         # *ThruSections for Cortical Slices
         cort_slice_thrusections_volumes = self.add_thrusection(
             slices_tags,
-            MAX_DEGREE=2,
+            MAX_DEGREE=1,
             MAKE_SOLID=True,
-            CONTINUITY="G2",
+            CONTINUITY="G0",
         )
-
         cort_lines, cort_splines_radial, cort_splines_longitudinal = (
             self.split_thrusection_entities(cort_slice_thrusections_volumes)
         )
@@ -448,9 +460,9 @@ class HexMesh:
 
         trab_inner_vol_thrusection = self.add_thrusection(
             trab_curveloop_h_list,
-            MAX_DEGREE=2,
+            MAX_DEGREE=1,
             MAKE_SOLID=True,
-            CONTINUITY="G2",
+            CONTINUITY="G0",
         )
 
         trab_inner_lines, trab_inner_splines_radial, trab_inner_splines_longitudinal = (
@@ -475,9 +487,9 @@ class HexMesh:
         # add thrusection
         trab_slice_vol_thrusections = self.add_thrusection(
             trabecular_slice_curve_loop_tags,
-            MAX_DEGREE=2,
+            MAX_DEGREE=1,
             MAKE_SOLID=True,
-            CONTINUITY="G2",
+            CONTINUITY="G0",
         )
         # split entities
         trab_lines, trab_splines_radial, trab_splines_longitudinal = (
@@ -488,21 +500,21 @@ class HexMesh:
         radial_lines.extend(trab_splines_radial)
         longitudinal_lines.extend(trab_splines_longitudinal)
 
-        # mesher.factory.synchronize()
-        # all_line_entities = gmsh.model.getEntities(1)
-        # all_line_entities = [line[1] for line in all_line_entities]
-        # lines_to_delete = [
-        #     line
-        #     for line in all_line_entities
-        #     if line not in transverse_lines
-        #     or line not in radial_lines
-        #     or line not in longitudinal_lines
-        #     or line not in cort_lines
-        # ]
-        # print(f"Deleting {len(lines_to_delete)} entities")
-        # [gmsh.model.occ.remove([(1, line)]) for line in lines_to_delete]
-        # # [gmsh.model.occ.remove([(1, line)]) for line in all_line_entities]
-        # mesher.factory.synchronize()
+        mesher.factory.synchronize()
+        all_line_entities = gmsh.model.getEntities(1)
+        all_line_entities = [line[1] for line in all_line_entities]
+        lines_to_delete = [
+            line
+            for line in all_line_entities
+            if line not in transverse_lines
+            or line not in radial_lines
+            or line not in longitudinal_lines
+            or line not in cort_lines
+        ]
+        print(f"Deleting {len(lines_to_delete)} entities")
+        [gmsh.model.occ.remove([(1, line)]) for line in lines_to_delete]
+        # [gmsh.model.occ.remove([(1, line)]) for line in all_line_entities]
+        mesher.factory.synchronize()
 
         trab_refinement = None
         quadref_vols = None
@@ -543,11 +555,34 @@ class HexMesh:
         )
 
         # * Make ThruSection Compound
-        self.make_compound(1, cortical_ext_bspline)
-        self.make_compound(1, cortical_int_bspline)
-        self.make_compound(2, trab_surfs)
-        self.make_compound(3, cort_slice_thrusections_volumes)
-        # self.make_compound(3, trab_slice_vol_thrusections)
+        cort_thrusection_surfs = []
+        for subvols in cort_slice_thrusections_volumes:
+            _, surfs = mesher.model.getAdjacencies(3, subvols[0][1])
+            cort_thrusection_surfs.extend(surfs)
+        # self.make_compound(1, cortical_ext_bspline)
+        # self.make_compound(1, cortical_int_bspline)
+        # self.make_compound(2, [2, 8, 14, 20])
+        # self.make_compound(2, [4, 10, 16, 22])
+        # self.make_compound(2, [5, 11, 17, 23])
+        # self.make_compound(2, [6, 12, 18, 24])
+        # self.make_compound(3, cort_slice_thrusections_volumes)
+        # self.make_compound(3, [1, 2, 3, 4])
+        # self.make_compound(3, [5, 6, 7, 8])
+
+        # gmsh.model.mesh.setCompound(1, [73, 116])
+        # gmsh.model.mesh.setCompound(1, [75, 118])
+        # gmsh.model.mesh.setCompound(1, [74, 114])
+        # gmsh.model.mesh.setCompound(1, [76, 117])
+        # gmsh.model.mesh.setCompound(2, [1, 21])
+        # gmsh.model.mesh.setCompound(2, [4, 22])
+        # gmsh.model.mesh.setCompound(2, [2, 20])
+
+        # gmsh.model.mesh.setCompound(1, [83, 119])
+        # gmsh.model.mesh.setCompound(1, [84, 120])
+        # gmsh.model.mesh.setCompound(1, [77, 113])
+        # gmsh.model.mesh.setCompound(1, [79, 115])
+        # gmsh.model.mesh.setCompound(2, [5, 23])
+        # gmsh.model.mesh.setCompound(2, [6, 24])
 
         # * make transfinite
         mesher.make_thrusections_transfinite(
@@ -571,7 +606,6 @@ class HexMesh:
         )
 
         mesher.factory.synchronize()
-        gmsh.model.geo.removeAllDuplicates()
         mesher.mesh_generate(dim=3, element_order=ELM_ORDER)
 
         if MESH_ANALYSIS:
