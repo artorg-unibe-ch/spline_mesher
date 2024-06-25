@@ -927,24 +927,86 @@ class Mesher:
         sorted_indices = angles_idx[sorted_angles]
         return sorted_indices
 
+    def get_show_normals(self) -> None:
+        # For each surface in the model:
+        normals = []
+        curvatures = []
+        for e in gmsh.model.occ.getEntities(2):
+            # Retrieve the surface tag
+            s = e[1]
+
+            # Get the mesh nodes on the surface, including those on the boundary
+            # (contrary to internal nodes, which store their parametric coordinates,
+            # boundary nodes will be reparametrized on the surface in order to compute
+            # their parametric coordinates, the result being different when
+            # reparametrized on another adjacent surface)
+            tags, coord, param = gmsh.model.mesh.getNodes(2, s, True)
+
+            # Get the surface normals on all the points on the surface corresponding to
+            # the parametric coordinates of the nodes
+            norm = gmsh.model.getNormal(s, param)
+
+            # In the same way, get the curvature
+            curv = gmsh.model.getCurvature(2, s, param)
+
+            # Store the normals and the curvatures so that we can display them as
+            # list-based post-processing views
+            for i in range(0, len(coord), 3):
+                normals.append(coord[i])
+                normals.append(coord[i + 1])
+                normals.append(coord[i + 2])
+                normals.append(norm[i])
+                normals.append(norm[i + 1])
+                normals.append(norm[i + 2])
+                curvatures.append(coord[i])
+                curvatures.append(coord[i + 1])
+                curvatures.append(coord[i + 2])
+                curvatures.append(curv[i // 3])
+
+        # Create a list-based vector view on points to display the normals, and a scalar
+        # view on points to display the curvatures
+        vn = gmsh.view.add("normals")
+        gmsh.view.addListData(vn, "VP", len(normals) // 6, normals)
+        gmsh.view.option.setNumber(vn, "ShowScale", 0)
+        gmsh.view.option.setNumber(vn, "ArrowSizeMax", 30)
+        gmsh.view.option.setNumber(vn, "ColormapNumber", 19)
+        vc = gmsh.view.add("curvatures")
+        gmsh.view.addListData(vc, "SP", len(curvatures) // 4, curvatures)
+        gmsh.view.option.setNumber(vc, "ShowScale", 0)
+        return None
+
     def make_thrusections_transfinite(
         self, longitudinal_lines, cort_lines, trab_transverse_lines, radial_lines
     ):
         ######################################################################
         # TRANSFINITE CURVES - LONGITUDINAL, CORTICAL, TRANSVERSE, RADIAL
         self.factory.synchronize()
-        for line in longitudinal_lines:
-            self.model.mesh.setTransfiniteCurve(line, self.n_longitudinal)
-        for line in cort_lines:
-            self.model.mesh.setTransfiniteCurve(line, self.n_transverse_cort)
-        for line in trab_transverse_lines:
-            self.model.mesh.setTransfiniteCurve(line, self.n_transverse_trab)
-        for line in radial_lines:
-            self.model.mesh.setTransfiniteCurve(line, self.n_radial)
+        all_lines = self.model.occ.getEntities(1)
+        for ll in all_lines:
+            self.model.mesh.setTransfiniteCurve(ll[1], 10)
+            # if ll[1] in longitudinal_lines:
+            #     self.model.mesh.setTransfiniteCurve(ll[1], self.n_longitudinal)
+            # elif ll[1] in cort_lines:
+            #     self.model.mesh.setTransfiniteCurve(ll[1], self.n_transverse_cort)
+            # elif ll[1] in trab_transverse_lines:
+            #     self.model.mesh.setTransfiniteCurve(ll[1], self.n_transverse_trab)
+            # elif ll[1] in radial_lines:
+            #     self.model.mesh.setTransfiniteCurve(ll[1], self.n_radial)
+            # else:
+            #     self.model.mesh.setTransfiniteCurve(ll[1], 100)
+
+        # for line in longitudinal_lines:
+        #     self.model.mesh.setTransfiniteCurve(line, self.n_longitudinal)
+        # for line in cort_lines:
+        #     self.model.mesh.setTransfiniteCurve(line, self.n_transverse_cort)
+        # for line in trab_transverse_lines:
+        #     self.model.mesh.setTransfiniteCurve(line, self.n_transverse_trab)
+        # for line in radial_lines:
+        #     self.model.mesh.setTransfiniteCurve(line, self.n_radial)
 
         for surf in self.model.getEntities(2):
             self.model.mesh.setTransfiniteSurface(surf[1])
-            self.model.mesh.setRecombine(2, surf[1])
+            self.model.mesh.setRecombine(surf[0], surf[1], angle=90)
             self.model.mesh.setSmoothing(surf[0], surf[1], 100000)
         for vol in self.model.getEntities(3):
             self.model.mesh.setTransfiniteVolume(vol[1])
@@ -957,13 +1019,14 @@ class Mesher:
         self.option.setNumber("Mesh.Recombine3DLevel", 1)
         self.option.setNumber("Mesh.ElementOrder", element_order)
         self.option.setNumber("Mesh.Smoothing", 100000)
-        self.option.setNumber("Geometry.Tolerance", 1e-3)
+        # self.option.setNumber("Geometry.Tolerance", 5e-4)
 
         self.model.mesh.generate(dim)
         self.model.mesh.removeDuplicateNodes()
         self.model.mesh.removeDuplicateElements()
         self.model.occ.synchronize()
 
+        """
         self.logger.info("Optimising mesh")
         if element_order == 1:
             self.model.mesh.optimize(
@@ -971,6 +1034,7 @@ class Mesher:
             )
         elif element_order > 1:
             self.model.mesh.optimize(method="HighOrderFastCurving", force=False)
+        """
         return None
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:
