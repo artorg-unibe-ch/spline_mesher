@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import List, Tuple
 
 import cv2
 import gmsh
@@ -12,21 +13,16 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import scipy.spatial as ss
+import shapely.geometry as shpg
 import SimpleITK as sitk
 from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy.interpolate import splev, splprep, splrep
-from SimpleITK.SimpleITK import Image
 from numpy import ndarray
-from typing import List, Tuple
-
 from scipy import spatial
+from scipy.interpolate import splev, splprep, splrep
 from shapely import Polygon
-import shapely.geometry as shpg
-
-from joblib import Parallel, delayed
+from SimpleITK.SimpleITK import Image
 from skimage.measure import find_contours
-
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203

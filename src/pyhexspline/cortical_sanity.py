@@ -1,16 +1,15 @@
 import math
+from logging import Logger
 from pathlib import Path
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as shpg
 import shapely.ops as shpops
+from numpy import ndarray
 from scipy import spatial
 from shapely.ops import unary_union
-from logging import Logger
-from numpy import ndarray
-from typing import Tuple
-
 
 # plt.style.use('02_CODE/src/spline_mesher/cfgdir/pos_monitor.mplstyle')  # https://github.com/matplotlib/matplotlib/issues/17978
 
@@ -21,7 +20,13 @@ LOGGING_NAME = "MESHING"
 
 class CorticalSanityCheck:
     def __init__(
-        self, MIN_THICKNESS: float, ext_contour: ndarray, int_contour: ndarray, model: str, save_plot: bool, logger: Logger
+        self,
+        MIN_THICKNESS: float,
+        ext_contour: ndarray,
+        int_contour: ndarray,
+        model: str,
+        save_plot: bool,
+        logger: Logger,
     ) -> None:
         self.min_thickness = (
             MIN_THICKNESS  # minimum thickness between internal and external contour
@@ -729,7 +734,11 @@ class CorticalSanityCheck:
         return int_contour, ext_offset
 
     def cortical_sanity_check(
-        self, ext_contour: ndarray, int_contour: ndarray, iterator: int, show_plots: bool = True
+        self,
+        ext_contour: ndarray,
+        int_contour: ndarray,
+        iterator: int,
+        show_plots: bool = True,
     ) -> ndarray:
         """
         Check if the internal contour is within the external contour.
