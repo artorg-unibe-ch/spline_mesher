@@ -150,9 +150,9 @@ class HexMesh:
             phases=PHASES,
         )
 
-        img_np = cortical_v.plot_mhd_slice()
-        # cortical_ext, cortical_int = cortical_v.volume_splines()
-        cortical_ext, cortical_int = cortical_v.volume_splines_optimized(img_np)
+        cortical_v.plot_mhd_slice()
+        image_pad = cortical_v.binary_threshold(img_path=cortical_v.img_path)
+        cortical_ext, cortical_int = cortical_v.volume_splines_optimized(image_pad)
 
         # cortical_ext = np.load(
         #     "/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/cortical_ext_interp_v2.npy"
