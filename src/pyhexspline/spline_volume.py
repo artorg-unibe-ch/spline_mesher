@@ -1017,14 +1017,18 @@ class OCC_volume:
             line_sets.append(vertical_ll)
         return line_sets
 
-    def volume_splines_optimized(self, mask) -> Tuple[ndarray, ndarray]:
-
-        height = mask.shape[0]
+    def volume_splines_optimized(self, imsitk_pad) -> Tuple[ndarray, ndarray]:
+        imnp = sitk.GetArrayFromImage(imsitk_pad)
+        self.spacing = imsitk_pad.GetSpacing()
+        imnp = np.transpose(imnp, [2, 1, 0])
+        imnp = np.flip(imnp, axis=1)
+        height = imnp.shape[2]
+        self.logger.debug(f"Height:\t{height}")
 
         NUM_SLICES = height // self.SLICING_COEFFICIENT
         total_slices = np.linspace(0, height - 1, NUM_SLICES, dtype=int)
         results = Parallel(n_jobs=-1)(
-            delayed(self.process_slice)(mask, slice_idx) for slice_idx in total_slices
+            delayed(self.process_slice)(imnp, slice_idx) for slice_idx in total_slices
         )
 
         outer_contours, inner_contours = zip(*results)
