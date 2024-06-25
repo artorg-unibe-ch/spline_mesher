@@ -73,7 +73,7 @@ def main():
     # print(sitk_image_s.GetSize())
 
     sitk_image_s = sitk.ReadImage(
-        "99_testing_prototyping/repro-mesh-issues/C0001421_CORTMASK.mhd"
+        "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/437_R_90_F/C0003095_CORTMASK.mhd"
     )
     print(sitk_image_s.GetSize())
     sitk_image_s = sitk_image_s[:, :, :]

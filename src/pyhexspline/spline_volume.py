@@ -308,8 +308,8 @@ class OCC_volume:
         constant = int(sitk.GetArrayFromImage(image).min())
         image_thr = sitk.ConstantPad(
             image,
-            (0, iso_pad_size, iso_pad_size),
-            (0, iso_pad_size, iso_pad_size),
+            (iso_pad_size, iso_pad_size, 0),
+            (iso_pad_size, iso_pad_size, 0),
             constant,
         )
         return image_thr
@@ -318,6 +318,34 @@ class OCC_volume:
         """
         THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
         """
+        THRESHOLD_PARAM = self.THRESHOLD_PARAM
+        ASPECT = self.ASPECT
+        SLICE = self.SLICE
+
+        if self.sitk_image is None:
+            image = sitk.ReadImage(img_path)
+        else:
+            image = self.sitk_image
+            # image = sitk.PermuteAxes(image, [2, 0, 1])
+            # image.SetSpacing(self.sitk_image.GetSpacing())
+
+        # image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
+
+        image_pad = self.pad_image(image, iso_pad_size=10)
+
+        if self.show_plots is True:
+            self.plot_slice(
+                image_pad, SLICE, f"Padded Image on slice n. {SLICE}", ASPECT
+            )
+        else:
+            self.logger.info(f"Padded Image\t\t\tshow_plots:\t{self.show_plots}")
+
+        print(f"Image size after padding: {image_pad.GetSize()}")
+        return image_pad
+
+    """
+    def binary_threshold(self, img_path: str) -> Tuple[ndarray, ndarray]:
+        THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
         THRESHOLD_PARAM = self.THRESHOLD_PARAM
         ASPECT = self.ASPECT
         SLICE = self.SLICE
@@ -413,6 +441,7 @@ class OCC_volume:
         self.coordsX = np.transpose(coordsX, [1, 0])
         self.coordsY = np.transpose(coordsY, [1, 0])
         return contour_ext, contour_int
+    """
 
     def sort_xy(self, x: ndarray, y: ndarray) -> Tuple[ndarray, ndarray]:
         # https://stackoverflow.com/questions/58377015/counterclockwise-sorting-of-x-y-data
@@ -930,7 +959,7 @@ class OCC_volume:
         return all_points_array
 
     def classify_and_store_contours(self, mask, slice_idx):
-        contours = find_contours(mask[slice_idx, :, :], level=0.5)
+        contours = find_contours(mask[:, :, slice_idx])  # , level=0.5)
         if contours:
             outer_contours = contours[0]  # First contour as outer
             if len(contours) > 1:
@@ -940,14 +969,14 @@ class OCC_volume:
     def evaluate_bspline(self, contour):
         tckp, _ = splprep(
             [contour[:, 0], contour[:, 1]],
-            s=1000,
-            k=3,
+            s=self.S,
+            k=self.K,
             per=1,
             ub=[contour[0][0], contour[-1][0]],
             ue=[contour[0][1], contour[-1][1]],
             quiet=1,
         )
-        xnew, ynew = splev(np.linspace(0, 1, 500), tckp)
+        xnew, ynew = splev(np.linspace(0, 1, self.INTERP_POINTS_S), tckp)
         xnew = np.append(xnew, xnew[0])
         ynew = np.append(ynew, ynew[0])
         return xnew, ynew
@@ -1025,11 +1054,18 @@ class OCC_volume:
         height = imnp.shape[2]
         self.logger.debug(f"Height:\t{height}")
 
-        NUM_SLICES = height // self.SLICING_COEFFICIENT
+        NUM_SLICES = height // 10  # TODO: parametrize this 10
         total_slices = np.linspace(0, height - 1, NUM_SLICES, dtype=int)
-        results = Parallel(n_jobs=-1)(
-            delayed(self.process_slice)(imnp, slice_idx) for slice_idx in total_slices
-        )
+
+        # results = Parallel(n_jobs=-1)(
+        #     delayed(self.process_slice)(imnp, slice_idx) for slice_idx in total_slices
+        # )
+
+        results = []
+        for slice_idx in total_slices:
+            print(f"Processing slice {slice_idx}")
+            result = self.process_slice(imnp, slice_idx)
+            results.append(result)
 
         outer_contours, inner_contours = zip(*results)
         out_arr_mm = np.array(outer_contours).reshape(-1, 3) * 0.061
@@ -1065,11 +1101,13 @@ class OCC_volume:
         for key in slices_int:
             for coord_array in slices_int[key]:
                 all_coords_int.append(coord_array)
+        cortical_int_array = np.vstack(all_coords_int)
 
         all_coords_ext = []
         for key in slices_ext:
             for coord_array in slices_ext[key]:
                 all_coords_ext.append(coord_array)
+        cortical_ext_array = np.vstack(all_coords_ext)  #! change of name !
 
         inn_sanity = []
         for z_value, slice_ext_points in slices_ext.items():
@@ -1079,4 +1117,4 @@ class OCC_volume:
             inn_sanity.append(inn_dp)
         inn_sanity = np.array(inn_sanity).reshape(-1, 3)
 
-        return all_coords_ext, all_coords_int
+        return cortical_ext_array, cortical_int_array
