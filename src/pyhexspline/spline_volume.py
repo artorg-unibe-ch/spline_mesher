@@ -15,10 +15,18 @@ import scipy.spatial as ss
 import SimpleITK as sitk
 from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy.interpolate import splev, splprep
+from scipy.interpolate import splev, splprep, splrep
 from SimpleITK.SimpleITK import Image
 from numpy import ndarray
 from typing import List, Tuple
+
+from scipy import spatial
+from shapely import Polygon
+import shapely.geometry as shpg
+
+from joblib import Parallel, delayed
+from skimage.measure import find_contours
+
 
 LOGGING_NAME = "MESHING"
 # flake8: noqa: E203
@@ -852,3 +860,219 @@ class OCC_volume:
         contour_int = contour_int.reshape(-1, 3)
 
         return contour_ext, contour_int
+
+    def interpolate_vertical_lines_3d(self, line_sets):
+        """
+        Interpolate 3D vertical lines using cubic spline interpolation and downsample the result.
+
+        This function takes a list of 3D line sets, where each line set is expected to be a list of points in 3D space (x, y, z).
+        Each line is interpolated individually using cubic spline interpolation to generate a smooth curve through the points.
+        The interpolated points are then downsampled based on a slicing coefficient, reducing the number of points in the final output.
+        The function returns a single numpy array containing the downsampled interpolated points from all line sets.
+
+        Parameters
+        ----------
+        line_sets : list of list of list
+            A list where each element is a line set, which is a list of points, and each point is a list of three floats representing the x, y, and z coordinates.
+        slicing_coefficient : int
+            The coefficient used for downsampling the interpolated points. A slicing_coefficient of n will keep every nth point in the z-axis.
+
+        Returns
+        -------
+        np.ndarray
+            A numpy array of shape (n, 3), where n is the total number of downsampled interpolated points from all line sets. Each row represents an interpolated point with x, y, and z coordinates.
+
+        Raises
+        ------
+        ValueError
+            If any line set contains less than 4 unique data points, or if the data contains NaN or Inf values, a ValueError is raised.
+
+        Notes
+        -----
+        The interpolation is performed using the `splrep` and `splev` functions from scipy's interpolate module, with a cubic spline (k=3) and a smoothing factor of 1e6.
+        The downsampling is performed by selecting every nth point in the z-axis based on the slicing_coefficient, reducing the density of points in the final output.
+
+        Examples
+        --------
+        >>> line_sets = [[[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]], [[-1, -1, -1], [0, 0, 0], [1, 1, 1], [2, 2, 2]]]
+        >>> interpolated_points = interpolate_vertical_lines_3d(line_sets, 10)
+        >>> print(interpolated_points.shape)
+        (20, 3)
+        """
+        interpolated_lines = []
+        for line in line_sets:
+            line = np.array(line)
+            line_sorted_by_z = line[np.argsort(line[:, 2])]
+
+            if len(line_sorted_by_z) < 4:
+                raise ValueError(
+                    "Insufficient unique data points for cubic spline interpolation."
+                )
+
+            if np.any(np.isnan(line_sorted_by_z)) or np.any(np.isinf(line_sorted_by_z)):
+                raise ValueError("Data contains NaN or Inf values.")
+
+            x_sorted = line_sorted_by_z[:, 0]
+            y_sorted = line_sorted_by_z[:, 1]
+            z_sorted = line_sorted_by_z[:, 2]
+
+            splrep_eval_x = splrep(z_sorted, x_sorted, k=3, s=1e6)
+            splrep_eval_y = splrep(z_sorted, y_sorted, k=3, s=1e6)
+
+            # Generate znew for interpolation
+            znew = np.linspace(z_sorted[0], z_sorted[-1], self.SLICING_COEFFICIENT)
+            xnew = splev(znew, splrep_eval_x)
+            ynew = splev(znew, splrep_eval_y)
+
+            interpolated_lines.append(np.vstack((xnew, ynew, znew)).T)
+
+        all_points_array = np.concatenate(interpolated_lines, axis=0)
+        return all_points_array
+
+    def classify_and_store_contours(self, mask, slice_idx):
+        contours = find_contours(mask[slice_idx, :, :], level=0.5)
+        if contours:
+            outer_contours = contours[0]  # First contour as outer
+            if len(contours) > 1:
+                inner_contours = contours[1]  # Second contour as inner
+        return outer_contours, inner_contours
+
+    def evaluate_bspline(self, contour):
+        tckp, _ = splprep(
+            [contour[:, 0], contour[:, 1]],
+            s=1000,
+            k=3,
+            per=1,
+            ub=[contour[0][0], contour[-1][0]],
+            ue=[contour[0][1], contour[-1][1]],
+            quiet=1,
+        )
+        xnew, ynew = splev(np.linspace(0, 1, 500), tckp)
+        xnew = np.append(xnew, xnew[0])
+        ynew = np.append(ynew, ynew[0])
+        return xnew, ynew
+
+    def calculate_outer_offset(self, contour):
+        MIN_THICKNESS = self.MIN_THICKNESS
+        contour = np.array(contour)[:, :2]
+        # Assuming the contour is (x, y, z) and we only need (x, y)
+        outer_polygon = Polygon(contour)
+        offset = int(MIN_THICKNESS)
+        buffered_polygon = outer_polygon.buffer(-offset)
+        offset_polygon = np.array(buffered_polygon.exterior.coords)
+        return offset_polygon
+
+    def check_inner_offset(self, outer_polygon, inn_contour):
+        outer_polygon = shpg.Polygon(outer_polygon)
+        outer_contour = np.array(outer_polygon.exterior.coords)
+        inn_contour = (np.array(inn_contour).reshape(-1, 3)[:, :2]).reshape(-1, 2)
+        is_inside_shpg = [
+            shpg.Point(point).within(outer_polygon) for point in inn_contour
+        ]
+        is_inside = np.c_[is_inside_shpg, is_inside_shpg]
+        closest_points = [
+            outer_contour[spatial.KDTree(outer_contour).query(point)[1]]
+            for point in inn_contour
+        ]
+        closest_points = np.array(closest_points).reshape(-1, 2)
+        np.copyto(dst=inn_contour, src=closest_points, where=np.logical_not(is_inside))
+        return inn_contour
+
+    def process_slice(self, mask, slice_idx):
+        out_cont, inn = self.classify_and_store_contours(mask, slice_idx)
+
+        out_dp = out_cont.copy()
+        out_dp = [shpg.Point(point) for point in out_dp]
+        out_dp = shpg.Polygon(out_dp)
+        out_dp = out_dp.simplify(30, preserve_topology=True)
+
+        xout, yout = self.evaluate_bspline(np.array(out_dp.exterior.coords))
+
+        out_bspline = np.column_stack((xout, yout))
+        out_bspline = np.column_stack(
+            (out_bspline, np.full(out_bspline.shape[0], slice_idx))
+        )
+
+        inn_dp = inn.copy()
+        inn_dp = [shpg.Point(point) for point in inn_dp]
+        inn_dp = shpg.Polygon(inn_dp)
+        inn_dp = inn_dp.simplify(30, preserve_topology=True)
+
+        xin, yin = self.evaluate_bspline(np.array(inn_dp.exterior.coords))
+
+        inn_bspline = np.column_stack((xin, yin))
+        inn_bspline = np.column_stack(
+            (inn_bspline, np.full(inn_bspline.shape[0], slice_idx))
+        )
+        return out_bspline, inn_bspline
+
+    def get_line_sets(self, contour):
+        num_points = contour[0].shape[0]
+        line_sets = []
+        for pt_idx in range(num_points):
+            vertical_ll = []
+            for _slice in contour:
+                # Collecting the pt_idx-th point from each slice
+                vertical_ll.append(_slice[pt_idx])
+            line_sets.append(vertical_ll)
+        return line_sets
+
+    def volume_splines_optimized(self, mask) -> Tuple[ndarray, ndarray]:
+
+        height = mask.shape[0]
+
+        NUM_SLICES = height // self.SLICING_COEFFICIENT
+        total_slices = np.linspace(0, height - 1, NUM_SLICES, dtype=int)
+        results = Parallel(n_jobs=-1)(
+            delayed(self.process_slice)(mask, slice_idx) for slice_idx in total_slices
+        )
+
+        outer_contours, inner_contours = zip(*results)
+        out_arr_mm = np.array(outer_contours).reshape(-1, 3) * 0.061
+        inn_arr_mm = np.array(inner_contours).reshape(-1, 3) * 0.061
+
+        z_unique = np.unique(out_arr_mm[:, 2])
+        cortical_ext_split = np.array_split(out_arr_mm, len(z_unique))
+        cortical_int_split = np.array_split(inn_arr_mm, len(z_unique))
+
+        line_sets_ext = self.get_line_sets(cortical_ext_split)
+        line_sets_int = self.get_line_sets(cortical_int_split)
+
+        cortical_ext_interp = self.interpolate_vertical_lines_3d(line_sets_ext)
+        cortical_int_interp = self.interpolate_vertical_lines_3d(line_sets_int)
+
+        slices_ext = {}
+        for point in cortical_ext_interp:
+            z_value = point[2]
+            if z_value not in slices_ext:
+                slices_ext[z_value] = []
+            slices_ext[z_value].append(point)
+
+        slices_int = {}
+        for point in cortical_int_interp:
+            z_value = point[2]
+            if z_value not in slices_int:
+                slices_int[z_value] = []
+            slices_int[z_value].append(point)
+
+        # TODO: I really don't like this back and forth conversion, but tentative fix for now
+
+        all_coords_int = []
+        for key in slices_int:
+            for coord_array in slices_int[key]:
+                all_coords_int.append(coord_array)
+
+        all_coords_ext = []
+        for key in slices_ext:
+            for coord_array in slices_ext[key]:
+                all_coords_ext.append(coord_array)
+
+        inn_sanity = []
+        for z_value, slice_ext_points in slices_ext.items():
+            out_offset = self.calculate_outer_offset(slice_ext_points)
+            inn_dp = self.check_inner_offset(out_offset, slices_int[z_value])
+            inn_dp = np.column_stack((inn_dp, np.full(inn_dp.shape[0], z_value)))
+            inn_sanity.append(inn_dp)
+        inn_sanity = np.array(inn_sanity).reshape(-1, 3)
+
+        return all_coords_ext, all_coords_int

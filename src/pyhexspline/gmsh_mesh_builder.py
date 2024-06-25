@@ -438,25 +438,56 @@ class Mesher:
             np.array(intersections_append_s).reshape((-1, slicing_coefficient)).tolist()
         )
 
-        BSplineFilling_tags = []
-        for i in range(len(array_bspline_sliced) - 1):
-            bspline_s = array_bspline_sliced[i]
-            for j in range(len(bspline_s) - 1):
-                WIRE = self.factory.addWire(
-                    [
-                        intersections_append[j][i],
-                        array_bspline_sliced[i][j],
-                        intersections_append[j + 1][i],
-                        array_bspline_sliced[i + 1][j],
-                    ],
-                    tag=-1,
-                    checkClosed=True,
-                )
+        try:
+            BSplineFilling_tags = []
+            for i in range(len(array_bspline_sliced) - 1):
+                bspline_s = array_bspline_sliced[i]
+                for j in range(len(bspline_s) - 1):
+                    WIRE = self.factory.addWire(
+                        [
+                            intersections_append[j][i],
+                            array_bspline_sliced[i][j],
+                            intersections_append[j + 1][i],
+                            array_bspline_sliced[i + 1][j],
+                        ],
+                        tag=-1,
+                        checkClosed=True,
+                    )
 
-                BSplineFilling = self.factory.addBSplineFilling(
-                    WIRE, type="Stretch", tag=-1
-                )
-                BSplineFilling_tags = np.append(BSplineFilling_tags, BSplineFilling)
+                    BSplineFilling = self.factory.addBSplineFilling(
+                        WIRE, type="Stretch", tag=-1
+                    )
+                    BSplineFilling_tags = np.append(BSplineFilling_tags, BSplineFilling)
+        except Exception as e:
+            # I'm truly not proud of this trick
+            self.logger.error(f"Error in BSplineFilling: {e}")
+            bspline_t = np.array(bsplines, dtype="int").reshape(
+                (slicing_coefficient, -1)
+            )
+            bspline_t = np.array([np.roll(row, -1) for row in bspline_t])
+            bspline_first_elements = bspline_t[:, 0][:, np.newaxis]
+            array_bspline_sliced = np.concatenate(
+                (bspline_t, bspline_first_elements), axis=1
+            )
+            BSplineFilling_tags = []
+            for i in range(len(array_bspline_sliced) - 1):
+                bspline_s = array_bspline_sliced[i]
+                for j in range(len(bspline_s) - 1):
+                    WIRE = self.factory.addWire(
+                        [
+                            intersections_append[j][i],
+                            array_bspline_sliced[i][j],
+                            intersections_append[j + 1][i],
+                            array_bspline_sliced[i + 1][j],
+                        ],
+                        tag=-1,
+                        checkClosed=True,
+                    )
+
+                    BSplineFilling = self.factory.addBSplineFilling(
+                        WIRE, type="Stretch", tag=-1
+                    )
+                    BSplineFilling_tags = np.append(BSplineFilling_tags, BSplineFilling)
         return BSplineFilling_tags
 
     def add_interslice_segments(
@@ -487,25 +518,43 @@ class Mesher:
             int
         )
 
-        ext_int_tags = []
-        self.logger.debug("Surface slices")
-        self.logger.debug("j, i")
-        for i in range(len(inter_a) - 1):
-            interslice_i = inter_a[i]
-            for j in range(len(interslice_i) - 1):
-                self.logger.debug(
-                    f"{j}, {i}:\t{inter_a[i][j]} {ext_r[i][j]} {inter_a[i][j + 1]} {int_r[i][j]}"
-                )
-                ext_int_tags_s = self.factory.addCurveLoop(
-                    [
-                        inter_a[i][j],
-                        ext_r[i][j],
-                        inter_a[i][j + 1],
-                        int_r[i][j],
-                    ],
-                    tag=-1,
-                )
-                ext_int_tags = np.append(ext_int_tags, ext_int_tags_s)
+        try:
+            ext_int_tags = []
+            self.logger.debug("Surface slices")
+            self.logger.debug("j, i")
+            for i in range(len(inter_a) - 1):
+                interslice_i = inter_a[i]
+                for j in range(len(interslice_i) - 1):
+                    self.logger.debug(
+                        f"{j}, {i}:\t{inter_a[i][j]} {ext_r[i][j]} {inter_a[i][j + 1]} {int_r[i][j]}"
+                    )
+                    ext_int_tags_s = self.factory.addCurveLoop(
+                        [
+                            inter_a[i][j],
+                            ext_r[i][j],
+                            inter_a[i][j + 1],
+                            int_r[i][j],
+                        ],
+                        tag=-1,
+                    )
+                    ext_int_tags = np.append(ext_int_tags, ext_int_tags_s)
+        except Exception as e:
+            self.logger.error(f"Error in add_slice_surfaces: {e}")
+            ext_r = np.array([np.roll(ext_r, -1) for ext_r in ext_r])
+            ext_int_tags = []
+            for i in range(len(inter_a) - 1):
+                interslice_i = inter_a[i]
+                for j in range(len(interslice_i) - 1):
+                    ext_int_tags_s = self.factory.addCurveLoop(
+                        [
+                            inter_a[i][j],
+                            ext_r[i][j],
+                            inter_a[i][j + 1],
+                            int_r[i][j],
+                        ],
+                        tag=-1,
+                    )
+                    ext_int_tags = np.append(ext_int_tags, ext_int_tags_s)
 
         ext_int_tags_l = np.array(ext_int_tags, dtype="int").tolist()
         slices_ext_int_tags = []

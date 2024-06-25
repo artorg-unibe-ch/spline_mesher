@@ -150,8 +150,16 @@ class HexMesh:
             phases=PHASES,
         )
 
-        cortical_v.plot_mhd_slice()
-        cortical_ext, cortical_int = cortical_v.volume_splines()
+        img_np = cortical_v.plot_mhd_slice()
+        # cortical_ext, cortical_int = cortical_v.volume_splines()
+        cortical_ext, cortical_int = cortical_v.volume_splines_optimized(img_np)
+
+        # cortical_ext = np.load(
+        #     "/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/cortical_ext_interp_v2.npy"
+        # )
+        # cortical_int = np.load(
+        #     "/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/cortical_int_interp_v2.npy"
+        # )
 
         # Cortical surface sanity check
         cortex = csc.CorticalSanityCheck(
@@ -216,27 +224,6 @@ class HexMesh:
         intersections_int = np.zeros((len(cortical_ext_split), 2, 2, 3), dtype=float)
 
         for i, _ in enumerate(cortical_ext_split):
-            """
-            # Ensure that cortical_ext_split[i] is unique and closed
-            unique_ext, idx_ext = np.unique(
-                cortical_ext_split[i], axis=0, return_index=True
-            )
-            if not np.allclose(unique_ext[0], unique_ext[-1]):
-                idx_ext[-1] = idx_ext[0]
-                cortical_ext_split[i] = unique_ext[np.argsort(idx_ext)]
-            else:
-                cortical_ext_split[i] = unique_ext
-
-            # Ensure that cortical_int_sanity_split[i] is unique and closed
-            unique_int, idx_int = np.unique(
-                cortical_int_sanity_split[i], axis=0, return_index=True
-            )
-            if not np.allclose(unique_int[0], unique_int[-1]):
-                idx_int[-1] = idx_int[0]
-                cortical_int_sanity_split[i] = unique_int[np.argsort(idx_int)]
-            else:
-                cortical_int_sanity_split[i] = unique_int
-            """
 
             cortex_centroid[i][:-1] = mesher.polygon_tensor_of_inertia(
                 cortical_ext_split[i],
@@ -460,7 +447,7 @@ class HexMesh:
         mesher.model.occ.synchronize()
         mesher.logger.info("Optimising mesh")
         if ELM_ORDER == 1:
-            mesher.model.mesh.optimize(method="HighOrderElastic", force=True)
+            mesher.model.mesh.optimize(method="UntangleMeshGeometry", force=True)
             pass
         elif ELM_ORDER > 1:
             mesher.model.mesh.optimize(method="HighOrderFastCurving", force=False)
