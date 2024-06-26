@@ -46,6 +46,7 @@ class OCC_volume:
         S: int,
         K: int,
         INTERP_POINTS: int,
+        DP_SIMPLIFICATION: int,
         debug_orientation: int,
         show_plots: bool,
         thickness_tol: float,
@@ -75,6 +76,7 @@ class OCC_volume:
         self.S = S
         self.K = K
         self.INTERP_POINTS_S = INTERP_POINTS
+        self.dp_simplification = DP_SIMPLIFICATION
         self.height = 1.0
         self.spacing = []
         self.coordsX = []
@@ -941,8 +943,8 @@ class OCC_volume:
             y_sorted = line_sorted_by_z[:, 1]
             z_sorted = line_sorted_by_z[:, 2]
 
-            splrep_eval_x = splrep(z_sorted, x_sorted, k=3, s=1e6)
-            splrep_eval_y = splrep(z_sorted, y_sorted, k=3, s=1e6)
+            splrep_eval_x = splrep(z_sorted, x_sorted, k=3, s=10)
+            splrep_eval_y = splrep(z_sorted, y_sorted, k=3, s=10)
 
             # Generate znew for interpolation
             znew = np.linspace(z_sorted[0], z_sorted[-1], self.SLICING_COEFFICIENT)
@@ -1004,12 +1006,13 @@ class OCC_volume:
         return inn_contour
 
     def process_slice(self, mask, slice_idx):
+        DP_SIMPLIFICATION = self.dp_simplification
         out_cont, inn = self.classify_and_store_contours(mask, slice_idx)
 
         out_dp = out_cont.copy()
         out_dp = [shpg.Point(point) for point in out_dp]
         out_dp = shpg.Polygon(out_dp)
-        out_dp = out_dp.simplify(30, preserve_topology=True)
+        out_dp = out_dp.simplify(DP_SIMPLIFICATION, preserve_topology=True)
 
         xout, yout = self.evaluate_bspline(np.array(out_dp.exterior.coords))
 
@@ -1021,7 +1024,7 @@ class OCC_volume:
         inn_dp = inn.copy()
         inn_dp = [shpg.Point(point) for point in inn_dp]
         inn_dp = shpg.Polygon(inn_dp)
-        inn_dp = inn_dp.simplify(30, preserve_topology=True)
+        inn_dp = inn_dp.simplify(DP_SIMPLIFICATION, preserve_topology=True)
 
         xin, yin = self.evaluate_bspline(np.array(inn_dp.exterior.coords))
 

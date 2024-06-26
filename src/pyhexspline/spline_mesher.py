@@ -108,6 +108,7 @@ class HexMesh:
         S = int(self.settings_dict["s"])
         K = int(self.settings_dict["k"])
         INTERP_POINTS = int(self.settings_dict["interp_points"])
+        DP_SIMPLIFICATION = int(self.settings_dict["dp_simplification"])
         SHOW_PLOTS = bool(self.settings_dict["show_plots"])
         SHOW_GMSH = bool(self.settings_dict["show_gmsh"])
         WRITE_MESH = bool(self.settings_dict["write_mesh"])
@@ -144,6 +145,7 @@ class HexMesh:
             S=S,
             K=K,
             INTERP_POINTS=INTERP_POINTS,
+            DP_SIMPLIFICATION=DP_SIMPLIFICATION,
             debug_orientation=DEBUG_ORIENTATION,
             show_plots=SHOW_PLOTS,
             thickness_tol=THICKNESS_TOL,
