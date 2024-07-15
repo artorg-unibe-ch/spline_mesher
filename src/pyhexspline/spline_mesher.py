@@ -12,6 +12,7 @@ import sys
 import time
 from itertools import chain
 from pathlib import Path
+import SimpleITK as sitk
 
 import gmsh
 import numpy as np
@@ -152,8 +153,15 @@ class HexMesh:
             phases=PHASES,
         )
 
-        cortical_v.plot_mhd_slice()
-        image_pad = cortical_v.binary_threshold(img_path=cortical_v.img_path)
+        if cortical_v.sitk_image is None:
+            img = sitk.PermuteAxes(sitk.ReadImage(cortical_v.img_path), [1, 2, 0])
+        else:
+            img = self.sitk_image
+        if cortical_v.show_plots is True:
+            cortical_v.plot_mhd_slice(img)
+        else:
+            self.logger.info(f"MHD slice\t\t\tshow_plots:\t{cortical_v.show_plots}")
+        image_pad = cortical_v.binary_threshold(img)
         cortical_ext, cortical_int = cortical_v.volume_splines_optimized(image_pad)
 
         # cortical_ext = np.load(

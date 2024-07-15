@@ -46,7 +46,7 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 50,  # smoothing factor of the spline
+        "s": 100,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 500,  # number of points to interpolate the spline
         "dp_simplification": 2,  # Ramer-Douglas-Peucker simplification factor
@@ -61,7 +61,7 @@ def main():
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
         "show_plots": False,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
-        "write_mesh": False,  # write mesh to file
+        "write_mesh": True,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
@@ -74,10 +74,10 @@ def main():
     # print(sitk_image_s.GetSize())
 
     sitk_image_s = sitk.ReadImage(
-        "/home/simoneponcioni/Desktop/repro-to-remesh/1570/C0001570_CORTMASK.mhd"
+        "/home/simoneponcioni/Desktop/repro-to-remesh/C0002211_CORTMASK.mhd"
     )
     print(sitk_image_s.GetSize())
-    sitk_image_s = sitk_image_s[:, :, :-40]
+    # sitk_image_s = sitk_image_s[:, :, :-40]
 
     mesh = HexMesh(
         meshing_settings,

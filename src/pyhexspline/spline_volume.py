@@ -109,62 +109,54 @@ class OCC_volume:
             ),
         )
 
-    def plot_mhd_slice(self):
+    def plot_mhd_slice(self, img):
         """
         Helper function to plot a slice of the MHD file
 
         Returns:
             None
         """
-        if self.show_plots is True:
-            if self.sitk_image is None:
-                img = sitk.PermuteAxes(sitk.ReadImage(self.img_path), [1, 2, 0])
-                img_view = sitk.GetArrayViewFromImage(img)
-            else:
-                img = self.sitk_image
-                img_view = sitk.GetArrayViewFromImage(img)
+        img_view = sitk.GetArrayViewFromImage(img)
 
-            fig, ax = plt.subplots(
-                figsize=(
-                    np.shape(img_view)[0] / self.ASPECT,
-                    np.shape(img_view)[1] / self.ASPECT,
-                )
+        fig, ax = plt.subplots(
+            figsize=(
+                np.shape(img_view)[0] / self.ASPECT,
+                np.shape(img_view)[1] / self.ASPECT,
             )
-            plt.subplots_adjust(bottom=0.25)
+        )
+        plt.subplots_adjust(bottom=0.25)
 
-            l = plt.imshow(
-                img_view[self.SLICE, :, :],
-                cmap="cividis",
-                interpolation="nearest",
-                aspect="equal",
-            )
-            plt.title(f"Slice n. {self.SLICE} of masked object", weight="bold")
+        l = plt.imshow(
+            img_view[self.SLICE, :, :],
+            cmap="cividis",
+            interpolation="nearest",
+            aspect="equal",
+        )
+        plt.title(f"Slice n. {self.SLICE} of masked object", weight="bold")
 
-            axcolor = "lightgoldenrodyellow"
-            axSlider = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
-            slider = Slider(
-                axSlider,
-                "Slice",
-                0,
-                img_view.shape[0] - 1,
-                valinit=self.SLICE,
-                valstep=1,
-            )
+        axcolor = "lightgoldenrodyellow"
+        axSlider = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
+        slider = Slider(
+            axSlider,
+            "Slice",
+            0,
+            img_view.shape[0] - 1,
+            valinit=self.SLICE,
+            valstep=1,
+        )
 
-            def update(val):
-                slice_index = int(slider.val)
-                l.set_data(img_view[slice_index, :, :])
-                fig.canvas.draw_idle()
+        def update(val):
+            slice_index = int(slider.val)
+            l.set_data(img_view[slice_index, :, :])
+            fig.canvas.draw_idle()
 
-            slider.on_changed(update)
+        slider.on_changed(update)
 
-            if matplotlib.get_backend() == "agg":
-                # set the backend to TkAgg
-                matplotlib.use("TkAgg")
-            plt.show()
-            plt.close()
-        else:
-            self.logger.info(f"MHD slice\t\t\tshow_plots:\t{self.show_plots}")
+        if matplotlib.get_backend() == "agg":
+            # set the backend to TkAgg
+            matplotlib.use("TkAgg")
+        plt.show()
+        plt.close()
         return None
 
     def plot_slice(self, image, SLICE, title, ASPECT):
@@ -173,19 +165,19 @@ class OCC_volume:
         fig, ax = plt.subplots(figsize=(ASPECT, ASPECT))
         plt.subplots_adjust(bottom=0.25)
         l = plt.imshow(
-            img_view[:, :, SLICE], cmap="gray", interpolation="None", aspect="equal"
+            img_view[SLICE, :, :], cmap="gray", interpolation="None", aspect="equal"
         )
         plt.title(title, weight="bold")
 
         axcolor = "lightgoldenrodyellow"
         axSlider = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
         slider = Slider(
-            axSlider, "Slice", 0, img_view.shape[2] - 1, valinit=SLICE, valstep=1
+            axSlider, "Slice", 0, img_view.shape[0] - 1, valinit=SLICE, valstep=1
         )
 
         def update(val):
             slice_index = int(slider.val)
-            l.set_data(img_view[:, :, slice_index])
+            l.set_data(img_view[slice_index, :, :])
             fig.canvas.draw_idle()
 
         slider.on_changed(update)
@@ -312,7 +304,7 @@ class OCC_volume:
         )
         return image_thr
 
-    def binary_threshold(self, img_path: str) -> Tuple[ndarray, ndarray]:
+    def binary_threshold(self, image: Image) -> Tuple[ndarray, ndarray]:
         """
         THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
         """
@@ -320,16 +312,20 @@ class OCC_volume:
         ASPECT = self.ASPECT
         SLICE = self.SLICE
 
-        if self.sitk_image is None:
-            image = sitk.ReadImage(img_path)
-        else:
-            image = self.sitk_image
-            # image = sitk.PermuteAxes(image, [2, 0, 1])
-            # image.SetSpacing(self.sitk_image.GetSpacing())
+        # if self.sitk_image is None:
+        #     image = sitk.ReadImage(img_path)
+        # else:
+        #     image = self.sitk_image
+        #     image = sitk.PermuteAxes(image, [2, 0, 1])
+        #     image.SetSpacing(self.sitk_image.GetSpacing())
 
         # image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
 
+        print(f"Image size before padding: {image.GetSize()}")
+
         image_pad = self.pad_image(image, iso_pad_size=10)
+
+        print(f"Image size after padding: {image_pad.GetSize()}")
 
         if self.show_plots is True:
             self.plot_slice(
@@ -889,64 +885,33 @@ class OCC_volume:
         return contour_ext, contour_int
 
     def interpolate_vertical_lines_3d(self, line_sets):
-        """
-        Interpolate 3D vertical lines using cubic spline interpolation and downsample the result.
 
-        This function takes a list of 3D line sets, where each line set is expected to be a list of points in 3D space (x, y, z).
-        Each line is interpolated individually using cubic spline interpolation to generate a smooth curve through the points.
-        The interpolated points are then downsampled based on a slicing coefficient, reducing the number of points in the final output.
-        The function returns a single numpy array containing the downsampled interpolated points from all line sets.
-
-        Parameters
-        ----------
-        line_sets : list of list of list
-            A list where each element is a line set, which is a list of points, and each point is a list of three floats representing the x, y, and z coordinates.
-        slicing_coefficient : int
-            The coefficient used for downsampling the interpolated points. A slicing_coefficient of n will keep every nth point in the z-axis.
-
-        Returns
-        -------
-        np.ndarray
-            A numpy array of shape (n, 3), where n is the total number of downsampled interpolated points from all line sets. Each row represents an interpolated point with x, y, and z coordinates.
-
-        Raises
-        ------
-        ValueError
-            If any line set contains less than 4 unique data points, or if the data contains NaN or Inf values, a ValueError is raised.
-
-        Notes
-        -----
-        The interpolation is performed using the `splrep` and `splev` functions from scipy's interpolate module, with a cubic spline (k=3) and a smoothing factor of 1e6.
-        The downsampling is performed by selecting every nth point in the z-axis based on the slicing_coefficient, reducing the density of points in the final output.
-
-        Examples
-        --------
-        >>> line_sets = [[[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]], [[-1, -1, -1], [0, 0, 0], [1, 1, 1], [2, 2, 2]]]
-        >>> interpolated_points = interpolate_vertical_lines_3d(line_sets, 10)
-        >>> print(interpolated_points.shape)
-        (20, 3)
-        """
         interpolated_lines = []
         for line in line_sets:
             line = np.array(line)
-            line_sorted_by_z = line[np.argsort(line[:, 2])]
 
-            if len(line_sorted_by_z) < 4:
+            # Check for NaN or Inf values
+            if np.any(np.isnan(line)) or np.any(np.isinf(line)):
+                raise ValueError("Data contains NaN or Inf values.")
+
+            # Check for duplicate points
+            line = np.unique(line, axis=0)
+            if len(line) < 4:
                 raise ValueError(
                     "Insufficient unique data points for cubic spline interpolation."
                 )
 
-            if np.any(np.isnan(line_sorted_by_z)) or np.any(np.isinf(line_sorted_by_z)):
-                raise ValueError("Data contains NaN or Inf values.")
-
+            # Sort by Z-values
+            line_sorted_by_z = line[np.argsort(line[:, 2])]
             x_sorted = line_sorted_by_z[:, 0]
             y_sorted = line_sorted_by_z[:, 1]
             z_sorted = line_sorted_by_z[:, 2]
 
-            splrep_eval_x = splrep(z_sorted, x_sorted, k=3, s=10)
-            splrep_eval_y = splrep(z_sorted, y_sorted, k=3, s=10)
+            # Perform cubic spline interpolation
+            splrep_eval_x = splrep(z_sorted, x_sorted, k=3, s=1e6)
+            splrep_eval_y = splrep(z_sorted, y_sorted, k=3, s=1e6)
 
-            # Generate znew for interpolation
+            # Generate new Z values for interpolation
             znew = np.linspace(z_sorted[0], z_sorted[-1], self.SLICING_COEFFICIENT)
             xnew = splev(znew, splrep_eval_x)
             ynew = splev(znew, splrep_eval_y)
@@ -954,6 +919,19 @@ class OCC_volume:
             interpolated_lines.append(np.vstack((xnew, ynew, znew)).T)
 
         all_points_array = np.concatenate(interpolated_lines, axis=0)
+
+        # Plot final interpolated points
+        if self.show_plots:
+            plt.figure(figsize=(10, 10))
+            plt.scatter(
+                all_points_array[:, 0],
+                all_points_array[:, 1],
+                label="Interpolated Points",
+            )
+            plt.legend()
+            plt.title("Interpolated Points")
+            plt.show()
+
         return all_points_array
 
     def classify_and_store_contours(self, mask, slice_idx):
@@ -986,6 +964,14 @@ class OCC_volume:
         outer_polygon = Polygon(contour)
         offset = int(MIN_THICKNESS)
         buffered_polygon = outer_polygon.buffer(-offset)
+        try:
+            if len(list(buffered_polygon.geoms)) > 1:
+                polygons = list(buffered_polygon.geoms)
+                self.logger.warning(
+                    f"Buffered polygon has more than one geometry: {len(polygons)}"
+                )
+        except AttributeError:
+            pass
         offset_polygon = np.array(buffered_polygon.exterior.coords)
         return offset_polygon
 
@@ -1043,7 +1029,61 @@ class OCC_volume:
                 # Collecting the pt_idx-th point from each slice
                 vertical_ll.append(_slice[pt_idx])
             line_sets.append(vertical_ll)
+
+        # plot every line_set with a different color
+        if self.show_plots:
+            for line_set in line_sets:
+                line_set = np.array(line_set)
+                plt.plot(line_set[:, 0], line_set[:, 1])
+            plt.show()
         return line_sets
+
+    def plot_slices_with_slider(self, imnp, total_slices, results):
+        """
+        Function to plot slices with a slider to navigate through slices.
+
+        Args:
+            imnp (numpy.ndarray): 3D numpy array representing the image.
+            total_slices (int): Total number of slices.
+            results (list): List of tuples containing outer and inner contour plots for each slice.
+
+        Returns:
+            None
+        """
+        fig, ax = plt.subplots()
+        plt.subplots_adjust(bottom=0.25)
+
+        img_display = ax.imshow(imnp[:, :, 0], cmap="gray")
+        outer_plot, inner_plot = results[0]
+        (outer_contour_plot,) = ax.plot(
+            outer_plot[:, 1], outer_plot[:, 0], "r", label="Outer Contour"
+        )
+        (inner_contour_plot,) = ax.plot(
+            inner_plot[:, 1], inner_plot[:, 0], "b", label="Inner Contour"
+        )
+        ax.legend()
+
+        axcolor = "lightgoldenrodyellow"
+        ax_slider = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
+        slider = Slider(
+            ax_slider, "Slice", 0, len(total_slices) - 1, valinit=0, valstep=1
+        )
+
+        def update(val):
+            slice_idx = int(slider.val)
+            img_display.set_data(imnp[:, :, total_slices[slice_idx]])
+            outer_plot, inner_plot = results[slice_idx]
+            outer_contour_plot.set_data(outer_plot[:, 1], outer_plot[:, 0])
+            inner_contour_plot.set_data(inner_plot[:, 1], inner_plot[:, 0])
+            fig.canvas.draw_idle()
+
+        slider.on_changed(update)
+
+        if matplotlib.get_backend() == "agg":
+            matplotlib.use("TkAgg")
+        plt.show()
+        plt.close()
+        return None
 
     def volume_splines_optimized(self, imsitk_pad) -> Tuple[ndarray, ndarray]:
         imnp = sitk.GetArrayFromImage(imsitk_pad)
@@ -1060,13 +1100,16 @@ class OCC_volume:
         #     delayed(self.process_slice)(imnp, slice_idx) for slice_idx in total_slices
         # )
 
-        results = []
+        processed_slices = []
         for slice_idx in total_slices:
             print(f"Processing slice {slice_idx}")
             result = self.process_slice(imnp, slice_idx)
-            results.append(result)
+            processed_slices.append(result)
 
-        outer_contours, inner_contours = zip(*results)
+        if self.show_plots is True:
+            self.plot_slices_with_slider(imnp, total_slices, processed_slices)
+
+        outer_contours, inner_contours = zip(*processed_slices)
         out_arr_mm = np.array(outer_contours).reshape(-1, 3) * 0.061
         inn_arr_mm = np.array(inner_contours).reshape(-1, 3) * 0.061
 
@@ -1079,6 +1122,22 @@ class OCC_volume:
 
         cortical_ext_interp = self.interpolate_vertical_lines_3d(line_sets_ext)
         cortical_int_interp = self.interpolate_vertical_lines_3d(line_sets_int)
+
+        if self.show_plots is True:
+            # plot cortical_ext_interp and cortical_int_interp
+            plt.figure(figsize=(10, 10))
+            plt.plot(
+                cortical_ext_interp[:, 0],
+                cortical_ext_interp[:, 1],
+                label="Outer Contour",
+            )
+            plt.plot(
+                cortical_int_interp[:, 0],
+                cortical_int_interp[:, 1],
+                label="Inner Contour",
+            )
+            plt.legend()
+            plt.show()
 
         slices_ext = {}
         for point in cortical_ext_interp:
