@@ -12,11 +12,12 @@ import sys
 import time
 from itertools import chain
 from pathlib import Path
-import SimpleITK as sitk
 
 import gmsh
 import numpy as np
 import plotly.io as pio
+import SimpleITK as sitk
+
 from pyhexspline import cortical_sanity as csc
 from pyhexspline.gmsh_mesh_builder import Mesher, TrabecularVolume
 from pyhexspline.quad_refinement import QuadRefinement
@@ -160,7 +161,7 @@ class HexMesh:
         if cortical_v.show_plots is True:
             cortical_v.plot_mhd_slice(img)
         else:
-            self.logger.info(f"MHD slice\t\t\tshow_plots:\t{cortical_v.show_plots}")
+            logger.info(f"MHD slice\t\t\tshow_plots:\t{cortical_v.show_plots}")
         image_pad = cortical_v.binary_threshold(img)
         cortical_ext, cortical_int = cortical_v.volume_splines_optimized(image_pad)
 
