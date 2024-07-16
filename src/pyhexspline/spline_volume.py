@@ -46,7 +46,8 @@ class OCC_volume:
         S: int,
         K: int,
         INTERP_POINTS: int,
-        DP_SIMPLIFICATION: int,
+        DP_SIMPLIFICATION_OUTER: int,
+        DP_SIMPLIFICATION_INNER: int,
         debug_orientation: int,
         show_plots: bool,
         thickness_tol: float,
@@ -76,7 +77,8 @@ class OCC_volume:
         self.S = S
         self.K = K
         self.INTERP_POINTS_S = INTERP_POINTS
-        self.dp_simplification = DP_SIMPLIFICATION
+        self.dp_simplification_outer = DP_SIMPLIFICATION_OUTER
+        self.dp_simplification_inner = DP_SIMPLIFICATION_INNER
         self.height = 1.0
         self.spacing = []
         self.coordsX = []
@@ -992,13 +994,14 @@ class OCC_volume:
         return inn_contour
 
     def process_slice(self, mask, slice_idx):
-        DP_SIMPLIFICATION = self.dp_simplification
+        DP_SIMPLIFICATION_OUTER = self.dp_simplification_outer
+        DP_SIMPLIFICATION_INNER = self.dp_simplification_inner
         out_cont, inn = self.classify_and_store_contours(mask, slice_idx)
 
         out_dp = out_cont.copy()
         out_dp = [shpg.Point(point) for point in out_dp]
         out_dp = shpg.Polygon(out_dp)
-        out_dp = out_dp.simplify(DP_SIMPLIFICATION, preserve_topology=True)
+        out_dp = out_dp.simplify(DP_SIMPLIFICATION_OUTER, preserve_topology=True)
 
         xout, yout = self.evaluate_bspline(np.array(out_dp.exterior.coords))
 
@@ -1010,7 +1013,7 @@ class OCC_volume:
         inn_dp = inn.copy()
         inn_dp = [shpg.Point(point) for point in inn_dp]
         inn_dp = shpg.Polygon(inn_dp)
-        inn_dp = inn_dp.simplify(DP_SIMPLIFICATION, preserve_topology=True)
+        inn_dp = inn_dp.simplify(DP_SIMPLIFICATION_INNER, preserve_topology=True)
 
         xin, yin = self.evaluate_bspline(np.array(inn_dp.exterior.coords))
 
