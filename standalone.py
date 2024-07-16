@@ -46,7 +46,7 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 100,  # smoothing factor of the spline
+        "s": 50,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 500,  # number of points to interpolate the spline
         "dp_simplification": 2,  # Ramer-Douglas-Peucker simplification factor
@@ -59,7 +59,7 @@ def main():
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 20,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting
-        "show_plots": False,  # show plots during construction
+        "show_plots": True,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
         "write_mesh": True,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center
@@ -74,7 +74,7 @@ def main():
     # print(sitk_image_s.GetSize())
 
     sitk_image_s = sitk.ReadImage(
-        "/home/simoneponcioni/Desktop/repro-to-remesh/C0002211_CORTMASK.mhd"
+        "/home/simoneponcioni/Desktop/repro-to-remesh/C0002215_CORTMASK.mhd"
     )
     print(sitk_image_s.GetSize())
     # sitk_image_s = sitk_image_s[:, :, :-40]

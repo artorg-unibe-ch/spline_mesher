@@ -1023,6 +1023,14 @@ class OCC_volume:
     def get_line_sets(self, contour):
         num_points = contour[0].shape[0]
         line_sets = []
+
+        # Align slices based on the first point
+        first_point = contour[0][0]
+        for i in range(1, len(contour)):
+            distances = np.linalg.norm(contour[i] - first_point, axis=1)
+            min_idx = np.argmin(distances)
+            contour[i] = np.roll(contour[i], -min_idx, axis=0)
+
         for pt_idx in range(num_points):
             vertical_ll = []
             for _slice in contour:
@@ -1030,12 +1038,13 @@ class OCC_volume:
                 vertical_ll.append(_slice[pt_idx])
             line_sets.append(vertical_ll)
 
-        # plot every line_set with a different color
         if self.show_plots:
             for line_set in line_sets:
                 line_set = np.array(line_set)
                 plt.plot(line_set[:, 0], line_set[:, 1])
+                plt.title("Matched vertical lines")
             plt.show()
+
         return line_sets
 
     def plot_slices_with_slider(self, imnp, total_slices, results):
@@ -1093,12 +1102,8 @@ class OCC_volume:
         height = imnp.shape[2]
         self.logger.debug(f"Height:\t{height}")
 
-        NUM_SLICES = height // 10  # TODO: parametrize this 10
+        NUM_SLICES = height // 10  # TODO: parametrize this value
         total_slices = np.linspace(0, height - 1, NUM_SLICES, dtype=int)
-
-        # results = Parallel(n_jobs=-1)(
-        #     delayed(self.process_slice)(imnp, slice_idx) for slice_idx in total_slices
-        # )
 
         processed_slices = []
         for slice_idx in total_slices:
