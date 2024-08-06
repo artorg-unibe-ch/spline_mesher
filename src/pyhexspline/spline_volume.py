@@ -6,7 +6,6 @@ import cv2
 import gmsh
 import imutils
 import matplotlib
-
 # matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +18,8 @@ from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import ndarray
 from scipy import spatial
-from scipy.interpolate import splev, splprep, splrep
+from scipy.interpolate import UnivariateSpline, splev, splprep, splrep
+from scipy.optimize import minimize
 from shapely import Polygon
 from SimpleITK.SimpleITK import Image
 from skimage.measure import find_contours
@@ -886,8 +886,34 @@ class OCC_volume:
 
         return contour_ext, contour_int
 
-    def interpolate_vertical_lines_3d(self, line_sets):
+    def guess(self, x, y, k, s, w=None):
+        """Do an ordinary spline fit to provide knots"""
+        return splrep(x, y, w, k=k, s=s)
 
+    def err(self, c, x, y, t, k, w=None):
+        """The error function to minimize"""
+        diff = y - splev(x, (t, c, k))
+        if w is None:
+            diff = np.einsum("...i,...i", diff, diff)
+        else:
+            diff = np.dot(diff * diff, w)
+        return np.abs(diff)
+
+    def spline_neumann(self, x, y, k=3, s=0, w=None):
+        t, c0, k = self.guess(x, y, k, s, w=w)
+        x0 = x[0]  # point at which zero slope is required
+        con = {
+            "type": "eq",
+            "fun": lambda c: splev(x0, (t, c, k), der=1),
+        }
+        opt = minimize(self.err, c0, (x, y, t, k, w), constraints=con)
+        copt = opt.x
+        return UnivariateSpline._from_tck((t, copt, k))
+
+    def interpolate_vertical_lines_3d(self, line_sets):
+        """
+        https://stackoverflow.com/questions/32046582/spline-with-constraints-at-border
+        """
         interpolated_lines = []
         for line in line_sets:
             line = np.array(line)
@@ -909,14 +935,14 @@ class OCC_volume:
             y_sorted = line_sorted_by_z[:, 1]
             z_sorted = line_sorted_by_z[:, 2]
 
-            # Perform cubic spline interpolation
-            splrep_eval_x = splrep(z_sorted, x_sorted, k=3, s=1e6)
-            splrep_eval_y = splrep(z_sorted, y_sorted, k=3, s=1e6)
+            # Perform cubic spline interpolation with Neumann boundary conditions
+            splrep_eval_x = self.spline_neumann(z_sorted, x_sorted, k=3, s=1e6)
+            splrep_eval_y = self.spline_neumann(z_sorted, y_sorted, k=3, s=1e6)
 
             # Generate new Z values for interpolation
             znew = np.linspace(z_sorted[0], z_sorted[-1], self.SLICING_COEFFICIENT)
-            xnew = splev(znew, splrep_eval_x)
-            ynew = splev(znew, splrep_eval_y)
+            xnew = splrep_eval_x(znew)
+            ynew = splrep_eval_y(znew)
 
             interpolated_lines.append(np.vstack((xnew, ynew, znew)).T)
 
