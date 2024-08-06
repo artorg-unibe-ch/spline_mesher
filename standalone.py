@@ -62,7 +62,7 @@ def main():
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting in the inner trabecular compartment
         "show_plots": False,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
-        "write_mesh": True,  # write mesh to file
+        "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center (#! Should be set to False if ellipsoid fitting is True)
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }
@@ -74,11 +74,10 @@ def main():
     # sitk_image_s = sitk_image_s[:, :, 35:-35]
     # print(sitk_image_s.GetSize())
 
-    sitk_image_s = sitk.ReadImage(
-        "/home/simoneponcioni/Desktop/repro-to-remesh/C0002230_CORTMASK.mhd"
-    )
+    sitk_image_s = sitk.ReadImage("/Users/msb/Desktop/delete_tmp/C0003097_CORTMASK.mhd")
+
     print(sitk_image_s.GetSize())
-    # sitk_image_s = sitk_image_s[:, :, :-40]
+    sitk_image_s = sitk_image_s[:, :, 20:-20]
 
     mesh = HexMesh(
         meshing_settings,
