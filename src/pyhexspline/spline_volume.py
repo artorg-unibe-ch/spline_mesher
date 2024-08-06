@@ -968,10 +968,18 @@ class OCC_volume:
         buffered_polygon = outer_polygon.buffer(-offset)
         try:
             if len(list(buffered_polygon.geoms)) > 1:
+                # sometimes some spurious polygons are created, assuming that we want to keep the largest one
                 polygons = list(buffered_polygon.geoms)
                 self.logger.warning(
                     f"Buffered polygon has more than one geometry: {len(polygons)}"
                 )
+                # if difference of area is big, then discard the small polygons
+                areas = [polygon.area for polygon in polygons]
+                max_area = max(areas)
+                # assuming that the largest polygon is the correct one
+                buffered_polygon = [
+                    polygon for polygon in polygons if polygon.area == max_area
+                ][0]
         except AttributeError:
             pass
         offset_polygon = np.array(buffered_polygon.exterior.coords)
