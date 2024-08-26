@@ -3,7 +3,7 @@ from typing import Tuple
 
 import numpy as np
 import SimpleITK as sitk
-from OCC_volume import OCC_volume
+from pyhexspline.spline_volume import OCC_volume
 
 
 class TestOCCVolume(unittest.TestCase):
