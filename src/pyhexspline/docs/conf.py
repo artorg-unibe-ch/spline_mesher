@@ -13,17 +13,21 @@
 import os
 import sys
 
+import sphinx_rtd_theme
+
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
 sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
 
-project = "hexmesher"
+project = "pyhexspline"
 copyright = "2023, Simone Poncioni"
 author = "Simone Poncioni"
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.1"
+release = "0.2.0"
 
 
 # -- General configuration ---------------------------------------------------

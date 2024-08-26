@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>spline_mesher &mdash; spline-mesher 0.0.1-pre-alpha documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>spline_mesher &mdash; pyhexspline 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -32,7 +32,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            spline-mesher
+            pyhexspline
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -47,7 +47,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">spline_mesher</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cortical_sanity.html">cortical_sanity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gmsh_mesh_builder.html">gmsh_mesh_builder module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="spline-volume-creation.html">spline-volume-creation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spline-volume-creation.html">spline_volume module</a></li>
 </ul>
 </li>
 </ul>
@@ -58,7 +58,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">spline-mesher</a>
+          <a href="index.html">pyhexspline</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -77,12 +77,142 @@
            <div itemprop="articleBody">
              
   <section id="spline-mesher">
-<h1>spline_mesher<a class="headerlink" href="#spline-mesher" title="Permalink to this heading"></a></h1>
+<h1>spline_mesher<a class="headerlink" href="#spline-mesher" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="cortical_sanity.html">cortical_sanity module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gmsh_mesh_builder.html">gmsh_mesh_builder module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="spline-volume-creation.html">spline-volume-creation module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cortical_sanity.html">cortical_sanity module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.KDT_nn"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.KDT_nn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.ccw_angle"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.ccw_angle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.center_of_mass"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.center_of_mass()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.check_min_thickness"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.check_min_thickness()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.convertRadiansToDegrees"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.convertRadiansToDegrees()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_internal_point"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.correct_internal_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_intersection"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.correct_intersection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.cortical_sanity_check"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.cortical_sanity_check()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.draw_arrow"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.draw_arrow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.get_normals"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.get_normals()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.hyp_min_thickness"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.hyp_min_thickness()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_angle_bigger_bool"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.is_angle_bigger_bool()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_internal_inside_external"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.is_internal_inside_external()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_internal_radius_bigger_than_external"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.is_internal_radius_bigger_than_external()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.lineseg_dists"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.lineseg_dists()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.min_thickness_nearest_pairs"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.min_thickness_nearest_pairs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.nearest_pairs_arrs"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.nearest_pairs_arrs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.nearest_point"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.nearest_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.offset_surface"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.offset_surface()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.plot_contours"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.plot_contours()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.plot_corrected_contours"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.plot_corrected_contours()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.project_point_on_line"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.project_point_on_line()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.push_contour"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.push_contour()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.resample_contour"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.resample_contour()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.reset_numpy_index"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.reset_numpy_index()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.roll_index"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.roll_index()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.unit_vector"><code class="docutils literal notranslate"><span class="pre">CorticalSanityCheck.unit_vector()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gmsh_mesh_builder.html">gmsh_mesh_builder module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher"><code class="docutils literal notranslate"><span class="pre">Mesher</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_bspline_filling"><code class="docutils literal notranslate"><span class="pre">Mesher.add_bspline_filling()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_interslice_segments"><code class="docutils literal notranslate"><span class="pre">Mesher.add_interslice_segments()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_intersurface_planes"><code class="docutils literal notranslate"><span class="pre">Mesher.add_intersurface_planes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_slice_surfaces"><code class="docutils literal notranslate"><span class="pre">Mesher.add_slice_surfaces()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_volume"><code class="docutils literal notranslate"><span class="pre">Mesher.add_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.analyse_mesh_quality"><code class="docutils literal notranslate"><span class="pre">Mesher.analyse_mesh_quality()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.create_centre_splines"><code class="docutils literal notranslate"><span class="pre">Mesher.create_centre_splines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_barycenters"><code class="docutils literal notranslate"><span class="pre">Mesher.get_barycenters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_centroids_dict"><code class="docutils literal notranslate"><span class="pre">Mesher.get_centroids_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_elm_volume"><code class="docutils literal notranslate"><span class="pre">Mesher.get_elm_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_radius_longest_edge"><code class="docutils literal notranslate"><span class="pre">Mesher.get_radius_longest_edge()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_sort_coords"><code class="docutils literal notranslate"><span class="pre">Mesher.get_sort_coords()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_trabecular_cortical_volume_mesh"><code class="docutils literal notranslate"><span class="pre">Mesher.get_trabecular_cortical_volume_mesh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_add_points"><code class="docutils literal notranslate"><span class="pre">Mesher.gmsh_add_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_geometry_formulation"><code class="docutils literal notranslate"><span class="pre">Mesher.gmsh_geometry_formulation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_get_bnds"><code class="docutils literal notranslate"><span class="pre">Mesher.gmsh_get_bnds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_get_elms"><code class="docutils literal notranslate"><span class="pre">Mesher.gmsh_get_elms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_get_nodes"><code class="docutils literal notranslate"><span class="pre">Mesher.gmsh_get_nodes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_get_reference_point_coord"><code class="docutils literal notranslate"><span class="pre">Mesher.gmsh_get_reference_point_coord()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_insert_bspline"><code class="docutils literal notranslate"><span class="pre">Mesher.gmsh_insert_bspline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_bspline"><code class="docutils literal notranslate"><span class="pre">Mesher.insert_bspline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_closest_point"><code class="docutils literal notranslate"><span class="pre">Mesher.insert_closest_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_ellipse_arcs"><code class="docutils literal notranslate"><span class="pre">Mesher.insert_ellipse_arcs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_intersection_line"><code class="docutils literal notranslate"><span class="pre">Mesher.insert_intersection_line()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_lines"><code class="docutils literal notranslate"><span class="pre">Mesher.insert_lines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_points"><code class="docutils literal notranslate"><span class="pre">Mesher.insert_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_tensor_of_inertia"><code class="docutils literal notranslate"><span class="pre">Mesher.insert_tensor_of_inertia()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.intersection_point"><code class="docutils literal notranslate"><span class="pre">Mesher.intersection_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.mesh_generate"><code class="docutils literal notranslate"><span class="pre">Mesher.mesh_generate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.meshing_transfinite"><code class="docutils literal notranslate"><span class="pre">Mesher.meshing_transfinite()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.nodes2coords"><code class="docutils literal notranslate"><span class="pre">Mesher.nodes2coords()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.partition_lines"><code class="docutils literal notranslate"><span class="pre">Mesher.partition_lines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.polygon_tensor_of_inertia"><code class="docutils literal notranslate"><span class="pre">Mesher.polygon_tensor_of_inertia()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.query_closest_idx"><code class="docutils literal notranslate"><span class="pre">Mesher.query_closest_idx()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.shapely_line_polygon_intersection"><code class="docutils literal notranslate"><span class="pre">Mesher.shapely_line_polygon_intersection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.shift_point"><code class="docutils literal notranslate"><span class="pre">Mesher.shift_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.sort_bspline_cw"><code class="docutils literal notranslate"><span class="pre">Mesher.sort_bspline_cw()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.sort_by_indexes"><code class="docutils literal notranslate"><span class="pre">Mesher.sort_by_indexes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.sort_ccw"><code class="docutils literal notranslate"><span class="pre">Mesher.sort_ccw()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.sort_ccw_test"><code class="docutils literal notranslate"><span class="pre">Mesher.sort_ccw_test()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.sort_cw_legacy"><code class="docutils literal notranslate"><span class="pre">Mesher.sort_cw_legacy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.sort_intersection_points"><code class="docutils literal notranslate"><span class="pre">Mesher.sort_intersection_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.sort_intersection_points_legacy"><code class="docutils literal notranslate"><span class="pre">Mesher.sort_intersection_points_legacy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.split_dict_by_array_len"><code class="docutils literal notranslate"><span class="pre">Mesher.split_dict_by_array_len()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.trabecular_cortical_connection"><code class="docutils literal notranslate"><span class="pre">Mesher.trabecular_cortical_connection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.trabecular_planes_inertia"><code class="docutils literal notranslate"><span class="pre">Mesher.trabecular_planes_inertia()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.trabecular_slices"><code class="docutils literal notranslate"><span class="pre">Mesher.trabecular_slices()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume"><code class="docutils literal notranslate"><span class="pre">TrabecularVolume</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_offset_points"><code class="docutils literal notranslate"><span class="pre">TrabecularVolume.get_offset_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_trabecular_position"><code class="docutils literal notranslate"><span class="pre">TrabecularVolume.get_trabecular_position()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_trabecular_vol"><code class="docutils literal notranslate"><span class="pre">TrabecularVolume.get_trabecular_vol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_vertices_coords"><code class="docutils literal notranslate"><span class="pre">TrabecularVolume.get_vertices_coords()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.principal_axes_length"><code class="docutils literal notranslate"><span class="pre">TrabecularVolume.principal_axes_length()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.set_length_factor"><code class="docutils literal notranslate"><span class="pre">TrabecularVolume.set_length_factor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.sort_trab_coords"><code class="docutils literal notranslate"><span class="pre">TrabecularVolume.sort_trab_coords()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spline-volume-creation.html">spline_volume module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume"><code class="docutils literal notranslate"><span class="pre">OCC_volume</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.binary_threshold"><code class="docutils literal notranslate"><span class="pre">OCC_volume.binary_threshold()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.calculate_outer_offset"><code class="docutils literal notranslate"><span class="pre">OCC_volume.calculate_outer_offset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.check_inner_offset"><code class="docutils literal notranslate"><span class="pre">OCC_volume.check_inner_offset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.check_orient"><code class="docutils literal notranslate"><span class="pre">OCC_volume.check_orient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.classify_and_store_contours"><code class="docutils literal notranslate"><span class="pre">OCC_volume.classify_and_store_contours()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.draw_contours"><code class="docutils literal notranslate"><span class="pre">OCC_volume.draw_contours()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.err"><code class="docutils literal notranslate"><span class="pre">OCC_volume.err()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.evaluate_bspline"><code class="docutils literal notranslate"><span class="pre">OCC_volume.evaluate_bspline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.exec_thresholding"><code class="docutils literal notranslate"><span class="pre">OCC_volume.exec_thresholding()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.get_binary_contour"><code class="docutils literal notranslate"><span class="pre">OCC_volume.get_binary_contour()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.get_draw_contour"><code class="docutils literal notranslate"><span class="pre">OCC_volume.get_draw_contour()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.get_line_sets"><code class="docutils literal notranslate"><span class="pre">OCC_volume.get_line_sets()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.guess"><code class="docutils literal notranslate"><span class="pre">OCC_volume.guess()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.input_sanity_check"><code class="docutils literal notranslate"><span class="pre">OCC_volume.input_sanity_check()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.interpolate_vertical_lines_3d"><code class="docutils literal notranslate"><span class="pre">OCC_volume.interpolate_vertical_lines_3d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.output_sanity_check"><code class="docutils literal notranslate"><span class="pre">OCC_volume.output_sanity_check()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.pad_image"><code class="docutils literal notranslate"><span class="pre">OCC_volume.pad_image()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plot_mhd_slice"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plot_mhd_slice()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plot_slice"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plot_slice()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plot_slices_with_slider"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plot_slices_with_slider()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plotly_add_traces"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plotly_add_traces()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plotly_makefig"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plotly_makefig()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.process_slice"><code class="docutils literal notranslate"><span class="pre">OCC_volume.process_slice()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.remove_self_intersections"><code class="docutils literal notranslate"><span class="pre">OCC_volume.remove_self_intersections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.sort_mahalanobis"><code class="docutils literal notranslate"><span class="pre">OCC_volume.sort_mahalanobis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.sort_mahalanobis_legacy"><code class="docutils literal notranslate"><span class="pre">OCC_volume.sort_mahalanobis_legacy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.sort_surface"><code class="docutils literal notranslate"><span class="pre">OCC_volume.sort_surface()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.sort_xy"><code class="docutils literal notranslate"><span class="pre">OCC_volume.sort_xy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.spline_neumann"><code class="docutils literal notranslate"><span class="pre">OCC_volume.spline_neumann()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.volume_splines"><code class="docutils literal notranslate"><span class="pre">OCC_volume.volume_splines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.volume_splines_optimized"><code class="docutils literal notranslate"><span class="pre">OCC_volume.volume_splines_optimized()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </div>
 </section>

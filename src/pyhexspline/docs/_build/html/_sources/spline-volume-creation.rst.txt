@@ -1,7 +1,7 @@
-spline\-volume\-creation module
-===============================
+spline_volume module
+====================
 
-.. automodule:: spline-volume-creation
+.. automodule:: pyhexspline.spline_volume
    :members:
    :undoc-members:
    :show-inheritance:
