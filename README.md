@@ -7,6 +7,10 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
 ![Issue creation][todo_to_issue]
 ![Python application][pyapp]
 
@@ -109,16 +113,9 @@ To get a local copy up and running follow these simple example steps.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
-## Standalone execution
+## Standalone execution - rationale
 
-- Import the MetaImage file of the masked model that we want to convert;
-- Using SimpleITK extract the binary contour for each slice (in cortical bone, this contains inner+outer cortex)
-- Extract only the outer contour using the OpenCV library and interpolate them over a numpy meshgrid
-- First sorting: counterclockwise sorting of points (i, j) wrt CoM of the object
-- Second sorting: sorting according to Mahalanobis distance (because it's more independent of the starting points than Euclidean distance)
-- Representation of a B-spline of 3rd order over the transverse surface on the points (i, j)
-- Meshing
-- To be continued
+A robust, standalone meshing algorithm designed to employ the cortical mask obtained from the standard image processing technique of the scanner was developed. The algorithm is designed to generate a biphasic, structured, and fully hexahedral mesh of the clinical section. This smooth representation is believed to result in a more precise representation of the mechanical behaviour of the cortical shell than voxel-based isotropic hexahedral meshes. Furthermore, the creation of a structured mesh offers several advantages. Firstly, they offer greater simplicity and efficiency, requiring significantly less memory because connectivity with neighbouring elements is defined implicitly. Secondly, the creation of structured meshes allows topologically identical models to be obtained, enabling easier comparison between different patients measured at the same anatomical site or between multiple measurements in longitudinal studies. Initially, the cortical mask is imported, binarised, and padded to ensure that the periosteal contour does not intersect the image borders. The periosteal and endosteal contours are extracted using the scikit-image package. The contours are sorted in a counter-clockwise direction. The two point clouds are used to build polygons slice-wise, and the geometry of each polygon is simplified using a Douglas-Ramer-Peucker algorithm to remove high-frequency changes in the contours. Successively, a 3rd order periodic BSpline is used in the transverse plane to construct a smooth and accurate representation of the polygons. An internal coordinate system passing through the centroid of the splines is then used to identify all coplanar points in the longitudinal direction to fit 3rd-order BSplines in the plane to get a smoother transition between slices. The final point cloud finally undergoes a sanity check where a minimum cortical thickness of \SI{0.5}{\milli\metre} is set for all periosteal-endosteal point pairs. This guarantees the necessary space to fit at least three elements in the cortical thickness and ensures continuity in extremely thin structures. The points constructing the simplified geometry are imported in the OpenCASCADE kernel built in GMSH, a three-dimensional finite element mesh generator. The mesh geometry is constructed solely using geometric primitives (points, lines, and splines). The geometry is subdivided into simpler six-face subvolumes partitioned through the main axes of inertia of the model, which guarantees the use of the transfinite technique implemented in the mesh generator. The transfinite subvolumes are then used to generate a volumetric structured smooth mesh on the cortical and trabecular compartments. The cortical elements are conforming with the trabecular elements. The generated mesh is subsequently optimised using a Winslow untagler. The mesh size was defined according to a convergence study for stiffness \( \mathrm{S} \) (\SI{}{\newton\per\milli\metre}) and yield force \( \mathrm{F_y}\) (\SI{}{\newton}). The capacity of the mesh to represent the geometry (smoothing and polygon simplification) was determined through the utilisation of the Dice similarity coefficient (DSC), as outlined by Zou et al. A minimum value of \SI{95}{\percent} was considered appropriate. The element quality was assessed by calculating the (signed-) inverse conditioning number ((S-) ICN). The (S-) ICN measure not only describes the quality of the element by quantifying its deviation from the ideal element shape and its distance to degeneracy, but it is also linked to the conditioning of the stiffness matrix. A badly conditioned stiffness matrix can potentially lead to roundoff errors or significantly slow down the convergence speed of the simulation.
   
 _For more examples, please refer to the [Documentation](https://example.com)_
 
@@ -127,12 +124,12 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [x] __v0.0.2__: single execution of radius and tibia mesher
-- [ ] __v0.1.0__: add phase discrimination in order to mesh single phase models (e.g. vertebrae)
-- [ ] __Performance improvements__:
-  - [ ] Faster implementation of sorting algorithm
+- [x] __v0.0.1__: single execution of radius and tibia mesher
+- [x] __v0.0.2__:
+  - [x] Faster implementation of sorting algorithm
   - [x] Faster implementation of cortical sanity check
-  - [ ] Implement test robustness over different models
+  - [x] Implement test robustness over different models
+- [ ] __v1.1.0__: add phase discrimination in order to mesh single phase models (e.g. vertebrae)
 
 See the [open issues](https://github.com/simoneponcioni/spline-mesher/issues) for a full list of proposed features (and known issues).
 
