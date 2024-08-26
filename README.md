@@ -56,8 +56,8 @@
 ## About The Project
 
 <div style="display: flex; justify-content: center;">
-  <img src="https://raw.githubusercontent.com/simoneponcioni/spline_mesher/master/src/pyhexspline/docs/img/mesh-example01.png" alt="Spline-mesher01" style="width: 45%;">
-  <img src="https://raw.githubusercontent.com/simoneponcioni/spline_mesher/master/src/pyhexspline/docs/img/mesh-example02.png" alt="Spline-mesher02" style="width: 45%;">
+  <img src="https://github.com/artorg-unibe-ch/spline_mesher/blob/master/src/pyhexspline/docs/img/mesh-example01.png" alt="Spline-mesher01" style="width: 45%;">
+  <img src="https://github.com/artorg-unibe-ch/spline_mesher/blob/master/src/pyhexspline/docs/img/mesh-example02.png" alt="Spline-mesher02" style="width: 45%;">
 </div>
 
 
