@@ -46,11 +46,11 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 100,  # smoothing factor of the spline
+        "s": 1,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
-        "interp_points": 100,  # number of points to interpolate the spline
-        "dp_simplification_outer": 3,  # Ramer-Douglas-Peucker simplification factor for the periosteal contour
-        "dp_simplification_inner": 3,  # Ramer-Douglas-Peucker simplification factor for the endosteal contour
+        "interp_points": 1000,  # number of points to interpolate the spline
+        "dp_simplification_outer": 1,  # Ramer-Douglas-Peucker simplification factor for the periosteal contour
+        "dp_simplification_inner": 1,  # Ramer-Douglas-Peucker simplification factor for the endosteal contour
         "thickness_tol": 5e-1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
@@ -60,7 +60,7 @@ def main():
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
         "n_elms_radial": 20,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting in the inner trabecular compartment
-        "show_plots": False,  # show plots during construction
+        "show_plots": True,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
         "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center (#! Should be set to False if ellipsoid fitting is True)
@@ -68,13 +68,21 @@ def main():
     }
 
     # sitk_image_s = transformer.hfe_input(
-    #     path_np_s="/Users/msb/Documents/01_PHD/03_Methods/Meshing/01_AIM/C0003094/C0003094_CORT_MASK_UNCOMP.npy"
+    #     path_np_s="/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/00_ORIGAIM/C0001406/C0001406_CORT_MASK.AIM"
     # )
 
     # sitk_image_s = sitk_image_s[:, :, 35:-35]
     # print(sitk_image_s.GetSize())
 
-    sitk_image_s = sitk.ReadImage("/Users/msb/Desktop/delete_tmp/C0003097_CORTMASK.mhd")
+    sitk_image_s = sitk.ReadImage(
+        "/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0003102/C0003102_CORT_MASK.mhd"
+    )
+    # rotate image
+    sitk_image_s = sitk.PermuteAxes(sitk_image_s, [2, 1, 0])
+    # flip image
+    sitk_image_s = sitk.Flip(sitk_image_s, [True, False, False])
+    # rotate 90° in the z-axis
+    sitk_image_s = sitk.PermuteAxes(sitk_image_s, [1, 0, 2])
 
     print(sitk_image_s.GetSize())
     sitk_image_s = sitk_image_s[:, :, 20:-20]
