@@ -76,6 +76,7 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
@@ -98,6 +99,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_bspline_filling">add_bspline_filling() (gmsh_mesh_builder.Mesher method)</a>
 </li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.add_curve_loop">add_curve_loop() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_interslice_segments">add_interslice_segments() (gmsh_mesh_builder.Mesher method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_intersurface_planes">add_intersurface_planes() (gmsh_mesh_builder.Mesher method)</a>
@@ -105,6 +108,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_slice_surfaces">add_slice_surfaces() (gmsh_mesh_builder.Mesher method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.add_surface_loop">add_surface_loop() (pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_volume">add_volume() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -116,7 +121,7 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.binary_threshold">binary_threshold() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.binary_threshold">binary_threshold() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -124,26 +129,36 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.calculate_outer_offset">calculate_outer_offset() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.calculate_outer_offset">calculate_outer_offset() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.ccw_angle">ccw_angle() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.center_of_mass">center_of_mass() (cortical_sanity.CorticalSanityCheck method)</a>
+
+      <ul>
+        <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.center_of_mass">(pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.check_inner_offset">check_inner_offset() (pyhexspline.spline_volume.OCC_volume method)</a>
+      </ul></li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.check_closed_surface_loop">check_closed_surface_loop() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.check_inner_offset">check_inner_offset() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.check_min_thickness">check_min_thickness() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.check_orient">check_orient() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.check_orient">check_orient() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.classify_and_store_contours">classify_and_store_contours() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.classify_and_store_contours">classify_and_store_contours() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.close_outer_loop">close_outer_loop() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.common">common() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.convertRadiansToDegrees">convertRadiansToDegrees() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_internal_point">correct_internal_point() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_intersection">correct_intersection() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
       <li>
@@ -159,6 +174,20 @@
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.create_centre_splines">create_centre_splines() (gmsh_mesh_builder.Mesher method)</a>
 </li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_connecting_surfaces">create_connecting_surfaces() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.create_initial_points">create_initial_points() (in module pyhexspline.quad_refinement)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_intersurface_connection">create_intersurface_connection() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_line_dict">create_line_dict() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_square_grid">create_square_grid() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_subvertices">create_subvertices() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_surf_dict">create_surf_dict() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -169,7 +198,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.draw_contours">draw_contours() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.draw_contours">draw_contours() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -177,13 +206,23 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.err">err() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.err">err() (pyhexspline.spline_volume.OCC_volume method)</a>
+</li>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.evaluate_bspline">evaluate_bspline() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.evaluate_bspline">evaluate_bspline() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.exec_quad_refinement">exec_quad_refinement() (pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.exec_thresholding">exec_thresholding() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.exec_thresholding">exec_thresholding() (pyhexspline.spline_volume.OCC_volume method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.flatten">flatten() (pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -191,17 +230,23 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_adjacent_points">get_adjacent_points() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_affine_transformation_matrix">get_affine_transformation_matrix() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_barycenters">get_barycenters() (gmsh_mesh_builder.Mesher method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.get_binary_contour">get_binary_contour() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.get_binary_contour">get_binary_contour() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_centroids_dict">get_centroids_dict() (gmsh_mesh_builder.Mesher method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.get_draw_contour">get_draw_contour() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_common_lines">get_common_lines() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.get_draw_contour">get_draw_contour() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_elm_volume">get_elm_volume() (gmsh_mesh_builder.Mesher method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.get_line_sets">get_line_sets() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.get_line_sets">get_line_sets() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.get_normals">get_normals() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
@@ -215,13 +260,39 @@
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_trabecular_position">get_trabecular_position() (gmsh_mesh_builder.TrabecularVolume method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_trabecular_vol">get_trabecular_vol() (gmsh_mesh_builder.TrabecularVolume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_vertices_coords">get_vertices_coords() (gmsh_mesh_builder.TrabecularVolume method)</a>
+
+      <ul>
+        <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_vertices_coords">(pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      </ul></li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_vertices_minmax">get_vertices_minmax() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_custom_lines">gmsh_add_custom_lines() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_line">gmsh_add_line() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_outer_connectivity">gmsh_add_outer_connectivity() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_plane_surface">gmsh_add_plane_surface() (pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_add_points">gmsh_add_points() (gmsh_mesh_builder.Mesher method)</a>
+
+      <ul>
+        <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_points">(pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      </ul></li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surface">gmsh_add_surface() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfaces">gmsh_add_surfaces() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfs">gmsh_add_surfs() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_volume">gmsh_add_volume() (pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_geometry_formulation">gmsh_geometry_formulation() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -233,7 +304,11 @@
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_get_reference_point_coord">gmsh_get_reference_point_coord() (gmsh_mesh_builder.Mesher method)</a>
 </li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_get_unique_surfaces">gmsh_get_unique_surfaces() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_insert_bspline">gmsh_insert_bspline() (gmsh_mesh_builder.Mesher method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_make_transfinite">gmsh_make_transfinite() (pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
       <li>
     gmsh_mesh_builder
@@ -242,13 +317,19 @@
         <li><a href="gmsh_mesh_builder.html#module-gmsh_mesh_builder">module</a>
 </li>
       </ul></li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.guess">guess() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_skin_points">gmsh_skin_points() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.guess">guess() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
 </tr></table>
 
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="spline_mesher.html#pyhexspline.spline_mesher.HexMesh">HexMesh (class in pyhexspline.spline_mesher)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.hyp_min_thickness">hyp_min_thickness() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
@@ -258,7 +339,7 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.input_sanity_check">input_sanity_check() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.input_sanity_check">input_sanity_check() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_bspline">insert_bspline() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -276,7 +357,7 @@
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.insert_tensor_of_inertia">insert_tensor_of_inertia() (gmsh_mesh_builder.Mesher method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.interpolate_vertical_lines_3d">interpolate_vertical_lines_3d() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.interpolate_vertical_lines_3d">interpolate_vertical_lines_3d() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.intersection_point">intersection_point() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -312,6 +393,8 @@
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher">Mesher (class in gmsh_mesh_builder)</a>
 </li>
+      <li><a href="spline_mesher.html#pyhexspline.spline_mesher.HexMesh.mesher">mesher() (pyhexspline.spline_mesher.HexMesh method)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.meshing_transfinite">meshing_transfinite() (gmsh_mesh_builder.Mesher method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.min_thickness_nearest_pairs">min_thickness_nearest_pairs() (cortical_sanity.CorticalSanityCheck method)</a>
@@ -326,7 +409,11 @@
 </li>
         <li><a href="gmsh_mesh_builder.html#module-gmsh_mesh_builder">gmsh_mesh_builder</a>
 </li>
-        <li><a href="spline-volume-creation.html#module-pyhexspline.spline_volume">pyhexspline.spline_volume</a>
+        <li><a href="quad_refinement.html#module-pyhexspline.quad_refinement">pyhexspline.quad_refinement</a>
+</li>
+        <li><a href="spline_mesher.html#module-pyhexspline.spline_mesher">pyhexspline.spline_mesher</a>
+</li>
+        <li><a href="spline_volume.html#module-pyhexspline.spline_volume">pyhexspline.spline_volume</a>
 </li>
       </ul></li>
   </ul></td>
@@ -349,13 +436,13 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume">OCC_volume (class in pyhexspline.spline_volume)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume">OCC_volume (class in pyhexspline.spline_volume)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.offset_surface">offset_surface() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.output_sanity_check">output_sanity_check() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.output_sanity_check">output_sanity_check() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -363,7 +450,7 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.pad_image">pad_image() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.pad_image">pad_image() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.partition_lines">partition_lines() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -371,33 +458,49 @@
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.plot_corrected_contours">plot_corrected_contours() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plot_mhd_slice">plot_mhd_slice() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.plot_mhd_slice">plot_mhd_slice() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plot_slice">plot_slice() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.plot_slice">plot_slice() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plot_slices_with_slider">plot_slices_with_slider() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.plot_slices_with_slider">plot_slices_with_slider() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plotly_add_traces">plotly_add_traces() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.plot_vertices">plot_vertices() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.plotly_add_traces">plotly_add_traces() (pyhexspline.spline_volume.OCC_volume method)</a>
+</li>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.plotly_makefig">plotly_makefig() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.plotly_makefig">plotly_makefig() (pyhexspline.spline_volume.OCC_volume method)</a>
-</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.polygon_tensor_of_inertia">polygon_tensor_of_inertia() (gmsh_mesh_builder.Mesher method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.principal_axes_length">principal_axes_length() (gmsh_mesh_builder.TrabecularVolume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.process_slice">process_slice() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.process_slice">process_slice() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.project_point_on_line">project_point_on_line() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.push_contour">push_contour() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
       <li>
+    pyhexspline.quad_refinement
+
+      <ul>
+        <li><a href="quad_refinement.html#module-pyhexspline.quad_refinement">module</a>
+</li>
+      </ul></li>
+      <li>
+    pyhexspline.spline_mesher
+
+      <ul>
+        <li><a href="spline_mesher.html#module-pyhexspline.spline_mesher">module</a>
+</li>
+      </ul></li>
+      <li>
     pyhexspline.spline_volume
 
       <ul>
-        <li><a href="spline-volume-creation.html#module-pyhexspline.spline_volume">module</a>
+        <li><a href="spline_volume.html#module-pyhexspline.spline_volume">module</a>
 </li>
       </ul></li>
   </ul></td>
@@ -406,6 +509,12 @@
 <h2 id="Q">Q</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.quad_refinement">quad_refinement() (pyhexspline.quad_refinement.QuadRefinement method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement">QuadRefinement (class in pyhexspline.quad_refinement)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.query_closest_idx">query_closest_idx() (gmsh_mesh_builder.Mesher method)</a>
 </li>
   </ul></td>
@@ -414,7 +523,7 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.remove_self_intersections">remove_self_intersections() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.remove_self_intersections">remove_self_intersections() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.resample_contour">resample_contour() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
@@ -431,6 +540,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.set_length_factor">set_length_factor() (gmsh_mesh_builder.TrabecularVolume method)</a>
+</li>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.set_transformation_matrix">set_transformation_matrix() (pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.shapely_line_polygon_intersection">shapely_line_polygon_intersection() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -452,17 +563,17 @@
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.sort_intersection_points_legacy">sort_intersection_points_legacy() (gmsh_mesh_builder.Mesher method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.sort_mahalanobis">sort_mahalanobis() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.sort_mahalanobis">sort_mahalanobis() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.sort_mahalanobis_legacy">sort_mahalanobis_legacy() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.sort_mahalanobis_legacy">sort_mahalanobis_legacy() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.sort_surface">sort_surface() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.sort_surface">sort_surface() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.sort_trab_coords">sort_trab_coords() (gmsh_mesh_builder.TrabecularVolume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.sort_xy">sort_xy() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.sort_xy">sort_xy() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.spline_neumann">spline_neumann() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.spline_neumann">spline_neumann() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.split_dict_by_array_len">split_dict_by_array_len() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -496,11 +607,13 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.volume_splines">volume_splines() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.vertices_grid_cleanup">vertices_grid_cleanup() (pyhexspline.quad_refinement.QuadRefinement method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline-volume-creation.html#pyhexspline.spline_volume.OCC_volume.volume_splines_optimized">volume_splines_optimized() (pyhexspline.spline_volume.OCC_volume method)</a>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.volume_splines">volume_splines() (pyhexspline.spline_volume.OCC_volume method)</a>
+</li>
+      <li><a href="spline_volume.html#pyhexspline.spline_volume.OCC_volume.volume_splines_optimized">volume_splines_optimized() (pyhexspline.spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
 </tr></table>
