@@ -1,51 +1,108 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cortical_sanity &mdash; PyHexSpline 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>cortical_sanity &#8212; spline-mesher 0.0.1-pre-alpha documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-   
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
 
-  </head><body>
-  
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
           
+          
+          <a href="../index.html" class="icon icon-home">
+            PyHexSpline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../hr_pqct_meshing.html">HR-pQCT Structured Hexahedral Meshing</a></li>
+</ul>
 
-          <div class="body" role="main">
-            
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyHexSpline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cortical_sanity</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <h1>Source code for cortical_sanity</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">spatial</span>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">Logger</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">shapely.geometry</span> <span class="k">as</span> <span class="nn">shpg</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">shapely.geometry</span> <span class="k">as</span> <span class="nn">shpg</span>
+<span class="kn">import</span> <span class="nn">shapely.ops</span> <span class="k">as</span> <span class="nn">shpops</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">ndarray</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">spatial</span>
+<span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="kn">import</span> <span class="n">unary_union</span>
 
 <span class="c1"># plt.style.use(&#39;02_CODE/src/spline_mesher/cfgdir/pos_monitor.mplstyle&#39;)  # https://github.com/matplotlib/matplotlib/issues/17978</span>
 
+<span class="c1"># flake8: noqa: E501</span>
 
-<div class="viewcode-block" id="CorticalSanityCheck"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck">[docs]</a><span class="k">class</span> <span class="nc">CorticalSanityCheck</span><span class="p">:</span>
+<span class="n">LOGGING_NAME</span> <span class="o">=</span> <span class="s2">&quot;MESHING&quot;</span>
+
+
+<div class="viewcode-block" id="CorticalSanityCheck">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck">[docs]</a>
+<span class="k">class</span> <span class="nc">CorticalSanityCheck</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">MIN_THICKNESS</span><span class="p">,</span> <span class="n">ext_contour</span><span class="p">,</span> <span class="n">int_contour</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">save_plot</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">MIN_THICKNESS</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">ext_contour</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">int_contour</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">save_plot</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_thickness</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">MIN_THICKNESS</span>  <span class="c1"># minimum thickness between internal and external contour</span>
@@ -54,9 +111,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">int_contour</span> <span class="o">=</span> <span class="n">int_contour</span>  <span class="c1"># internal contour</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_plot</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">save_plot</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
 
-<div class="viewcode-block" id="CorticalSanityCheck.unit_vector"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.unit_vector">[docs]</a>    <span class="k">def</span> <span class="nf">unit_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vector</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CorticalSanityCheck.unit_vector">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.unit_vector">[docs]</a>
+    <span class="k">def</span> <span class="nf">unit_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vector</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the unit vector in numpy form</span>
 
 <span class="sd">        Args:</span>
@@ -70,8 +130,11 @@
             <span class="n">vector</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
         <span class="p">]</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.ccw_angle"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.ccw_angle">[docs]</a>    <span class="k">def</span> <span class="nf">ccw_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">,</span> <span class="n">idx1</span><span class="p">,</span> <span class="n">idx2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.ccw_angle">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.ccw_angle">[docs]</a>
+    <span class="k">def</span> <span class="nf">ccw_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">,</span> <span class="n">idx1</span><span class="p">,</span> <span class="n">idx2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the angle between two 2D arrays in the range [0, 2*pi)</span>
 
 <span class="sd">        Args:</span>
@@ -89,12 +152,18 @@
         <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">angle</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">angle</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">angle</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.convertRadiansToDegrees"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.convertRadiansToDegrees">[docs]</a>    <span class="k">def</span> <span class="nf">convertRadiansToDegrees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radians</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Converts radians to degrees&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.convertRadiansToDegrees">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.convertRadiansToDegrees">[docs]</a>
+    <span class="k">def</span> <span class="nf">convertRadiansToDegrees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radians</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts radians to degrees&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">radians</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.reset_numpy_index"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.reset_numpy_index">[docs]</a>    <span class="k">def</span> <span class="nf">reset_numpy_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.reset_numpy_index">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.reset_numpy_index">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_numpy_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reset the index of a numpy array to a given index</span>
 <span class="sd">        Legacy function, use numpy_roll_index() instead</span>
 <span class="sd">        Args:</span>
@@ -107,8 +176,11 @@
 
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">arr</span><span class="p">[</span><span class="n">idx</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">arr</span><span class="p">[:</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]]</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.roll_index"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.roll_index">[docs]</a>    <span class="k">def</span> <span class="nf">roll_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.roll_index">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.roll_index">[docs]</a>
+    <span class="k">def</span> <span class="nf">roll_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Roll the index of a numpy array to a given index.</span>
 <span class="sd">        A little faster than reset_numpy_index()</span>
 
@@ -121,8 +193,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="n">idx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.is_angle_bigger_bool"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_angle_bigger_bool">[docs]</a>    <span class="k">def</span> <span class="nf">is_angle_bigger_bool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha_int</span><span class="p">,</span> <span class="n">alpha_ext</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.is_angle_bigger_bool">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_angle_bigger_bool">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_angle_bigger_bool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha_int</span><span class="p">,</span> <span class="n">alpha_ext</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns True if alpha_int is bigger than alpha_ext, False otherwise</span>
 <span class="sd">        If alpha_int is bigger than alpha_ext, then the internal angle is bigger than the external angle</span>
 <span class="sd">        If np.nan, then return False and print a warning</span>
@@ -151,14 +226,20 @@
             <span class="k">raise</span> <span class="ne">RuntimeWarning</span><span class="p">(</span><span class="s2">&quot;angle comparison is not possible and/or edge case&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">bool_angle</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.center_of_mass"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.center_of_mass">[docs]</a>    <span class="k">def</span> <span class="nf">center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.center_of_mass">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.center_of_mass">[docs]</a>
+    <span class="k">def</span> <span class="nf">center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="n">total</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">x_coord</span> <span class="o">=</span> <span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">@</span> <span class="nb">range</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">/</span> <span class="n">total</span>
         <span class="n">y_coord</span> <span class="o">=</span> <span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">@</span> <span class="nb">range</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">/</span> <span class="n">total</span>
         <span class="k">return</span> <span class="n">x_coord</span><span class="p">,</span> <span class="n">y_coord</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.is_internal_radius_bigger_than_external"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_internal_radius_bigger_than_external">[docs]</a>    <span class="k">def</span> <span class="nf">is_internal_radius_bigger_than_external</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_e_0</span><span class="p">,</span> <span class="n">p_i_0</span><span class="p">,</span> <span class="n">idx_ext</span><span class="p">,</span> <span class="n">idx_int</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.is_internal_radius_bigger_than_external">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_internal_radius_bigger_than_external">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_internal_radius_bigger_than_external</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_e_0</span><span class="p">,</span> <span class="n">p_i_0</span><span class="p">,</span> <span class="n">idx_ext</span><span class="p">,</span> <span class="n">idx_int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns True if the internal radius is bigger than the external radius, False otherwise</span>
 
 <span class="sd">        Args:</span>
@@ -182,8 +263,11 @@
         <span class="n">bool_radius</span> <span class="o">=</span> <span class="p">[</span><span class="n">r_e</span> <span class="o">&lt;</span> <span class="n">r_i</span> <span class="k">for</span> <span class="p">(</span><span class="n">r_e</span><span class="p">,</span> <span class="n">r_i</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">r_e</span><span class="p">,</span> <span class="n">r_i</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">bool_radius</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.is_internal_inside_external"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_internal_inside_external">[docs]</a>    <span class="k">def</span> <span class="nf">is_internal_inside_external</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_e_0</span><span class="p">,</span> <span class="n">p_i_0</span><span class="p">,</span> <span class="n">idx_ext</span><span class="p">,</span> <span class="n">idx_int</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.is_internal_inside_external">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.is_internal_inside_external">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_internal_inside_external</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_e_0</span><span class="p">,</span> <span class="n">p_i_0</span><span class="p">,</span> <span class="n">idx_ext</span><span class="p">,</span> <span class="n">idx_int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Rationale for deciding if internal contour is inside external contour based on</span>
 <span class="sd">        the angle between the first and second point of the external contour, and the first</span>
 <span class="sd">        point and the first point of the internal contour.</span>
@@ -223,8 +307,11 @@
         <span class="p">]</span>
         <span class="k">return</span> <span class="n">boolean_angle</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.check_min_thickness"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.check_min_thickness">[docs]</a>    <span class="k">def</span> <span class="nf">check_min_thickness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">idx_ext</span><span class="p">,</span> <span class="n">idx_int</span><span class="p">,</span> <span class="n">min_thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.check_min_thickness">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.check_min_thickness">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_min_thickness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">idx_ext</span><span class="p">,</span> <span class="n">idx_int</span><span class="p">,</span> <span class="n">min_thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        # ! delete this function if not used</span>
 <span class="sd">        Checks thickness of ext, int arrays and returns a list of booleans</span>
 <span class="sd">        of form [True, ..., False] where True means the thickness if below tolerance.</span>
@@ -244,8 +331,11 @@
         <span class="n">bool_min_thickness</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">min_thickness</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dist</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">bool_min_thickness</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.correct_internal_point"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_internal_point">[docs]</a>    <span class="k">def</span> <span class="nf">correct_internal_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">base_idx</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.correct_internal_point">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_internal_point">[docs]</a>
+    <span class="k">def</span> <span class="nf">correct_internal_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">base_idx</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Corrects [x, y] position of points of internal array</span>
 
 <span class="sd">        Args:</span>
@@ -260,8 +350,11 @@
             <span class="p">[</span><span class="n">arr</span><span class="p">[</span><span class="n">base_idx</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]][:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dy</span><span class="p">,</span> <span class="n">arr</span><span class="p">[</span><span class="n">base_idx</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]][:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dx</span><span class="p">]</span>
         <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.correct_intersection"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_intersection">[docs]</a>    <span class="k">def</span> <span class="nf">correct_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext_arr</span><span class="p">,</span> <span class="n">int_arr</span><span class="p">,</span> <span class="n">base_idx</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">bool_arr</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.correct_intersection">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_intersection">[docs]</a>
+    <span class="k">def</span> <span class="nf">correct_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext_arr</span><span class="p">,</span> <span class="n">int_arr</span><span class="p">,</span> <span class="n">base_idx</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">bool_arr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Takes ext and int arrays and applies nodal displacement to the elements where bool_min_thickness == True</span>
 
 <span class="sd">        Args:</span>
@@ -305,8 +398,11 @@
         <span class="n">corr_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">corr_arr</span><span class="p">,</span> <span class="n">corr_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">corr_arr</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.draw_arrow"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.draw_arrow">[docs]</a>    <span class="k">def</span> <span class="nf">draw_arrow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">arr_start</span><span class="p">,</span> <span class="n">arr_end</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.draw_arrow">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.draw_arrow">[docs]</a>
+    <span class="k">def</span> <span class="nf">draw_arrow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">arr_start</span><span class="p">,</span> <span class="n">arr_end</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Helper that draws normals with arrow and vector annotation</span>
 
 <span class="sd">        Args:</span>
@@ -340,8 +436,11 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.get_normals"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.get_normals">[docs]</a>    <span class="k">def</span> <span class="nf">get_normals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.get_normals">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.get_normals">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_normals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get normal arrays point-wise for array [xs, ys]</span>
 
 <span class="sd">        Args:</span>
@@ -412,8 +511,11 @@
 
         <span class="k">return</span> <span class="n">dx_med</span><span class="p">,</span> <span class="n">dy_med</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.nearest_point"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.nearest_point">[docs]</a>    <span class="k">def</span> <span class="nf">nearest_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">pt</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.nearest_point">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.nearest_point">[docs]</a>
+    <span class="k">def</span> <span class="nf">nearest_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">pt</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find nearest point between an array and a point (e.g. the first point of ext contour)</span>
 
 <span class="sd">        Args:</span>
@@ -429,8 +531,11 @@
         <span class="n">loc</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">spatial</span><span class="o">.</span><span class="n">KDTree</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">pt</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span>
         <span class="k">return</span> <span class="n">loc</span><span class="p">,</span> <span class="n">idx</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.nearest_pairs_arrs"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.nearest_pairs_arrs">[docs]</a>    <span class="k">def</span> <span class="nf">nearest_pairs_arrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">,</span> <span class="n">arr2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.nearest_pairs_arrs">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.nearest_pairs_arrs">[docs]</a>
+    <span class="k">def</span> <span class="nf">nearest_pairs_arrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">,</span> <span class="n">arr2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find nearest point between two arrays and create a an array containing nearest-pairs indices</span>
 
 <span class="sd">        Args:</span>
@@ -454,15 +559,21 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">dist_nearest_neighbour</span><span class="p">,</span> <span class="n">base_idx</span><span class="p">,</span> <span class="n">closest_idx</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.min_thickness_nearest_pairs"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.min_thickness_nearest_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">min_thickness_nearest_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbour_dists</span><span class="p">):</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.min_thickness_nearest_pairs">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.min_thickness_nearest_pairs">[docs]</a>
+    <span class="k">def</span> <span class="nf">min_thickness_nearest_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbour_dists</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">neighbour_dists</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_thickness</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="n">bool_min_thickness</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">bool_min_thickness</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">bool_min_thickness</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.lineseg_dists"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.lineseg_dists">[docs]</a>    <span class="k">def</span> <span class="nf">lineseg_dists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.lineseg_dists">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.lineseg_dists">[docs]</a>
+    <span class="k">def</span> <span class="nf">lineseg_dists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        https://stackoverflow.com/questions/27161533/find-the-shortest-distance-between-a-point-and-line-segments-not-line</span>
 <span class="sd">        Cartesian distance from point to line segment</span>
 
@@ -492,7 +603,10 @@
         <span class="n">c</span> <span class="o">=</span> <span class="n">d_pa</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">d_pa</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.hyp_min_thickness"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.hyp_min_thickness">[docs]</a>    <span class="k">def</span> <span class="nf">hyp_min_thickness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext_contour</span><span class="p">,</span> <span class="n">int_contour</span><span class="p">,</span> <span class="n">idx_</span><span class="p">):</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.hyp_min_thickness">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.hyp_min_thickness">[docs]</a>
+    <span class="k">def</span> <span class="nf">hyp_min_thickness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext_contour</span><span class="p">,</span> <span class="n">int_contour</span><span class="p">,</span> <span class="n">idx_</span><span class="p">):</span>
         <span class="n">ext_contour</span> <span class="o">=</span> <span class="n">ext_contour</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">int_contour</span> <span class="o">=</span> <span class="n">int_contour</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">idx_</span> <span class="o">=</span> <span class="n">idx_</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -510,7 +624,10 @@
         <span class="n">bool_thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bool_thickness</span><span class="p">,</span> <span class="n">bool_thickness</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">bool_thickness</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.plot_contours"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.plot_contours">[docs]</a>    <span class="k">def</span> <span class="nf">plot_contours</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.plot_contours">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.plot_contours">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_contours</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">min_thickness</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">x_ext</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -519,7 +636,7 @@
         <span class="n">y_int</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create contours, get normals, plot</span>
 
 <span class="sd">        Args:</span>
@@ -565,8 +682,11 @@
 
         <span class="k">return</span> <span class="n">ext_a</span><span class="p">,</span> <span class="n">dx_med</span><span class="p">,</span> <span class="n">dy_med</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.resample_contour"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.resample_contour">[docs]</a>    <span class="k">def</span> <span class="nf">resample_contour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.resample_contour">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.resample_contour">[docs]</a>
+    <span class="k">def</span> <span class="nf">resample_contour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Cumulative Euclidean distance between successive polygon points.</span>
 
 <span class="sd">        Args:</span>
@@ -589,8 +709,11 @@
         <span class="p">]</span>
         <span class="k">return</span> <span class="n">xy_interp</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.offset_surface"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.offset_surface">[docs]</a>    <span class="k">def</span> <span class="nf">offset_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.offset_surface">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.offset_surface">[docs]</a>
+    <span class="k">def</span> <span class="nf">offset_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create artificial internal surface based on an offset</span>
 <span class="sd">        Args:</span>
 <span class="sd">            np.ndarray: 2D array of [x, y] points of the external surface</span>
@@ -598,6 +721,10 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: 2D array of [x, y] points of the offset surface</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">poly</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">noffpoly</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">noffafpolypts</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">noffpoly_union</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Create a Polygon from the 2d array</span>
         <span class="n">poly</span> <span class="o">=</span> <span class="n">shpg</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
@@ -605,11 +732,25 @@
         <span class="c1"># Create offset in inward direction</span>
         <span class="n">noffpoly</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>  <span class="c1"># offset</span>
 
+        <span class="c1"># If the result is a MultiPolygon, merge them into a single Polygon</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">noffpoly</span><span class="p">,</span> <span class="n">shpg</span><span class="o">.</span><span class="n">MultiPolygon</span><span class="p">):</span>
+            <span class="n">noffpoly</span> <span class="o">=</span> <span class="n">unary_union</span><span class="p">(</span><span class="n">noffpoly</span><span class="p">)</span>
+
         <span class="c1"># Turn polygon points into numpy arrays for plotting</span>
-        <span class="n">noffafpolypts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">noffpoly</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">noffafpolypts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">noffpoly</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Multipolygon was found, taking the convex hull as the offset surface&quot;</span>
+            <span class="p">)</span>
+            <span class="n">noffpoly_union</span> <span class="o">=</span> <span class="n">shpops</span><span class="o">.</span><span class="n">unary_union</span><span class="p">(</span><span class="n">noffpoly</span><span class="p">)</span>
+            <span class="n">noffafpolypts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">noffpoly_union</span><span class="o">.</span><span class="n">convex_hull</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">noffafpolypts</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.plot_corrected_contours"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.plot_corrected_contours">[docs]</a>    <span class="k">def</span> <span class="nf">plot_corrected_contours</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.plot_corrected_contours">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.plot_corrected_contours">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_corrected_contours</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">fig</span><span class="p">,</span>
         <span class="n">ax1</span><span class="p">,</span>
@@ -683,8 +824,11 @@
 
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.project_point_on_line"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.project_point_on_line">[docs]</a>    <span class="k">def</span> <span class="nf">project_point_on_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.project_point_on_line">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.project_point_on_line">[docs]</a>
+    <span class="k">def</span> <span class="nf">project_point_on_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Project point p on line a-b</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ap</span> <span class="o">=</span> <span class="n">p</span> <span class="o">-</span> <span class="n">a</span>
@@ -694,8 +838,11 @@
         <span class="n">t</span> <span class="o">=</span> <span class="n">ap_ab</span> <span class="o">/</span> <span class="n">ab2</span>
         <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">ab</span> <span class="o">*</span> <span class="n">t</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.KDT_nn"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.KDT_nn">[docs]</a>    <span class="k">def</span> <span class="nf">KDT_nn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.KDT_nn">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.KDT_nn">[docs]</a>
+    <span class="k">def</span> <span class="nf">KDT_nn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find nearest point between two arrays and create an array containing nearest-pairs indices</span>
 
 <span class="sd">        Args:</span>
@@ -708,19 +855,24 @@
         <span class="n">_</span><span class="p">,</span> <span class="n">p_nn</span> <span class="o">=</span> <span class="n">spatial</span><span class="o">.</span><span class="n">KDTree</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">p_nn</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.push_contour"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.push_contour">[docs]</a>    <span class="k">def</span> <span class="nf">push_contour</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.push_contour">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.push_contour">[docs]</a>
+    <span class="k">def</span> <span class="nf">push_contour</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">ext_contour</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">int_contour</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="p">):</span>
-        <span class="n">RESAMPLING</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">]:</span>
+        <span class="n">is_inside_shpg</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># initialise</span>
+
+        <span class="n">RESAMPLING</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>
         <span class="n">ext_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset_surface</span><span class="p">(</span><span class="n">ext_contour</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
         <span class="n">ext_offset_hres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resample_contour</span><span class="p">(</span><span class="n">ext_offset</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="n">RESAMPLING</span><span class="p">)</span>
         <span class="n">int_contour_hres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resample_contour</span><span class="p">(</span><span class="n">int_contour</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="n">RESAMPLING</span><span class="p">)</span>
 
-        <span class="n">is_inside</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">is_inside_shpg</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">shpg</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="n">int_contour_hres</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">.</span><span class="n">within</span><span class="p">(</span><span class="n">shpg</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span><span class="n">ext_offset_hres</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">int_contour_hres</span><span class="p">))</span>
         <span class="p">]</span>
-        <span class="n">is_inside</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">is_inside</span><span class="p">,</span> <span class="n">is_inside</span><span class="p">]</span>
+        <span class="n">is_inside</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">is_inside_shpg</span><span class="p">,</span> <span class="n">is_inside_shpg</span><span class="p">]</span>
         <span class="n">closest_points</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">ext_offset_hres</span><span class="p">[</span>
                 <span class="n">spatial</span><span class="o">.</span><span class="n">KDTree</span><span class="p">(</span><span class="n">ext_offset_hres</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">int_contour_hres</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">1</span><span class="p">]</span>
@@ -734,10 +886,17 @@
         <span class="n">int_contour</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resample_contour</span><span class="p">(</span><span class="n">int_contour_hres</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">int_contour</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">int_contour</span><span class="p">,</span> <span class="n">ext_offset</span></div>
 
-<div class="viewcode-block" id="CorticalSanityCheck.cortical_sanity_check"><a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.cortical_sanity_check">[docs]</a>    <span class="k">def</span> <span class="nf">cortical_sanity_check</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">ext_contour</span><span class="p">,</span> <span class="n">int_contour</span><span class="p">,</span> <span class="n">iterator</span><span class="p">,</span> <span class="n">show_plots</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CorticalSanityCheck.cortical_sanity_check">
+<a class="viewcode-back" href="../cortical_sanity.html#cortical_sanity.CorticalSanityCheck.cortical_sanity_check">[docs]</a>
+    <span class="k">def</span> <span class="nf">cortical_sanity_check</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ext_contour</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">int_contour</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">iterator</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">show_plots</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the internal contour is within the external contour.</span>
 
 <span class="sd">        Args:</span>
@@ -778,72 +937,36 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="k">return</span> <span class="n">new_int</span></div></div>
+        <span class="k">return</span> <span class="n">new_int</span></div>
+</div>
+
 </pre></div>
 
+           </div>
           </div>
-          
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Simone Poncioni.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">spline-mesher</a></h1>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
 
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html">spline_mesher</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">Module code</a><ul>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2023, Simone Poncioni.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-    </div>
-
-    
-
-    
-  </body>
+</body>
 </html>

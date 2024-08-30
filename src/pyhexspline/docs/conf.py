@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = "hexmesher"
+project = "PyHexSpline"
 copyright = "2023, Simone Poncioni"
 author = "Simone Poncioni"
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.1"
+release = "0.9.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -36,6 +36,9 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.coverage",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
