@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyhexspline.spline_mesher &mdash; pyhexspline 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pyhexspline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">spline_mesher</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pyhexspline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyhexspline.spline_mesher</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyhexspline.spline_mesher</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">float64</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">uint64</span>
+<span class="kn">from</span> <span class="nn">SimpleITK.SimpleITK</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;NUMEXPR_MAX_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;16&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">gmsh</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">plotly.io</span> <span class="k">as</span> <span class="nn">pio</span>
+<span class="kn">import</span> <span class="nn">SimpleITK</span> <span class="k">as</span> <span class="nn">sitk</span>
+
+<span class="kn">from</span> <span class="nn">pyhexspline</span> <span class="kn">import</span> <span class="n">cortical_sanity</span> <span class="k">as</span> <span class="n">csc</span>
+<span class="kn">from</span> <span class="nn">pyhexspline.gmsh_mesh_builder</span> <span class="kn">import</span> <span class="n">Mesher</span><span class="p">,</span> <span class="n">TrabecularVolume</span>
+<span class="kn">from</span> <span class="nn">pyhexspline.quad_refinement</span> <span class="kn">import</span> <span class="n">QuadRefinement</span>
+<span class="kn">from</span> <span class="nn">pyhexspline.spline_volume</span> <span class="kn">import</span> <span class="n">OCC_volume</span>
+
+<span class="n">pio</span><span class="o">.</span><span class="n">renderers</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;browser&quot;</span>
+<span class="n">LOGGING_NAME</span> <span class="o">=</span> <span class="s2">&quot;MESHING&quot;</span>
+<span class="c1"># flake8: noqa: E402</span>
+
+
+<div class="viewcode-block" id="HexMesh">
+<a class="viewcode-back" href="../../spline_mesher.html#pyhexspline.spline_mesher.HexMesh">[docs]</a>
+<span class="k">class</span> <span class="nc">HexMesh</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">settings_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">img_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">sitk_image</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span> <span class="o">=</span> <span class="n">settings_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_dict</span> <span class="o">=</span> <span class="n">img_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="k">if</span> <span class="n">sitk_image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sitk_image</span> <span class="o">=</span> <span class="n">sitk_image</span>  <span class="c1"># imports the image</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sitk_image</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># reads the image from img_path_ext</span>
+
+<div class="viewcode-block" id="HexMesh.mesher">
+<a class="viewcode-back" href="../../spline_mesher.html#pyhexspline.spline_mesher.HexMesh.mesher">[docs]</a>
+    <span class="k">def</span> <span class="nf">mesher</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="n">uint64</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="n">uint64</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">],</span>
+        <span class="nb">int</span><span class="p">,</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">float64</span><span class="p">,</span>
+        <span class="n">float64</span><span class="p">,</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="n">uint64</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="n">uint64</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">]:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">LOGGING_NAME</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting meshing script...&quot;</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="n">img_basepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_dict</span><span class="p">[</span><span class="s2">&quot;img_basepath&quot;</span><span class="p">]</span>
+        <span class="n">img_basefilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_dict</span><span class="p">[</span><span class="s2">&quot;img_basefilename&quot;</span><span class="p">]</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">img_basepath</span><span class="p">,</span> <span class="n">img_basefilename</span><span class="p">,</span> <span class="n">img_basefilename</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sitk_image</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">img_path_ext</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span>
+                    <span class="n">img_basepath</span><span class="p">,</span>
+                    <span class="n">img_basefilename</span><span class="p">,</span>
+                    <span class="n">img_basefilename</span> <span class="o">+</span> <span class="s2">&quot;_CORT_MASK_cap.mhd&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">sitk_image</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">img_path_ext</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">sitk_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sitk_image</span>
+
+        <span class="n">filepath_ext</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">img_basepath</span><span class="p">,</span> <span class="n">img_basefilename</span><span class="p">,</span> <span class="n">img_basefilename</span><span class="p">))</span>
+        <span class="n">geo_unrolled_filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">img_dict</span><span class="p">[</span><span class="s2">&quot;outputpath&quot;</span><span class="p">],</span>
+                <span class="n">img_basefilename</span><span class="p">,</span>
+                <span class="n">img_basefilename</span> <span class="o">+</span> <span class="s2">&quot;.geo_unrolled&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">mesh_file_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">img_dict</span><span class="p">[</span><span class="s2">&quot;meshpath&quot;</span><span class="p">],</span>
+                <span class="n">img_basefilename</span><span class="p">,</span>
+                <span class="n">img_basefilename</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Spline_volume settings</span>
+        <span class="n">ASPECT</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;aspect&quot;</span><span class="p">])</span>
+        <span class="n">SLICE</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;_slice&quot;</span><span class="p">])</span>
+        <span class="n">UNDERSAMPLING</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;undersampling&quot;</span><span class="p">])</span>
+        <span class="n">SLICING_COEFFICIENT</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;slicing_coefficient&quot;</span><span class="p">])</span>
+        <span class="n">INSIDE_VAL</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;inside_val&quot;</span><span class="p">])</span>
+        <span class="n">OUTSIDE_VAL</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;outside_val&quot;</span><span class="p">])</span>
+        <span class="n">LOWER_THRESH</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;lower_thresh&quot;</span><span class="p">])</span>
+        <span class="n">UPPER_THRESH</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;upper_thresh&quot;</span><span class="p">])</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;s&quot;</span><span class="p">])</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;k&quot;</span><span class="p">])</span>
+        <span class="n">INTERP_POINTS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;interp_points&quot;</span><span class="p">])</span>
+        <span class="n">DP_SIMPLIFICATION_OUTER</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;dp_simplification_outer&quot;</span><span class="p">])</span>
+        <span class="n">DP_SIMPLIFICATION_INNER</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;dp_simplification_inner&quot;</span><span class="p">])</span>
+        <span class="n">SHOW_PLOTS</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;show_plots&quot;</span><span class="p">])</span>
+        <span class="n">SHOW_GMSH</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;show_gmsh&quot;</span><span class="p">])</span>
+        <span class="n">WRITE_MESH</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;write_mesh&quot;</span><span class="p">])</span>
+        <span class="n">THICKNESS_TOL</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;thickness_tol&quot;</span><span class="p">])</span>
+        <span class="n">PHASES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;phases&quot;</span><span class="p">])</span>
+
+        <span class="c1"># spline_mesher settings</span>
+        <span class="n">N_LONGITUDINAL</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;n_elms_longitudinal&quot;</span><span class="p">])</span>
+        <span class="n">N_TRANSVERSE_CORT</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;n_elms_transverse_cort&quot;</span><span class="p">])</span>
+        <span class="n">N_TRANSVERSE_TRAB</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;n_elms_transverse_trab&quot;</span><span class="p">])</span>
+        <span class="n">N_RADIAL</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;n_elms_radial&quot;</span><span class="p">])</span>
+        <span class="n">ELM_ORDER</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;mesh_order&quot;</span><span class="p">])</span>
+        <span class="n">QUAD_REFINEMENT</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;trab_refinement&quot;</span><span class="p">])</span>
+        <span class="n">MESH_ANALYSIS</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;mesh_analysis&quot;</span><span class="p">])</span>
+        <span class="n">ELLIPSOID_FITTING</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;ellipsoid_fitting&quot;</span><span class="p">])</span>
+
+        <span class="n">DEBUG_ORIENTATION</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mi">0</span>  <span class="c1"># 0: no debug, 1: debug # ! obscured from settings by design</span>
+        <span class="p">)</span>
+
+        <span class="n">cortical_v</span> <span class="o">=</span> <span class="n">OCC_volume</span><span class="p">(</span>
+            <span class="n">sitk_image</span><span class="p">,</span>
+            <span class="n">img_path_ext</span><span class="p">,</span>
+            <span class="n">filepath_ext</span><span class="p">,</span>
+            <span class="n">geo_unrolled_filename</span><span class="p">,</span>
+            <span class="n">ASPECT</span><span class="o">=</span><span class="n">ASPECT</span><span class="p">,</span>
+            <span class="n">SLICE</span><span class="o">=</span><span class="n">SLICE</span><span class="p">,</span>
+            <span class="n">UNDERSAMPLING</span><span class="o">=</span><span class="n">UNDERSAMPLING</span><span class="p">,</span>
+            <span class="n">SLICING_COEFFICIENT</span><span class="o">=</span><span class="n">SLICING_COEFFICIENT</span><span class="p">,</span>
+            <span class="n">INSIDE_VAL</span><span class="o">=</span><span class="n">INSIDE_VAL</span><span class="p">,</span>
+            <span class="n">OUTSIDE_VAL</span><span class="o">=</span><span class="n">OUTSIDE_VAL</span><span class="p">,</span>
+            <span class="n">LOWER_THRESH</span><span class="o">=</span><span class="n">LOWER_THRESH</span><span class="p">,</span>
+            <span class="n">UPPER_THRESH</span><span class="o">=</span><span class="n">UPPER_THRESH</span><span class="p">,</span>
+            <span class="n">S</span><span class="o">=</span><span class="n">S</span><span class="p">,</span>
+            <span class="n">K</span><span class="o">=</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">INTERP_POINTS</span><span class="o">=</span><span class="n">INTERP_POINTS</span><span class="p">,</span>
+            <span class="n">DP_SIMPLIFICATION_OUTER</span><span class="o">=</span><span class="n">DP_SIMPLIFICATION_OUTER</span><span class="p">,</span>
+            <span class="n">DP_SIMPLIFICATION_INNER</span><span class="o">=</span><span class="n">DP_SIMPLIFICATION_INNER</span><span class="p">,</span>
+            <span class="n">debug_orientation</span><span class="o">=</span><span class="n">DEBUG_ORIENTATION</span><span class="p">,</span>
+            <span class="n">show_plots</span><span class="o">=</span><span class="n">SHOW_PLOTS</span><span class="p">,</span>
+            <span class="n">thickness_tol</span><span class="o">=</span><span class="n">THICKNESS_TOL</span><span class="p">,</span>
+            <span class="n">phases</span><span class="o">=</span><span class="n">PHASES</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cortical_v</span><span class="o">.</span><span class="n">sitk_image</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">PermuteAxes</span><span class="p">(</span><span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="n">cortical_v</span><span class="o">.</span><span class="n">img_path</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sitk_image</span>
+        <span class="k">if</span> <span class="n">cortical_v</span><span class="o">.</span><span class="n">show_plots</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cortical_v</span><span class="o">.</span><span class="n">plot_mhd_slice</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MHD slice</span><span class="se">\t\t\t</span><span class="s2">show_plots:</span><span class="se">\t</span><span class="si">{</span><span class="n">cortical_v</span><span class="o">.</span><span class="n">show_plots</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">image_pad</span> <span class="o">=</span> <span class="n">cortical_v</span><span class="o">.</span><span class="n">binary_threshold</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="n">cortical_ext</span><span class="p">,</span> <span class="n">cortical_int</span> <span class="o">=</span> <span class="n">cortical_v</span><span class="o">.</span><span class="n">volume_splines_optimized</span><span class="p">(</span><span class="n">image_pad</span><span class="p">)</span>
+
+        <span class="c1"># cortical_ext = np.load(</span>
+        <span class="c1">#     &quot;/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/cortical_ext_interp_v2.npy&quot;</span>
+        <span class="c1"># )</span>
+        <span class="c1"># cortical_int = np.load(</span>
+        <span class="c1">#     &quot;/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/cortical_int_interp_v2.npy&quot;</span>
+        <span class="c1"># )</span>
+
+        <span class="c1"># Cortical surface sanity check</span>
+        <span class="n">cortex</span> <span class="o">=</span> <span class="n">csc</span><span class="o">.</span><span class="n">CorticalSanityCheck</span><span class="p">(</span>
+            <span class="n">MIN_THICKNESS</span><span class="o">=</span><span class="n">cortical_v</span><span class="o">.</span><span class="n">MIN_THICKNESS</span><span class="p">,</span>
+            <span class="n">ext_contour</span><span class="o">=</span><span class="n">cortical_ext</span><span class="p">,</span>
+            <span class="n">int_contour</span><span class="o">=</span><span class="n">cortical_int</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">cortical_v</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+            <span class="n">save_plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">z_unique</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">cortical_ext</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">cortical_ext_split</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">cortical_ext</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">z_unique</span><span class="p">))</span>
+        <span class="n">cortical_int_split</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">cortical_int</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">z_unique</span><span class="p">))</span>
+        <span class="n">cortical_int_sanity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cortical_int_split</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">):</span>
+            <span class="n">cortical_int_sanity</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cortex</span><span class="o">.</span><span class="n">cortical_sanity_check</span><span class="p">(</span>
+                <span class="n">ext_contour</span><span class="o">=</span><span class="n">cortical_ext_split</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">int_contour</span><span class="o">=</span><span class="n">cortical_int_split</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">iterator</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                <span class="n">show_plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">cortical_int_sanity</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cortical_int_split</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">cortical_int_sanity</span> <span class="o">=</span> <span class="n">cortical_int_sanity</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">setNumber</span><span class="p">(</span><span class="s2">&quot;General.NumThreads&quot;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="n">mesher</span> <span class="o">=</span> <span class="n">Mesher</span><span class="p">(</span>
+            <span class="n">geo_unrolled_filename</span><span class="p">,</span>
+            <span class="n">mesh_file_path</span><span class="p">,</span>
+            <span class="n">slicing_coefficient</span><span class="o">=</span><span class="n">cortical_v</span><span class="o">.</span><span class="n">SLICING_COEFFICIENT</span><span class="p">,</span>
+            <span class="n">n_longitudinal</span><span class="o">=</span><span class="n">N_LONGITUDINAL</span><span class="p">,</span>
+            <span class="n">n_transverse_trab</span><span class="o">=</span><span class="n">N_TRANSVERSE_TRAB</span><span class="p">,</span>
+            <span class="n">n_transverse_cort</span><span class="o">=</span><span class="n">N_TRANSVERSE_CORT</span><span class="p">,</span>
+            <span class="n">n_radial</span><span class="o">=</span><span class="n">N_RADIAL</span><span class="p">,</span>
+            <span class="n">ellipsoid_fitting</span><span class="o">=</span><span class="n">ELLIPSOID_FITTING</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">cortex_centroid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">cortical_int_sanity_split</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span>
+            <span class="n">cortical_int_sanity</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">cortical_int_sanity</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]))</span>
+        <span class="p">)</span>
+        <span class="n">cortical_ext_centroid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">)[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">cortical_int_centroid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cortical_int_split</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cortical_int_split</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cortical_int_split</span><span class="p">)[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">idx_list_ext</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">),</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">idx_list_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">),</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">intersections_ext</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">intersections_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cortical_ext_split</span><span class="p">):</span>
+
+            <span class="n">cortex_centroid</span><span class="p">[</span><span class="n">i</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">polygon_tensor_of_inertia</span><span class="p">(</span>
+                <span class="n">cortical_ext_split</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">cortical_int_sanity_split</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">true_coi</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">cortex_centroid</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cortical_ext_split</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">(</span>
+                <span class="n">cortical_ext_centroid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">idx_list_ext</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">intersections_ext_s</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">insert_tensor_of_inertia</span><span class="p">(</span>
+                <span class="n">cortical_ext_split</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">cortex_centroid</span><span class="p">[</span><span class="n">i</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">intersections_ext</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">intersections_ext_s</span>
+            <span class="p">(</span>
+                <span class="n">cortical_int_centroid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">idx_list_int</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">intersections_int_s</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">insert_tensor_of_inertia</span><span class="p">(</span>
+                <span class="n">cortical_int_sanity_split</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">cortex_centroid</span><span class="p">[</span><span class="n">i</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">intersections_int</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">intersections_int_s</span>
+
+        <span class="n">cortical_ext_msh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cortical_ext_centroid</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">cortical_int_msh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cortical_int_centroid</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="p">(</span>
+            <span class="n">indices_coi_ext</span><span class="p">,</span>
+            <span class="n">cortical_ext_bspline</span><span class="p">,</span>
+            <span class="n">intersection_line_tags_ext</span><span class="p">,</span>
+            <span class="n">cortical_ext_surfs</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">gmsh_geometry_formulation</span><span class="p">(</span><span class="n">cortical_ext_msh</span><span class="p">,</span> <span class="n">idx_list_ext</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">indices_coi_int</span><span class="p">,</span>
+            <span class="n">cortical_int_bspline</span><span class="p">,</span>
+            <span class="n">intersection_line_tags_int</span><span class="p">,</span>
+            <span class="n">cortical_int_surfs</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">gmsh_geometry_formulation</span><span class="p">(</span><span class="n">cortical_int_msh</span><span class="p">,</span> <span class="n">idx_list_int</span><span class="p">)</span>
+        <span class="n">intersurface_line_tags</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">add_interslice_segments</span><span class="p">(</span>
+            <span class="n">indices_coi_ext</span><span class="p">,</span> <span class="n">indices_coi_int</span>
+        <span class="p">)</span>
+        <span class="n">slices_tags</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">add_slice_surfaces</span><span class="p">(</span>
+            <span class="n">cortical_ext_bspline</span><span class="p">,</span> <span class="n">cortical_int_bspline</span><span class="p">,</span> <span class="n">intersurface_line_tags</span>
+        <span class="p">)</span>
+        <span class="n">intersurface_surface_tags</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">add_intersurface_planes</span><span class="p">(</span>
+            <span class="n">intersurface_line_tags</span><span class="p">,</span>
+            <span class="n">intersection_line_tags_ext</span><span class="p">,</span>
+            <span class="n">intersection_line_tags_int</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">intersection_line_tags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">intersection_line_tags_ext</span><span class="p">,</span> <span class="n">intersection_line_tags_int</span>
+        <span class="p">)</span>
+        <span class="n">cortical_bspline_tags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cortical_ext_bspline</span><span class="p">,</span> <span class="n">cortical_int_bspline</span><span class="p">)</span>
+        <span class="n">cort_surfs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">cortical_ext_surfs</span><span class="p">,</span>
+                <span class="n">cortical_int_surfs</span><span class="p">,</span>
+                <span class="n">slices_tags</span><span class="p">,</span>
+                <span class="n">intersurface_surface_tags</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">cort_vol_tags</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">add_volume</span><span class="p">(</span>
+            <span class="n">cortical_ext_surfs</span><span class="p">,</span>
+            <span class="n">cortical_int_surfs</span><span class="p">,</span>
+            <span class="n">slices_tags</span><span class="p">,</span>
+            <span class="n">intersurface_surface_tags</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TODO: check if could be implemented when created (relationship with above functions)</span>
+        <span class="n">intersurface_line_tags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intersurface_line_tags</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="c1"># Trabecular meshing</span>
+        <span class="n">trabecular_volume</span> <span class="o">=</span> <span class="n">TrabecularVolume</span><span class="p">(</span>
+            <span class="n">geo_unrolled_filename</span><span class="p">,</span>
+            <span class="n">mesh_file_path</span><span class="p">,</span>
+            <span class="n">slicing_coefficient</span><span class="o">=</span><span class="n">cortical_v</span><span class="o">.</span><span class="n">SLICING_COEFFICIENT</span><span class="p">,</span>
+            <span class="n">n_longitudinal</span><span class="o">=</span><span class="n">N_LONGITUDINAL</span><span class="p">,</span>
+            <span class="n">n_transverse_cort</span><span class="o">=</span><span class="n">N_TRANSVERSE_CORT</span><span class="p">,</span>
+            <span class="n">n_transverse_trab</span><span class="o">=</span><span class="n">N_TRANSVERSE_TRAB</span><span class="p">,</span>
+            <span class="n">n_radial</span><span class="o">=</span><span class="n">N_RADIAL</span><span class="p">,</span>
+            <span class="n">QUAD_REFINEMENT</span><span class="o">=</span><span class="n">QUAD_REFINEMENT</span><span class="p">,</span>
+            <span class="n">ellipsoid_fitting</span><span class="o">=</span><span class="n">ELLIPSOID_FITTING</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">trabecular_volume</span><span class="o">.</span><span class="n">set_length_factor</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;center_square_length_factor&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+
+        <span class="p">(</span>
+            <span class="n">trab_point_tags</span><span class="p">,</span>
+            <span class="n">trab_line_tags_v</span><span class="p">,</span>
+            <span class="n">trab_line_tags_h</span><span class="p">,</span>
+            <span class="n">trab_surfs_v</span><span class="p">,</span>
+            <span class="n">trab_surfs_h</span><span class="p">,</span>
+            <span class="n">trab_vols</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">trabecular_volume</span><span class="o">.</span><span class="n">get_trabecular_vol</span><span class="p">(</span><span class="n">coi_idx</span><span class="o">=</span><span class="n">intersections_int</span><span class="p">)</span>
+
+        <span class="c1"># connection between inner trabecular and cortical volumes</span>
+        <span class="n">trab_cort_line_tags</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">trabecular_cortical_connection</span><span class="p">(</span>
+            <span class="n">coi_idx</span><span class="o">=</span><span class="n">indices_coi_int</span><span class="p">,</span> <span class="n">trab_point_tags</span><span class="o">=</span><span class="n">trab_point_tags</span>
+        <span class="p">)</span>
+
+        <span class="n">trab_slice_surf_tags</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">trabecular_slices</span><span class="p">(</span>
+            <span class="n">trab_cort_line_tags</span><span class="o">=</span><span class="n">trab_cort_line_tags</span><span class="p">,</span>
+            <span class="n">trab_line_tags_h</span><span class="o">=</span><span class="n">trab_line_tags_h</span><span class="p">,</span>
+            <span class="n">cort_int_bspline_tags</span><span class="o">=</span><span class="n">cortical_int_bspline</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">trab_plane_inertia_tags</span> <span class="o">=</span> <span class="n">trabecular_volume</span><span class="o">.</span><span class="n">trabecular_planes_inertia</span><span class="p">(</span>
+            <span class="n">trab_cort_line_tags</span><span class="p">,</span> <span class="n">trab_line_tags_v</span><span class="p">,</span> <span class="n">intersection_line_tags_int</span>
+        <span class="p">)</span>
+
+        <span class="n">cort_trab_vol_tags</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">get_trabecular_cortical_volume_mesh</span><span class="p">(</span>
+            <span class="n">trab_slice_surf_tags</span><span class="p">,</span>
+            <span class="n">trab_plane_inertia_tags</span><span class="p">,</span>
+            <span class="n">cortical_int_surfs</span><span class="p">,</span>
+            <span class="n">trab_surfs_v</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">cort_volume_tags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">cort_vol_tags</span><span class="p">,</span> <span class="n">cort_trab_vol_tags</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">)</span>
+
+        <span class="n">trab_refinement</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">quadref_vols</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">trabecular_volume</span><span class="o">.</span><span class="n">QUAD_REFINEMENT</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Starting quad refinement procedure (this might take some time)&quot;</span>
+            <span class="p">)</span>
+
+            <span class="c1"># get coords of trab_point_tags</span>
+            <span class="n">coords_vertices</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">trab_point_tags</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">trabecular_volume</span><span class="o">.</span><span class="n">get_vertices_coords</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
+                <span class="n">coords_vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+            <span class="n">trab_refinement</span> <span class="o">=</span> <span class="n">QuadRefinement</span><span class="p">(</span>
+                <span class="n">nb_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">DIM</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">SQUARE_SIZE_0_MM</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">MAX_SUBDIVISIONS</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">ELMS_THICKNESS</span><span class="o">=</span><span class="n">N_LONGITUDINAL</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="p">(</span>
+                <span class="n">quadref_line_tags_intersurf</span><span class="p">,</span>
+                <span class="n">quadref_surfs</span><span class="p">,</span>
+                <span class="n">quadref_vols</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">trab_refinement</span><span class="o">.</span><span class="n">exec_quad_refinement</span><span class="p">(</span>
+                <span class="n">trab_point_tags</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="p">)</span>  <span class="c1"># , coords_vertices</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Trabecular refinement done&quot;</span><span class="p">)</span>
+
+        <span class="c1"># * meshing</span>
+        <span class="n">trab_surfs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">chain</span><span class="p">(</span>
+                <span class="n">trab_surfs_v</span><span class="p">,</span>
+                <span class="n">trab_surfs_h</span><span class="p">,</span>
+                <span class="n">trab_slice_surf_tags</span><span class="p">,</span>
+                <span class="n">trab_plane_inertia_tags</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">trab_lines_longitudinal</span> <span class="o">=</span> <span class="n">trab_line_tags_v</span>
+        <span class="n">trab_lines_transverse</span> <span class="o">=</span> <span class="n">trab_cort_line_tags</span>
+        <span class="n">trab_lines_radial</span> <span class="o">=</span> <span class="n">trab_line_tags_h</span>
+
+        <span class="n">trabecular_volume</span><span class="o">.</span><span class="n">meshing_transfinite</span><span class="p">(</span>
+            <span class="n">trab_lines_longitudinal</span><span class="p">,</span>
+            <span class="n">trab_lines_transverse</span><span class="p">,</span>
+            <span class="n">trab_lines_radial</span><span class="p">,</span>
+            <span class="n">trab_surfs</span><span class="p">,</span>
+            <span class="n">trab_vols</span><span class="p">,</span>
+            <span class="n">phase</span><span class="o">=</span><span class="s2">&quot;trab&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># * physical groups</span>
+        <span class="n">mesher</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+        <span class="n">trab_vol_tags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">trab_vols</span><span class="p">,</span> <span class="n">cort_trab_vol_tags</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">cort_physical_group</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">addPhysicalGroup</span><span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span> <span class="n">cort_vol_tags</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Cortical_Compartment&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">quadref_vols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">trab_vol_tags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trab_vol_tags</span><span class="p">,</span> <span class="n">quadref_vols</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">trab_physical_group</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">addPhysicalGroup</span><span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span> <span class="n">trab_vol_tags</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Trabecular_Compartment&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># if (</span>
+        <span class="c1">#     trab_refinement is not None and quadref_vols is not None</span>
+        <span class="c1"># ):  # same as saying if QUAD_REFINEMENT</span>
+        <span class="c1">#     quadref_physical_group = trab_refinement.model.addPhysicalGroup(</span>
+        <span class="c1">#         3, quadref_vols[0]</span>
+        <span class="c1">#     )</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Cortical physical group: </span><span class="si">{</span><span class="n">cort_physical_group</span><span class="si">}</span><span class="se">\n</span><span class="s2">Trabecular physical group: </span><span class="si">{</span><span class="n">trab_physical_group</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">cort_longitudinal_lines</span> <span class="o">=</span> <span class="n">intersection_line_tags</span>
+        <span class="n">cort_transverse_lines</span> <span class="o">=</span> <span class="n">intersurface_line_tags</span>
+        <span class="n">mesher</span><span class="o">.</span><span class="n">meshing_transfinite</span><span class="p">(</span>
+            <span class="n">cort_longitudinal_lines</span><span class="p">,</span>
+            <span class="n">cort_transverse_lines</span><span class="p">,</span>
+            <span class="n">cortical_bspline_tags</span><span class="p">,</span>
+            <span class="n">cort_surfs</span><span class="p">,</span>
+            <span class="n">cort_volume_tags</span><span class="p">,</span>
+            <span class="n">phase</span><span class="o">=</span><span class="s2">&quot;cort&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">setRecombine</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">tot_vol_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">cort_vol_tags</span><span class="p">,</span> <span class="n">trab_vol_tags</span><span class="p">]</span>
+        <span class="n">mesher</span><span class="o">.</span><span class="n">mesh_generate</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">element_order</span><span class="o">=</span><span class="n">ELM_ORDER</span><span class="p">,</span> <span class="n">vol_tags</span><span class="o">=</span><span class="n">tot_vol_tags</span><span class="p">)</span>
+        <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">removeDuplicateNodes</span><span class="p">()</span>
+        <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">removeDuplicateElements</span><span class="p">()</span>
+        <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">occ</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+        <span class="n">mesher</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Optimising mesh&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ELM_ORDER</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;UntangleMeshGeometry&quot;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">ELM_ORDER</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;HighOrderFastCurving&quot;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">MESH_ANALYSIS</span><span class="p">:</span>
+            <span class="n">JAC_FULL</span> <span class="o">=</span> <span class="mf">999.9</span>  <span class="c1"># 999.9 if you want to see all the elements</span>
+            <span class="n">JAC_NEG</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.01</span>
+            <span class="n">mesher</span><span class="o">.</span><span class="n">analyse_mesh_quality</span><span class="p">(</span><span class="n">hiding_thresh</span><span class="o">=</span><span class="n">JAC_FULL</span><span class="p">)</span>
+
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">gmsh_get_nodes</span><span class="p">()</span>
+        <span class="n">elms</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">gmsh_get_elms</span><span class="p">()</span>
+        <span class="n">bnds_bot</span><span class="p">,</span> <span class="n">bnds_top</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">gmsh_get_bnds</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+        <span class="n">reference_point_coord</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">gmsh_get_reference_point_coord</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">SHOW_GMSH</span><span class="p">:</span>
+            <span class="n">gmsh</span><span class="o">.</span><span class="n">fltk</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">WRITE_MESH</span><span class="p">:</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">mesher</span><span class="o">.</span><span class="n">mesh_file_path</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">gmsh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mesher</span><span class="o">.</span><span class="n">mesh_file_path</span><span class="si">}</span><span class="s2">.msh&quot;</span><span class="p">)</span>
+            <span class="n">gmsh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mesher</span><span class="o">.</span><span class="n">mesh_file_path</span><span class="si">}</span><span class="s2">.inp&quot;</span><span class="p">)</span>
+            <span class="n">gmsh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mesher</span><span class="o">.</span><span class="n">mesh_file_path</span><span class="si">}</span><span class="s2">.vtk&quot;</span><span class="p">)</span>
+
+        <span class="n">entities_cort</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getEntitiesForPhysicalGroup</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">cort_physical_group</span><span class="p">)</span>
+        <span class="n">entities_trab</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getEntitiesForPhysicalGroup</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">trab_physical_group</span><span class="p">)</span>
+
+        <span class="n">centroids_cort</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">get_barycenters</span><span class="p">(</span><span class="n">tag_s</span><span class="o">=</span><span class="n">entities_cort</span><span class="p">)</span>
+        <span class="n">centroids_trab</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">get_barycenters</span><span class="p">(</span><span class="n">tag_s</span><span class="o">=</span><span class="n">entities_trab</span><span class="p">)</span>
+
+        <span class="n">elm_vol_cort</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">get_elm_volume</span><span class="p">(</span><span class="n">tag_s</span><span class="o">=</span><span class="n">entities_cort</span><span class="p">)</span>
+        <span class="n">elm_vol_trab</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">get_elm_volume</span><span class="p">(</span><span class="n">tag_s</span><span class="o">=</span><span class="n">entities_trab</span><span class="p">)</span>
+        <span class="n">min_elm_vol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">elm_vol_cort</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">elm_vol_trab</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">min_elm_vol</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Negative element volume detected: </span><span class="si">{</span><span class="n">min_elm_vol</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (mm^3), exiting...&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Minimum cortical element volume: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">elm_vol_cort</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Minimum trabecular element volume: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">elm_vol_trab</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># get biggest ROI_radius</span>
+        <span class="n">radius_roi_cort</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">get_radius_longest_edge</span><span class="p">(</span><span class="n">tag_s</span><span class="o">=</span><span class="n">entities_cort</span><span class="p">)</span>
+        <span class="n">radius_roi_trab</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">get_radius_longest_edge</span><span class="p">(</span><span class="n">tag_s</span><span class="o">=</span><span class="n">entities_trab</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">elm_vol_cort</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">elm_vol_trab</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">centroids_cort</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">centroids_trab</span>
+        <span class="p">),</span> <span class="s2">&quot;The number of volumes and centroids does not match.&quot;</span>
+
+        <span class="c1"># i.e., if cort_physical_group is 1 and trab_physical_group is 2:</span>
+        <span class="k">if</span> <span class="n">cort_physical_group</span> <span class="o">&lt;</span> <span class="n">trab_physical_group</span><span class="p">:</span>
+            <span class="n">centroids_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">centroids_cort</span><span class="p">,</span> <span class="n">centroids_trab</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">centroids_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">centroids_trab</span><span class="p">,</span> <span class="n">centroids_cort</span><span class="p">))</span>
+
+        <span class="n">centroids_dict</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">get_centroids_dict</span><span class="p">(</span><span class="n">centroids_c</span><span class="p">)</span>
+        <span class="c1"># split centroids_dict into cort and trab</span>
+        <span class="n">centroids_cort_dict</span><span class="p">,</span> <span class="n">centroids_trab_dict</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">split_dict_by_array_len</span><span class="p">(</span>
+            <span class="n">centroids_dict</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">centroids_cort</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># get number of nodes</span>
+        <span class="n">node_tags_cort</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">getNodesForPhysicalGroup</span><span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span> <span class="n">cort_physical_group</span>
+        <span class="p">)</span>
+        <span class="n">node_tags_trab</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mesher</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">getNodesForPhysicalGroup</span><span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span> <span class="n">trab_physical_group</span>
+        <span class="p">)</span>
+        <span class="n">nb_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_tags_cort</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_tags_trab</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of nodes in model: </span><span class="si">{</span><span class="n">nb_nodes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">gmsh_log</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">Path</span><span class="p">(</span><span class="n">mesh_file_path</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mesh_file_path</span><span class="si">}</span><span class="s2">_gmsh.log&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">gmsh_log</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">elapsed</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">ndigits</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Elapsed time:  </span><span class="si">{</span><span class="n">elapsed</span><span class="si">}</span><span class="s2"> (s)&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Meshing script finished.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># with open(f&quot;{mesh_file_path}_nodes.pickle&quot;, &quot;wb&quot;) as handle:</span>
+        <span class="c1">#     nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)</span>
+
+        <span class="c1"># with open(f&quot;{mesh_file_path}_elms.pickle&quot;, &quot;wb&quot;) as handle:</span>
+        <span class="c1">#     elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)</span>
+
+        <span class="c1"># with open(f&quot;{mesh_file_path}_centroids_trab.pickle&quot;, &quot;wb&quot;) as handle:</span>
+        <span class="c1">#     centroids_pkl = pickle.dump(</span>
+        <span class="c1">#         centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL</span>
+        <span class="c1">#     )</span>
+
+        <span class="c1"># with open(f&quot;{mesh_file_path}_centroids_cort.pickle&quot;, &quot;wb&quot;) as handle:</span>
+        <span class="c1">#     centroids_pkl = pickle.dump(</span>
+        <span class="c1">#         centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL</span>
+        <span class="c1">#     )</span>
+
+        <span class="c1"># with open(f&quot;{mesh_file_path}_bnds_bot.pickle&quot;, &quot;wb&quot;) as handle:</span>
+        <span class="c1">#     bnds_bot_pkl = pickle.dump(</span>
+        <span class="c1">#         bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL</span>
+        <span class="c1">#     )</span>
+
+        <span class="c1"># with open(f&quot;{mesh_file_path}_bnds_top.pickle&quot;, &quot;wb&quot;) as handle:</span>
+        <span class="c1">#     bnds_top_pkl = pickle.dump(</span>
+        <span class="c1">#         bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL</span>
+        <span class="c1">#     )</span>
+
+        <span class="c1"># botpath = f&quot;{mesh_file_path}_spline_botnodes.pickle&quot;</span>
+        <span class="c1"># with open(botpath, &quot;wb&quot;) as f:</span>
+        <span class="c1">#     pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)</span>
+
+        <span class="c1"># toppath = f&quot;{mesh_file_path}_spline_topnodes.pickle&quot;</span>
+        <span class="c1"># with open(toppath, &quot;wb&quot;) as f:</span>
+        <span class="c1">#     pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)</span>
+
+        <span class="c1"># cort_dict = f&quot;{mesh_file_path}_spline_centroids_cort_dict.pickle&quot;</span>
+        <span class="c1"># with open(cort_dict, &quot;wb&quot;) as f:</span>
+        <span class="c1">#     pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)</span>
+
+        <span class="c1"># trab_dict = f&quot;{mesh_file_path}_spline_centroids_trab_dict.pickle&quot;</span>
+        <span class="c1"># with open(trab_dict, &quot;wb&quot;) as f:</span>
+        <span class="c1">#     pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)</span>
+
+        <span class="c1"># cort_elm_vol_path = f&quot;{mesh_file_path}_spline_elm_vol_cort.npy&quot;</span>
+        <span class="c1"># np.save(cort_elm_vol_path, elm_vol_cort)</span>
+        <span class="c1"># trab_elm_vol_path = f&quot;{mesh_file_path}_spline_elm_vol_trab.npy&quot;</span>
+        <span class="c1"># np.save(trab_elm_vol_path, elm_vol_trab)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">nodes</span><span class="p">,</span>
+            <span class="n">elms</span><span class="p">,</span>
+            <span class="n">nb_nodes</span><span class="p">,</span>
+            <span class="n">centroids_cort_dict</span><span class="p">,</span>
+            <span class="n">centroids_trab_dict</span><span class="p">,</span>
+            <span class="n">elm_vol_cort</span><span class="p">,</span>
+            <span class="n">elm_vol_trab</span><span class="p">,</span>
+            <span class="n">radius_roi_cort</span><span class="p">,</span>
+            <span class="n">radius_roi_trab</span><span class="p">,</span>
+            <span class="n">bnds_bot</span><span class="p">,</span>
+            <span class="n">bnds_top</span><span class="p">,</span>
+            <span class="n">reference_point_coord</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Simone Poncioni.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

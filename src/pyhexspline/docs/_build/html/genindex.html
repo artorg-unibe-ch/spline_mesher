@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; PyHexSpline 0.9.0 documentation</title>
+  <title>Index &mdash; PyHexSpline 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -12,9 +12,7 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="_static/documentation_options.js?v=938c9ccc"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -79,6 +77,7 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
@@ -101,6 +100,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_bspline_filling">add_bspline_filling() (gmsh_mesh_builder.Mesher method)</a>
 </li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.add_curve_loop">add_curve_loop() (quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_interslice_segments">add_interslice_segments() (gmsh_mesh_builder.Mesher method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_intersurface_planes">add_intersurface_planes() (gmsh_mesh_builder.Mesher method)</a>
@@ -108,6 +109,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_slice_surfaces">add_slice_surfaces() (gmsh_mesh_builder.Mesher method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.add_surface_loop">add_surface_loop() (quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.add_volume">add_volume() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -132,6 +135,12 @@
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.ccw_angle">ccw_angle() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.center_of_mass">center_of_mass() (cortical_sanity.CorticalSanityCheck method)</a>
+
+      <ul>
+        <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.center_of_mass">(quad_refinement.QuadRefinement method)</a>
+</li>
+      </ul></li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.check_closed_surface_loop">check_closed_surface_loop() (quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.check_inner_offset">check_inner_offset() (spline_volume.OCC_volume method)</a>
 </li>
@@ -141,12 +150,16 @@
 </li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.classify_and_store_contours">classify_and_store_contours() (spline_volume.OCC_volume method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.close_outer_loop">close_outer_loop() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.common">common() (quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.convertRadiansToDegrees">convertRadiansToDegrees() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_internal_point">correct_internal_point() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck.correct_intersection">correct_intersection() (cortical_sanity.CorticalSanityCheck method)</a>
 </li>
       <li>
@@ -161,6 +174,20 @@
       <li><a href="cortical_sanity.html#cortical_sanity.CorticalSanityCheck">CorticalSanityCheck (class in cortical_sanity)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.create_centre_splines">create_centre_splines() (gmsh_mesh_builder.Mesher method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.create_connecting_surfaces">create_connecting_surfaces() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.create_initial_points">create_initial_points() (in module quad_refinement)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.create_intersurface_connection">create_intersurface_connection() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.create_line_dict">create_line_dict() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.create_square_grid">create_square_grid() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.create_subvertices">create_subvertices() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.create_surf_dict">create_surf_dict() (quad_refinement.QuadRefinement method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -182,11 +209,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.err">err() (spline_volume.OCC_volume method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.evaluate_bspline">evaluate_bspline() (spline_volume.OCC_volume method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.exec_quad_refinement">exec_quad_refinement() (quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.exec_thresholding">exec_thresholding() (spline_volume.OCC_volume method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.flatten">flatten() (quad_refinement.QuadRefinement method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -194,11 +231,17 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.get_adjacent_points">get_adjacent_points() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.get_affine_transformation_matrix">get_affine_transformation_matrix() (quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_barycenters">get_barycenters() (gmsh_mesh_builder.Mesher method)</a>
 </li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.get_binary_contour">get_binary_contour() (spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.get_centroids_dict">get_centroids_dict() (gmsh_mesh_builder.Mesher method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.get_common_lines">get_common_lines() (quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.get_draw_contour">get_draw_contour() (spline_volume.OCC_volume method)</a>
 </li>
@@ -218,13 +261,39 @@
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_trabecular_position">get_trabecular_position() (gmsh_mesh_builder.TrabecularVolume method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_trabecular_vol">get_trabecular_vol() (gmsh_mesh_builder.TrabecularVolume method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.get_vertices_coords">get_vertices_coords() (gmsh_mesh_builder.TrabecularVolume method)</a>
+
+      <ul>
+        <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.get_vertices_coords">(quad_refinement.QuadRefinement method)</a>
+</li>
+      </ul></li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.get_vertices_minmax">get_vertices_minmax() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_custom_lines">gmsh_add_custom_lines() (quad_refinement.QuadRefinement method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_line">gmsh_add_line() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_outer_connectivity">gmsh_add_outer_connectivity() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_plane_surface">gmsh_add_plane_surface() (quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_add_points">gmsh_add_points() (gmsh_mesh_builder.Mesher method)</a>
+
+      <ul>
+        <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_points">(quad_refinement.QuadRefinement method)</a>
+</li>
+      </ul></li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surface">gmsh_add_surface() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surfaces">gmsh_add_surfaces() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surfs">gmsh_add_surfs() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_volume">gmsh_add_volume() (quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_geometry_formulation">gmsh_geometry_formulation() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -236,7 +305,11 @@
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_get_reference_point_coord">gmsh_get_reference_point_coord() (gmsh_mesh_builder.Mesher method)</a>
 </li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_get_unique_surfaces">gmsh_get_unique_surfaces() (quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.gmsh_insert_bspline">gmsh_insert_bspline() (gmsh_mesh_builder.Mesher method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_make_transfinite">gmsh_make_transfinite() (quad_refinement.QuadRefinement method)</a>
 </li>
       <li>
     gmsh_mesh_builder
@@ -245,6 +318,8 @@
         <li><a href="gmsh_mesh_builder.html#module-gmsh_mesh_builder">module</a>
 </li>
       </ul></li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_skin_points">gmsh_skin_points() (quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.guess">guess() (spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
@@ -335,6 +410,8 @@
 </li>
         <li><a href="gmsh_mesh_builder.html#module-gmsh_mesh_builder">gmsh_mesh_builder</a>
 </li>
+        <li><a href="quad_refinement.html#module-quad_refinement">quad_refinement</a>
+</li>
         <li><a href="spline_mesher.html#module-spline_mesher">spline_mesher</a>
 </li>
         <li><a href="spline_volume.html#module-spline_volume">spline_volume</a>
@@ -390,6 +467,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.plot_vertices">plot_vertices() (quad_refinement.QuadRefinement method)</a>
+</li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.plotly_add_traces">plotly_add_traces() (spline_volume.OCC_volume method)</a>
 </li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.plotly_makefig">plotly_makefig() (spline_volume.OCC_volume method)</a>
@@ -410,6 +489,19 @@
 <h2 id="Q">Q</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    quad_refinement
+
+      <ul>
+        <li><a href="quad_refinement.html#module-quad_refinement">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.quad_refinement">quad_refinement() (quad_refinement.QuadRefinement method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement">QuadRefinement (class in quad_refinement)</a>
+</li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.query_closest_idx">query_closest_idx() (gmsh_mesh_builder.Mesher method)</a>
 </li>
   </ul></td>
@@ -435,6 +527,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.TrabecularVolume.set_length_factor">set_length_factor() (gmsh_mesh_builder.TrabecularVolume method)</a>
+</li>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.set_transformation_matrix">set_transformation_matrix() (quad_refinement.QuadRefinement method)</a>
 </li>
       <li><a href="gmsh_mesh_builder.html#gmsh_mesh_builder.Mesher.shapely_line_polygon_intersection">shapely_line_polygon_intersection() (gmsh_mesh_builder.Mesher method)</a>
 </li>
@@ -514,10 +608,12 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="spline_volume.html#spline_volume.OCC_volume.volume_splines">volume_splines() (spline_volume.OCC_volume method)</a>
+      <li><a href="quad_refinement.html#quad_refinement.QuadRefinement.vertices_grid_cleanup">vertices_grid_cleanup() (quad_refinement.QuadRefinement method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="spline_volume.html#spline_volume.OCC_volume.volume_splines">volume_splines() (spline_volume.OCC_volume method)</a>
+</li>
       <li><a href="spline_volume.html#spline_volume.OCC_volume.volume_splines_optimized">volume_splines_optimized() (spline_volume.OCC_volume method)</a>
 </li>
   </ul></td>
