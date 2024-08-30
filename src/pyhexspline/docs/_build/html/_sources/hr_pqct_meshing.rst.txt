@@ -8,3 +8,4 @@ HR-pQCT Structured Hexahedral Meshing
    gmsh_mesh_builder
    spline_volume
    spline_mesher
+   quad_refinement

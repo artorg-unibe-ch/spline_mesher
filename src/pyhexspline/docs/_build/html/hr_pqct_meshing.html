@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HR-pQCT Structured Hexahedral Meshing &mdash; PyHexSpline 0.9.0 documentation</title>
+  <title>HR-pQCT Structured Hexahedral Meshing &mdash; PyHexSpline 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -13,9 +13,7 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="_static/documentation_options.js?v=938c9ccc"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -52,6 +50,7 @@
 <li class="toctree-l2"><a class="reference internal" href="gmsh_mesh_builder.html">gmsh_mesh_builder module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="spline_volume.html">spline_volume module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="spline_mesher.html">spline_mesher module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quad_refinement.html">quad_refinement module</a></li>
 </ul>
 </li>
 </ul>
@@ -81,7 +80,7 @@
            <div itemprop="articleBody">
              
   <section id="hr-pqct-structured-hexahedral-meshing">
-<h1>HR-pQCT Structured Hexahedral Meshing<a class="headerlink" href="#hr-pqct-structured-hexahedral-meshing" title="Link to this heading"></a></h1>
+<h1>HR-pQCT Structured Hexahedral Meshing<a class="headerlink" href="#hr-pqct-structured-hexahedral-meshing" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="cortical_sanity.html">cortical_sanity module</a><ul>
@@ -222,6 +221,48 @@
 <li class="toctree-l3"><a class="reference internal" href="spline_mesher.html#spline_mesher.HexMesh.mesher"><code class="docutils literal notranslate"><span class="pre">HexMesh.mesher()</span></code></a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quad_refinement.html">quad_refinement module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.add_curve_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.add_curve_loop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.add_surface_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.add_surface_loop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.center_of_mass"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.center_of_mass()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.check_closed_surface_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.check_closed_surface_loop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.close_outer_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.close_outer_loop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.common"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.common()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.create_connecting_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_connecting_surfaces()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.create_intersurface_connection"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_intersurface_connection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.create_line_dict"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_line_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.create_square_grid"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_square_grid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.create_subvertices"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_subvertices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.create_surf_dict"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_surf_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.exec_quad_refinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.exec_quad_refinement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.flatten"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.flatten()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.get_adjacent_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_adjacent_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.get_affine_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_affine_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.get_common_lines"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_common_lines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.get_vertices_coords"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_vertices_coords()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.get_vertices_minmax"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_vertices_minmax()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_custom_lines"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_custom_lines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_line"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_line()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_outer_connectivity"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_outer_connectivity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_plane_surface"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_plane_surface()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surface"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surface()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surfaces()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surfs"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_volume"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_get_unique_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_get_unique_surfaces()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_make_transfinite"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_make_transfinite()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.gmsh_skin_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_skin_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.plot_vertices"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.plot_vertices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.quad_refinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.quad_refinement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.set_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.set_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quad_refinement.html#quad_refinement.QuadRefinement.vertices_grid_cleanup"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.vertices_grid_cleanup()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quad_refinement.html#quad_refinement.create_initial_points"><code class="docutils literal notranslate"><span class="pre">create_initial_points()</span></code></a></li>
 </ul>
 </li>
 </ul>

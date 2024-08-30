@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../../">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyhexspline.quad_refinement &mdash; pyhexspline 0.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+  <title>quad_refinement &mdash; PyHexSpline 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
   
   <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
+    <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -28,11 +28,11 @@
 
           
           
-          <a href="../../index.html" class="icon icon-home">
-            pyhexspline
+          <a href="../index.html" class="icon icon-home">
+            PyHexSpline
           </a>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -41,7 +41,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">spline_mesher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../hr_pqct_meshing.html">HR-pQCT Structured Hexahedral Meshing</a></li>
 </ul>
 
         </div>
@@ -50,16 +51,16 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">pyhexspline</a>
+          <a href="../index.html">PyHexSpline</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">pyhexspline.quad_refinement</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">quad_refinement</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -68,7 +69,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for pyhexspline.quad_refinement</h1><div class="highlight"><pre>
+  <h1>Source code for quad_refinement</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Quad refinement scheme for the inner trabecular region</span>
 <span class="sd">Author: Simone Poncioni, MSB</span>
@@ -96,7 +97,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement">[docs]</a>
 <span class="k">class</span> <span class="nc">QuadRefinement</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -119,13 +120,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">elms_thickness</span> <span class="o">=</span> <span class="n">ELMS_THICKNESS</span>
 
 <div class="viewcode-block" id="QuadRefinement.center_of_mass">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.center_of_mass">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.center_of_mass">[docs]</a>
     <span class="k">def</span> <span class="nf">center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices_coords</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vertices_coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="QuadRefinement.get_vertices_coords">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_vertices_coords">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.get_vertices_coords">[docs]</a>
     <span class="k">def</span> <span class="nf">get_vertices_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices_tags</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
         <span class="n">vertices_coords</span> <span class="o">=</span> <span class="p">[]</span>
@@ -135,7 +136,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.create_square_grid">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_square_grid">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.create_square_grid">[docs]</a>
     <span class="k">def</span> <span class="nf">create_square_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">big_square_size</span><span class="p">,</span> <span class="n">squares_per_side</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
         <span class="c1"># Calculate the size of each small square</span>
         <span class="n">small_square_size</span> <span class="o">=</span> <span class="n">big_square_size</span> <span class="o">/</span> <span class="n">squares_per_side</span>
@@ -162,7 +163,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.create_subvertices">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_subvertices">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.create_subvertices">[docs]</a>
     <span class="k">def</span> <span class="nf">create_subvertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">,</span> <span class="n">hierarchy</span><span class="p">,</span> <span class="n">square_size_0</span><span class="p">):</span>
         <span class="n">squares_per_side_1</span> <span class="o">=</span> <span class="mi">3</span>
         <span class="k">if</span> <span class="n">hierarchy</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -176,7 +177,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.plot_vertices">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.plot_vertices">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.plot_vertices">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
@@ -192,7 +193,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_points">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_points">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_points">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
         <span class="n">point_tags</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
@@ -202,7 +203,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_surfaces">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfaces">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surfaces">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_surfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_tags</span><span class="p">):</span>
         <span class="n">cloops</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">subline_tags</span> <span class="ow">in</span> <span class="n">line_tags</span><span class="p">[</span><span class="mi">30</span><span class="p">:</span><span class="o">-</span><span class="mi">30</span><span class="p">]:</span>
@@ -218,7 +219,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.get_vertices_minmax">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_vertices_minmax">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.get_vertices_minmax">[docs]</a>
     <span class="k">def</span> <span class="nf">get_vertices_minmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_coords</span><span class="p">):</span>
         <span class="n">max_x</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">point_coords</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">min_x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">point_coords</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
@@ -238,7 +239,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.get_affine_transformation_matrix">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_affine_transformation_matrix">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.get_affine_transformation_matrix">[docs]</a>
     <span class="k">def</span> <span class="nf">get_affine_transformation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verts_1</span><span class="p">,</span> <span class="n">point_coords</span><span class="p">):</span>
         <span class="c1"># find 4 outermost vertices of point_coords</span>
         <span class="n">verts_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vertices_minmax</span><span class="p">(</span><span class="n">point_coords</span><span class="p">)</span>
@@ -258,7 +259,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.set_transformation_matrix">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.set_transformation_matrix">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.set_transformation_matrix">[docs]</a>
     <span class="k">def</span> <span class="nf">set_transformation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">point_coords</span><span class="p">):</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">point_coords</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">coords_transformed</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
@@ -279,7 +280,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.vertices_grid_cleanup">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.vertices_grid_cleanup">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.vertices_grid_cleanup">[docs]</a>
     <span class="k">def</span> <span class="nf">vertices_grid_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
         <span class="n">vertices_unique</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
             <span class="n">vertices</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">decimals</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
@@ -292,7 +293,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_line">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_line">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_line">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_skins</span><span class="p">):</span>
         <span class="n">line_tags</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">_iter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># slicing iterator</span>
@@ -311,7 +312,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_plane_surface">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_plane_surface">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_plane_surface">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_plane_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_tags</span><span class="p">):</span>
         <span class="c1"># create surface from the center square</span>
         <span class="n">center_cloop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">addCurveLoop</span><span class="p">(</span><span class="n">line_tags</span><span class="p">,</span> <span class="n">tag</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
@@ -320,7 +321,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_custom_lines">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_custom_lines">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_custom_lines">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_custom_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_tags</span><span class="p">):</span>
         <span class="c1"># insert 5 tags at the beginning of the list (4 of the vertices and 1 for starting the count at 1 and not 0)</span>
         <span class="n">pt</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">+</span> <span class="n">point_tags</span>
@@ -642,7 +643,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_skin_points">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_skin_points">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_skin_points">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_skin_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_tags</span><span class="p">):</span>
         <span class="n">sqrt_shape</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">point_tags</span><span class="p">)))</span>
         <span class="n">windows</span> <span class="o">=</span> <span class="n">view_as_windows</span><span class="p">(</span>
@@ -654,7 +655,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_surfs">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfs">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surfs">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_surfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l_tags</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;l_tags: list of line tags&quot;&quot;&quot;</span>
 
@@ -731,7 +732,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_make_transfinite">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_make_transfinite">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_make_transfinite">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_make_transfinite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_tags</span><span class="p">,</span> <span class="n">surf_tags</span><span class="p">,</span> <span class="n">n_trans</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">subset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">line_tags</span><span class="p">):</span>
@@ -745,7 +746,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_get_unique_surfaces">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_get_unique_surfaces">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_get_unique_surfaces">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_get_unique_surfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_loop</span><span class="p">):</span>
         <span class="n">all_surfaces</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">curve</span> <span class="ow">in</span> <span class="n">curve_loop</span><span class="p">:</span>
@@ -759,7 +760,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_outer_connectivity">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_outer_connectivity">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_outer_connectivity">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_outer_connectivity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_tags</span><span class="p">,</span> <span class="n">initial_point_tags</span><span class="p">,</span> <span class="n">point_tags</span><span class="p">):</span>
         <span class="c1"># insert 5 tags at the beginning of the list (4 of the vertices and 1 for starting the count at 1 and not 0)</span>
         <span class="n">pt</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">+</span> <span class="n">point_tags</span>
@@ -898,7 +899,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.create_connecting_surfaces">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_connecting_surfaces">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.create_connecting_surfaces">[docs]</a>
     <span class="k">def</span> <span class="nf">create_connecting_surfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_loops_line_tags</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
         <span class="n">surface_loops</span> <span class="o">=</span> <span class="p">[]</span>
@@ -920,7 +921,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.close_outer_loop">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.close_outer_loop">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.close_outer_loop">[docs]</a>
     <span class="k">def</span> <span class="nf">close_outer_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_tags</span><span class="p">,</span> <span class="n">outer_square_lines</span><span class="p">):</span>
         <span class="c1"># read all the lines</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
@@ -1013,7 +1014,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.quad_refinement">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.quad_refinement">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.quad_refinement">[docs]</a>
     <span class="k">def</span> <span class="nf">quad_refinement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_point_tags</span><span class="p">):</span>
         <span class="n">SQUARE_SIZE_0_MM</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SQUARE_SIZE_0_MM</span>
         <span class="n">MAX_SUBDIVISIONS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_SUBDIVISIONS</span>
@@ -1064,7 +1065,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.get_adjacent_points">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_adjacent_points">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.get_adjacent_points">[docs]</a>
     <span class="k">def</span> <span class="nf">get_adjacent_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surf_tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">adjacecies_down</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">getAdjacencies</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DIM</span><span class="p">,</span> <span class="n">surf_tag</span><span class="p">)</span>
         <span class="n">adj_points</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1075,20 +1076,20 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.flatten">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.flatten">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.flatten">[docs]</a>
     <span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">arr</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="QuadRefinement.common">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.common">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.common">[docs]</a>
     <span class="k">def</span> <span class="nf">common</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
         <span class="n">u</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">u</span><span class="p">[</span><span class="n">c</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="QuadRefinement.get_common_lines">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.get_common_lines">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.get_common_lines">[docs]</a>
     <span class="k">def</span> <span class="nf">get_common_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
@@ -1101,7 +1102,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.create_intersurface_connection">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_intersurface_connection">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.create_intersurface_connection">[docs]</a>
     <span class="k">def</span> <span class="nf">create_intersurface_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_tags</span><span class="p">):</span>
         <span class="n">line_tags_intersurf</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_tags</span><span class="p">)):</span>
@@ -1139,7 +1140,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.create_line_dict">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_line_dict">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.create_line_dict">[docs]</a>
     <span class="k">def</span> <span class="nf">create_line_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines_lower_surf</span><span class="p">,</span> <span class="n">lines_upper_surf</span><span class="p">,</span> <span class="n">lines_intersurf</span><span class="p">):</span>
         <span class="c1"># Step 1: Create a dictionary of all lines and their corresponding points</span>
         <span class="n">lines_lower_dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1160,7 +1161,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.create_surf_dict">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.create_surf_dict">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.create_surf_dict">[docs]</a>
     <span class="k">def</span> <span class="nf">create_surf_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surf_lower</span><span class="p">,</span> <span class="n">surf_upper</span><span class="p">,</span> <span class="n">surf_inter</span><span class="p">):</span>
         <span class="n">surf_lower_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">surf_upper_dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1178,7 +1179,7 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.check_closed_surface_loop">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.check_closed_surface_loop">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.check_closed_surface_loop">[docs]</a>
     <span class="k">def</span> <span class="nf">check_closed_surface_loop</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">lines_lower_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">lines_upper_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">lines_intersurf_dict</span><span class="p">:</span> <span class="nb">dict</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
@@ -1212,31 +1213,31 @@
 
 
 <div class="viewcode-block" id="QuadRefinement.add_curve_loop">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.add_curve_loop">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.add_curve_loop">[docs]</a>
     <span class="k">def</span> <span class="nf">add_curve_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_loop_tags</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">addCurveLoop</span><span class="p">(</span><span class="n">curve_loop_tags</span><span class="p">,</span> <span class="n">tag</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_surface">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surface">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_surface">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_loop</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">addSurfaceFilling</span><span class="p">(</span><span class="n">curve_loop</span><span class="p">,</span> <span class="n">tag</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="QuadRefinement.add_surface_loop">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.add_surface_loop">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.add_surface_loop">[docs]</a>
     <span class="k">def</span> <span class="nf">add_surface_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface_loop_tags</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">addSurfaceLoop</span><span class="p">(</span><span class="n">surface_loop_tags</span><span class="p">,</span> <span class="n">sewing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tag</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="QuadRefinement.gmsh_add_volume">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_volume">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.gmsh_add_volume">[docs]</a>
     <span class="k">def</span> <span class="nf">gmsh_add_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface_loop</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">addVolume</span><span class="p">(</span><span class="n">surface_loop</span><span class="p">,</span> <span class="n">tag</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="QuadRefinement.exec_quad_refinement">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.QuadRefinement.exec_quad_refinement">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.QuadRefinement.exec_quad_refinement">[docs]</a>
     <span class="k">def</span> <span class="nf">exec_quad_refinement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outer_point_tags</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param outer_point_tags: list of list of point tags, each list of point tags represents a corner of the trabecular structure</span>
@@ -1371,7 +1372,7 @@
 
 
 <div class="viewcode-block" id="create_initial_points">
-<a class="viewcode-back" href="../../quad_refinement.html#pyhexspline.quad_refinement.create_initial_points">[docs]</a>
+<a class="viewcode-back" href="../quad_refinement.html#quad_refinement.create_initial_points">[docs]</a>
 <span class="k">def</span> <span class="nf">create_initial_points</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">occ</span><span class="o">.</span><span class="n">addPoint</span><span class="p">(</span><span class="o">*</span><span class="n">coords</span><span class="p">,</span> <span class="n">tag</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 

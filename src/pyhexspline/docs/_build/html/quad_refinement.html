@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>quad_refinement module &mdash; pyhexspline 0.2.0 documentation</title>
+  <title>quad_refinement module &mdash; PyHexSpline 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="gmsh_mesh_builder module" href="gmsh_mesh_builder.html" /> 
+    <link rel="prev" title="spline_mesher module" href="spline_mesher.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -31,7 +31,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            pyhexspline
+            PyHexSpline
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -43,51 +43,52 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">spline_mesher</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="spline_volume.html">spline_volume module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="spline_mesher.html">spline_mesher module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="hr_pqct_meshing.html">HR-pQCT Structured Hexahedral Meshing</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cortical_sanity.html">cortical_sanity module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gmsh_mesh_builder.html">gmsh_mesh_builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spline_volume.html">spline_volume module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spline_mesher.html">spline_mesher module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">quad_refinement module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.add_curve_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.add_curve_loop()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.add_surface_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.add_surface_loop()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.center_of_mass"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.center_of_mass()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.check_closed_surface_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.check_closed_surface_loop()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.close_outer_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.close_outer_loop()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.common"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.common()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.create_connecting_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_connecting_surfaces()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.create_intersurface_connection"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_intersurface_connection()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.create_line_dict"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_line_dict()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.create_square_grid"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_square_grid()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.create_subvertices"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_subvertices()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.create_surf_dict"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_surf_dict()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.exec_quad_refinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.exec_quad_refinement()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.flatten"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.flatten()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.get_adjacent_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_adjacent_points()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.get_affine_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_affine_transformation_matrix()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.get_common_lines"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_common_lines()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.get_vertices_coords"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_vertices_coords()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.get_vertices_minmax"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_vertices_minmax()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_custom_lines"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_custom_lines()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_line"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_line()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_outer_connectivity"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_outer_connectivity()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_plane_surface"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_plane_surface()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_points()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surface"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surface()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surfaces()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfs"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surfs()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_volume"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_volume()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_get_unique_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_get_unique_surfaces()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_make_transfinite"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_make_transfinite()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_skin_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_skin_points()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.plot_vertices"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.plot_vertices()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.quad_refinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.quad_refinement()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.set_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.set_transformation_matrix()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyhexspline.quad_refinement.QuadRefinement.vertices_grid_cleanup"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.vertices_grid_cleanup()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quad_refinement.QuadRefinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.add_curve_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.add_curve_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.add_surface_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.add_surface_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.center_of_mass"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.center_of_mass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.check_closed_surface_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.check_closed_surface_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.close_outer_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.close_outer_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.common"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.common()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_connecting_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_connecting_surfaces()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_intersurface_connection"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_intersurface_connection()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_line_dict"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_line_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_square_grid"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_square_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_subvertices"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_subvertices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_surf_dict"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_surf_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.exec_quad_refinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.exec_quad_refinement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.flatten"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.flatten()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_adjacent_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_adjacent_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_affine_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_affine_transformation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_common_lines"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_common_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_vertices_coords"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_vertices_coords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_vertices_minmax"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_vertices_minmax()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_custom_lines"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_custom_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_line"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_outer_connectivity"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_outer_connectivity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_plane_surface"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_plane_surface()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_surface"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surface()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surfaces()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_surfs"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surfs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_volume"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_get_unique_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_get_unique_surfaces()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_make_transfinite"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_make_transfinite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_skin_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_skin_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.plot_vertices"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.plot_vertices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.quad_refinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.quad_refinement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.set_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.set_transformation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.vertices_grid_cleanup"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.vertices_grid_cleanup()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#pyhexspline.quad_refinement.create_initial_points"><code class="docutils literal notranslate"><span class="pre">create_initial_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quad_refinement.create_initial_points"><code class="docutils literal notranslate"><span class="pre">create_initial_points()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -100,7 +101,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">pyhexspline</a>
+          <a href="index.html">PyHexSpline</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -108,7 +109,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">spline_mesher</a></li>
+          <li class="breadcrumb-item"><a href="hr_pqct_meshing.html">HR-pQCT Structured Hexahedral Meshing</a></li>
       <li class="breadcrumb-item active">quad_refinement module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/quad_refinement.rst.txt" rel="nofollow"> View page source</a>
@@ -119,8 +120,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-pyhexspline.quad_refinement">
-<span id="quad-refinement-module"></span><h1>quad_refinement module<a class="headerlink" href="#module-pyhexspline.quad_refinement" title="Link to this heading">¶</a></h1>
+  <section id="module-quad_refinement">
+<span id="quad-refinement-module"></span><h1>quad_refinement module<a class="headerlink" href="#module-quad_refinement" title="Link to this heading">¶</a></h1>
 <p>Quad refinement scheme for the inner trabecular region
 Author: Simone Poncioni, MSB
 Date: 04.2023</p>
@@ -129,72 +130,72 @@ Date: 04.2023</p>
 <a class="reference external" href="https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710">https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710</a>
 <a class="reference external" href="https://gitlab.onelab.info/gmsh/gmsh/-/issues/2439">https://gitlab.onelab.info/gmsh/gmsh/-/issues/2439</a></p>
 <dl class="py class">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyhexspline.quad_refinement.</span></span><span class="sig-name descname"><span class="pre">QuadRefinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DIM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SQUARE_SIZE_0_MM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MAX_SUBDIVISIONS</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELMS_THICKNESS</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">quad_refinement.</span></span><span class="sig-name descname"><span class="pre">QuadRefinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DIM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SQUARE_SIZE_0_MM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MAX_SUBDIVISIONS</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELMS_THICKNESS</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.add_curve_loop">
-<span class="sig-name descname"><span class="pre">add_curve_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.add_curve_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.add_curve_loop" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.add_curve_loop">
+<span class="sig-name descname"><span class="pre">add_curve_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.add_curve_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.add_curve_loop" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.add_surface_loop">
-<span class="sig-name descname"><span class="pre">add_surface_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface_loop_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.add_surface_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.add_surface_loop" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.add_surface_loop">
+<span class="sig-name descname"><span class="pre">add_surface_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface_loop_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.add_surface_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.add_surface_loop" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.center_of_mass">
-<span class="sig-name descname"><span class="pre">center_of_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.center_of_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.center_of_mass" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.center_of_mass">
+<span class="sig-name descname"><span class="pre">center_of_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.center_of_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.center_of_mass" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.check_closed_surface_loop">
-<span class="sig-name descname"><span class="pre">check_closed_surface_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines_lower_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_upper_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_intersurf_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.check_closed_surface_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.check_closed_surface_loop" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.check_closed_surface_loop">
+<span class="sig-name descname"><span class="pre">check_closed_surface_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines_lower_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_upper_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_intersurf_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.check_closed_surface_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.check_closed_surface_loop" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.close_outer_loop">
-<span class="sig-name descname"><span class="pre">close_outer_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outer_square_lines</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.close_outer_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.close_outer_loop" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.close_outer_loop">
+<span class="sig-name descname"><span class="pre">close_outer_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outer_square_lines</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.close_outer_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.close_outer_loop" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.common">
-<span class="sig-name descname"><span class="pre">common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.common"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.common" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.common">
+<span class="sig-name descname"><span class="pre">common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.common"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.common" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.create_connecting_surfaces">
-<span class="sig-name descname"><span class="pre">create_connecting_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loops_line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.create_connecting_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.create_connecting_surfaces" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_connecting_surfaces">
+<span class="sig-name descname"><span class="pre">create_connecting_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loops_line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_connecting_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_connecting_surfaces" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.create_intersurface_connection">
-<span class="sig-name descname"><span class="pre">create_intersurface_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.create_intersurface_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.create_intersurface_connection" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_intersurface_connection">
+<span class="sig-name descname"><span class="pre">create_intersurface_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_intersurface_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_intersurface_connection" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.create_line_dict">
-<span class="sig-name descname"><span class="pre">create_line_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines_lower_surf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_upper_surf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_intersurf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.create_line_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.create_line_dict" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_line_dict">
+<span class="sig-name descname"><span class="pre">create_line_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines_lower_surf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_upper_surf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_intersurf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_line_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_line_dict" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.create_square_grid">
-<span class="sig-name descname"><span class="pre">create_square_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">big_square_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squares_per_side</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.create_square_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.create_square_grid" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_square_grid">
+<span class="sig-name descname"><span class="pre">create_square_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">big_square_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squares_per_side</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_square_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_square_grid" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.create_subvertices">
-<span class="sig-name descname"><span class="pre">create_subvertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center_of_mass</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hierarchy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">square_size_0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.create_subvertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.create_subvertices" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_subvertices">
+<span class="sig-name descname"><span class="pre">create_subvertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center_of_mass</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hierarchy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">square_size_0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_subvertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_subvertices" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.create_surf_dict">
-<span class="sig-name descname"><span class="pre">create_surf_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surf_lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_inter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.create_surf_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.create_surf_dict" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_surf_dict">
+<span class="sig-name descname"><span class="pre">create_surf_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surf_lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_inter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_surf_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_surf_dict" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.exec_quad_refinement">
-<span class="sig-name descname"><span class="pre">exec_quad_refinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outer_point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.exec_quad_refinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.exec_quad_refinement" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.exec_quad_refinement">
+<span class="sig-name descname"><span class="pre">exec_quad_refinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outer_point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.exec_quad_refinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.exec_quad_refinement" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>outer_point_tags</strong> – list of list of point tags, each list of point tags represents a corner of the trabecular structure</p>
@@ -206,121 +207,121 @@ Date: 04.2023</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.flatten">
-<span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.flatten" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.flatten">
+<span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.flatten" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.get_adjacent_points">
-<span class="sig-name descname"><span class="pre">get_adjacent_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surf_tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.get_adjacent_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.get_adjacent_points" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_adjacent_points">
+<span class="sig-name descname"><span class="pre">get_adjacent_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surf_tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_adjacent_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_adjacent_points" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.get_affine_transformation_matrix">
-<span class="sig-name descname"><span class="pre">get_affine_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verts_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.get_affine_transformation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.get_affine_transformation_matrix" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_affine_transformation_matrix">
+<span class="sig-name descname"><span class="pre">get_affine_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verts_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_affine_transformation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_affine_transformation_matrix" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.get_common_lines">
-<span class="sig-name descname"><span class="pre">get_common_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.get_common_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.get_common_lines" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_common_lines">
+<span class="sig-name descname"><span class="pre">get_common_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_common_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_common_lines" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.get_vertices_coords">
-<span class="sig-name descname"><span class="pre">get_vertices_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.get_vertices_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.get_vertices_coords" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_vertices_coords">
+<span class="sig-name descname"><span class="pre">get_vertices_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_vertices_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_vertices_coords" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.get_vertices_minmax">
-<span class="sig-name descname"><span class="pre">get_vertices_minmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.get_vertices_minmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.get_vertices_minmax" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_vertices_minmax">
+<span class="sig-name descname"><span class="pre">get_vertices_minmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_vertices_minmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_vertices_minmax" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_custom_lines">
-<span class="sig-name descname"><span class="pre">gmsh_add_custom_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_custom_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_custom_lines" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_custom_lines">
+<span class="sig-name descname"><span class="pre">gmsh_add_custom_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_custom_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_custom_lines" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_line">
-<span class="sig-name descname"><span class="pre">gmsh_add_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_skins</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_line" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_line">
+<span class="sig-name descname"><span class="pre">gmsh_add_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_skins</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_line" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_outer_connectivity">
-<span class="sig-name descname"><span class="pre">gmsh_add_outer_connectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_point_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_outer_connectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_outer_connectivity" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_outer_connectivity">
+<span class="sig-name descname"><span class="pre">gmsh_add_outer_connectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_point_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_outer_connectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_outer_connectivity" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_plane_surface">
-<span class="sig-name descname"><span class="pre">gmsh_add_plane_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_plane_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_plane_surface" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_plane_surface">
+<span class="sig-name descname"><span class="pre">gmsh_add_plane_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_plane_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_plane_surface" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_points">
-<span class="sig-name descname"><span class="pre">gmsh_add_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_points" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_points">
+<span class="sig-name descname"><span class="pre">gmsh_add_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_points" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surface">
-<span class="sig-name descname"><span class="pre">gmsh_add_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surface" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_surface">
+<span class="sig-name descname"><span class="pre">gmsh_add_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_surface" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfaces">
-<span class="sig-name descname"><span class="pre">gmsh_add_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfaces" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_surfaces">
+<span class="sig-name descname"><span class="pre">gmsh_add_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_surfaces" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfs">
-<span class="sig-name descname"><span class="pre">gmsh_add_surfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_surfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_surfs" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_surfs">
+<span class="sig-name descname"><span class="pre">gmsh_add_surfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_surfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_surfs" title="Link to this definition">¶</a></dt>
 <dd><p>l_tags: list of line tags</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_add_volume">
-<span class="sig-name descname"><span class="pre">gmsh_add_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_add_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_add_volume" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_volume">
+<span class="sig-name descname"><span class="pre">gmsh_add_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_volume" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_get_unique_surfaces">
-<span class="sig-name descname"><span class="pre">gmsh_get_unique_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_get_unique_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_get_unique_surfaces" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_get_unique_surfaces">
+<span class="sig-name descname"><span class="pre">gmsh_get_unique_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_get_unique_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_get_unique_surfaces" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_make_transfinite">
-<span class="sig-name descname"><span class="pre">gmsh_make_transfinite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trans</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_make_transfinite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_make_transfinite" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_make_transfinite">
+<span class="sig-name descname"><span class="pre">gmsh_make_transfinite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trans</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_make_transfinite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_make_transfinite" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.gmsh_skin_points">
-<span class="sig-name descname"><span class="pre">gmsh_skin_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.gmsh_skin_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.gmsh_skin_points" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_skin_points">
+<span class="sig-name descname"><span class="pre">gmsh_skin_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_skin_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_skin_points" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.plot_vertices">
-<span class="sig-name descname"><span class="pre">plot_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.plot_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.plot_vertices" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.plot_vertices">
+<span class="sig-name descname"><span class="pre">plot_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.plot_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.plot_vertices" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.quad_refinement">
-<span class="sig-name descname"><span class="pre">quad_refinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.quad_refinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.quad_refinement" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.quad_refinement">
+<span class="sig-name descname"><span class="pre">quad_refinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.quad_refinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.quad_refinement" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.set_transformation_matrix">
-<span class="sig-name descname"><span class="pre">set_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.set_transformation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.set_transformation_matrix" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.set_transformation_matrix">
+<span class="sig-name descname"><span class="pre">set_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.set_transformation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.set_transformation_matrix" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.QuadRefinement.vertices_grid_cleanup">
-<span class="sig-name descname"><span class="pre">vertices_grid_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#QuadRefinement.vertices_grid_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.QuadRefinement.vertices_grid_cleanup" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.vertices_grid_cleanup">
+<span class="sig-name descname"><span class="pre">vertices_grid_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.vertices_grid_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.vertices_grid_cleanup" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pyhexspline.quad_refinement.create_initial_points">
-<span class="sig-prename descclassname"><span class="pre">pyhexspline.quad_refinement.</span></span><span class="sig-name descname"><span class="pre">create_initial_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyhexspline/quad_refinement.html#create_initial_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyhexspline.quad_refinement.create_initial_points" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quad_refinement.create_initial_points">
+<span class="sig-prename descclassname"><span class="pre">quad_refinement.</span></span><span class="sig-name descname"><span class="pre">create_initial_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#create_initial_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.create_initial_points" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -329,7 +330,7 @@ Date: 04.2023</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="gmsh_mesh_builder.html" class="btn btn-neutral float-left" title="gmsh_mesh_builder module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="spline_mesher.html" class="btn btn-neutral float-left" title="spline_mesher module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
