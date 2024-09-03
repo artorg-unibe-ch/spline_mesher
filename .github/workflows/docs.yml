@@ -16,17 +16,17 @@ jobs:
           pip install sphinx sphinx_rtd_theme myst_parser
       - name: Sphinx build
         run: |
-          sphinx-build 02_CODE/src/pyhexspline/docs 02_CODE/src/pyhexspline/docs/_build
+          sphinx-build src/pyhexspline/docs src/pyhexspline/docs/_build
       - name: Create .nojekyll file
         run: |
-          touch 02_CODE/src/pyhexspline/docs/_build/.nojekyll
+          touch src/pyhexspline/docs/_build/.nojekyll
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: 02_CODE/src/pyhexspline/docs/_build
+          publish_dir: src/pyhexspline/docs/_build
           force_orphan: true
 
 
