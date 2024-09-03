@@ -15,7 +15,7 @@
   <p align="center">
     A Python package for generating GMSH meshes from SCANCO HR-pQCT images.
     <br />
-    <a href="https://github.com/artorg-unibe-ch/spline_mesher"><strong>Explore the docs »</strong></a>
+    <a href="https://artorg-unibe-ch.github.io/spline_mesher/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/artorg-unibe-ch/spline_mesher/blob/master/examples/standalone_execution.ipynb">View Demo</a>
@@ -96,7 +96,7 @@ Import a voxel-based model and convert it to a geometrical simplified representa
 - **Quality Assessment**: Mesh quality is evaluated using the Dice similarity coefficient (DSC) with a minimum value of 95%, and the (signed-) inverse conditioning number ((S-) ICN) to ensure matrix conditioning and simulation stability.
 
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+_For more examples, please refer to the [Documentation](https://artorg-unibe-ch.github.io/spline_mesher/)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
