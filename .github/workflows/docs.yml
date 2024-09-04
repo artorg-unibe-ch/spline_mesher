@@ -27,7 +27,7 @@ jobs:
           venv/bin/pip install -e .
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser
+          pip install sphinx sphinx_rtd_theme myst_parser opencv-python matplotlib gmsh numpy
       - name: Sphinx build
         run: |
           sphinx-build src/pyhexspline/docs src/pyhexspline/docs/_build
