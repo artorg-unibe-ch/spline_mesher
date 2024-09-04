@@ -7,8 +7,8 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-![Issue creation][todo_to_issue]
-![Python application][pyapp]
+[![Python application](https://github.com/artorg-unibe-ch/HFE/actions/workflows/python-app.yml/badge.svg)](https://github.com/artorg-unibe-ch/HFE/actions/workflows/python-app.yml)
+[![Documentation](https://github.com/artorg-unibe-ch/HFE/actions/workflows/docs.yml/badge.svg)](https://github.com/artorg-unibe-ch/HFE/actions/workflows/docs.yml)
 
 <h3 align="center">Spline-based structured conformal hexahedral meshing</h3>
 
@@ -179,7 +179,7 @@ Simone Poncioni - simone.poncioni@unibe.ch
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [issues-url]: https://github.com/artorg-unibe-ch/spline_mesher/issues
-
+[Documentation]: https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/docs.yml/badge.svg
 [Python-url]: https://www.python.org/
 [GMSH-url]: http://gmsh.info/
 [pyapp]: https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/python-app.yml/badge.svg
