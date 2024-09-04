@@ -7,8 +7,8 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-[![Python application](https://github.com/artorg-unibe-ch/HFE/actions/workflows/python-app.yml/badge.svg)](https://github.com/artorg-unibe-ch/HFE/actions/workflows/python-app.yml)
-[![Documentation](https://github.com/artorg-unibe-ch/HFE/actions/workflows/docs.yml/badge.svg)](https://github.com/artorg-unibe-ch/HFE/actions/workflows/docs.yml)
+[![Python application](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/python-app.yml/badge.svg)](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/python-app.yml)
+[![Documentation](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/docs.yml/badge.svg)](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/docs.yml)
 
 <h3 align="center">Spline-based structured conformal hexahedral meshing</h3>
 
