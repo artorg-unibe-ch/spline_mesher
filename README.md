@@ -9,6 +9,7 @@
 
 ![Issue creation][todo_to_issue]
 ![Python application][pyapp]
+[![Documentation](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/docs.yml/badge.svg)](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/docs.yml)
 
 <h3 align="center">Spline-based structured conformal hexahedral meshing</h3>
 
