@@ -27,9 +27,10 @@ jobs:
           venv/bin/pip install -e .
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser opencv-python matplotlib gmsh numpy scipy imutils shapely SimpleITK
+          pip install sphinx sphinx_rtd_theme myst_parser opencv-python matplotlib gmsh numpy scipy imutils shapely SimpleITK plotly
       - name: Sphinx build
         run: |
+          source venv/bin/activate
           sphinx-build src/pyhexspline/docs src/pyhexspline/docs/_build
       - name: Create .nojekyll file
         run: |
