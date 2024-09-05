@@ -7,6 +7,10 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
+
+[![DOI](https://zenodo.org/badge/539539270.svg)](https://zenodo.org/doi/10.5281/zenodo.13691707)
+
+
 [![Python application](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/python-app.yml/badge.svg)](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/python-app.yml)
 [![Documentation](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/docs.yml/badge.svg)](https://github.com/artorg-unibe-ch/spline_mesher/actions/workflows/docs.yml)
 
