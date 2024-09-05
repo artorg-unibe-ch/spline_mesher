@@ -134,6 +134,19 @@ class CorticalSanityCheck:
         return bool_angle
 
     def center_of_mass(self, array: np.ndarray):
+        """
+        Calculate the center of mass of a 2D array.
+
+        This function computes the center of mass (centroid) of a given 2D array.
+        The center of mass is calculated based on the sum of the array values and
+        their respective coordinates.
+
+        Args:
+            array (np.ndarray): A 2D NumPy array representing the data.
+
+        Returns:
+            Tuple[float, float]: The x and y coordinates of the center of mass.
+        """
         total = array.sum()
         x_coord = (array.sum(axis=1) @ range(array.shape[0])) / total
         y_coord = (array.sum(axis=0) @ range(array.shape[1])) / total
@@ -475,6 +488,21 @@ class CorticalSanityCheck:
         return np.hypot(h, c)
 
     def hyp_min_thickness(self, ext_contour, int_contour, idx_):
+        """
+        Check if the thickness between external and internal contours is below a minimum threshold.
+
+        This function evaluates the thickness between corresponding points on the external
+        and internal contours. It checks if the thickness at any point is below a specified
+        minimum threshold and returns a boolean array indicating where this condition is met.
+
+        Args:
+            ext_contour (ndarray): The external contour points.
+            int_contour (ndarray): The internal contour points.
+            idx_ (ndarray): Indices for the internal contour points.
+
+        Returns:
+            ndarray: A boolean array indicating where the thickness is below the minimum threshold.
+        """
         ext_contour = ext_contour[:-1]
         int_contour = int_contour[:-1]
         idx_ = idx_[:-1]
@@ -621,6 +649,30 @@ class CorticalSanityCheck:
         iterator,
         save=False,
     ):
+        """
+        Plot and optionally save corrected contours for cortical thickness analysis.
+
+        This function plots the corrected internal and external contours for cortical
+        thickness analysis. It also provides an option to save the plots and the
+        corresponding data to files.
+
+        Args:
+            fig (matplotlib.figure.Figure): The figure object for the plot.
+            ax1 (matplotlib.axes.Axes): The first axes object for the plot.
+            ax2 (matplotlib.axes.Axes): The second axes object for the plot.
+            ext_s (ndarray): The external contour points.
+            dx_med (float): The x-offset for the external contour.
+            dy_med (float): The y-offset for the external contour.
+            ext_spline (ndarray): The external spline contour points.
+            ext_offset (ndarray): The offset external contour points.
+            int_spline (ndarray): The internal spline contour points.
+            new_int (ndarray): The corrected internal contour points.
+            iterator (int): The current iteration index.
+            save (bool, optional): Whether to save the plot and data to files. Default is False.
+
+        Returns:
+            None
+        """
         ax1.scatter(ext_spline[0, 0], ext_spline[0, 1], marker="x", s=300)
         ax1.scatter(int_spline[0, 0], int_spline[0, 1], marker="x", s=300)
         ax1.plot(
@@ -708,6 +760,22 @@ class CorticalSanityCheck:
     def push_contour(
         self, ext_contour: np.ndarray, int_contour: np.ndarray, offset: float
     ) -> Tuple[ndarray, ndarray]:
+        """
+        Adjust the internal contour to ensure it is within the offset external contour.
+
+        This function adjusts the internal contour points to ensure they are within the
+        offset external contour. It resamples both contours to a higher resolution,
+        checks if the internal points are within the external contour, and if not,
+        moves them to the closest points on the external contour.
+
+        Args:
+            ext_contour (np.ndarray): The external contour points.
+            int_contour (np.ndarray): The internal contour points.
+            offset (float): The offset distance for the external contour.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: The adjusted internal contour and the offset external contour.
+        """
         is_inside_shpg = []  # initialise
 
         RESAMPLING = int(1500)

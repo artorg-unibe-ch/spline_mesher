@@ -149,6 +149,19 @@ class Mesher:
             return dists, np.min(closest_idx_2)
 
     def shift_point(self, arr, intersection):
+        """
+        Shift a point in the array to the intersection point.
+
+        This function finds the closest point in the array to the given intersection
+        point and replaces it with the intersection point.
+
+        Args:
+            arr (ndarray): The array of points.
+            intersection (ndarray): The intersection point to be inserted.
+
+        Returns:
+            ndarray: The updated array with the intersection point inserted.
+        """
         _, closest_idx = spatial.KDTree(arr).query(intersection)
         arr = arr[closest_idx] = intersection
         return arr
@@ -168,10 +181,18 @@ class Mesher:
 
     def insert_tensor_of_inertia(self, array: ndarray, centroid: ndarray) -> tuple:
         """
-        1. calculate centroid of the cortex
-        2. calculate intersection of the centroid with the contours
-        3. calculate nearest neighbor of the intersection point
-        4. insert the intersection point into the contours
+        Insert the intersection points of the centroid with the contours.
+
+        This function calculates the intersection points of the centroid with the
+        contours, finds the nearest neighbour of the intersection points, and inserts
+        the intersection points into the contours.
+
+        Args:
+            array (ndarray): The array of contour points.
+            centroid (ndarray): The centroid of the cortex.
+
+        Returns:
+            tuple: The updated array with intersection points, the list of indices of the intersection points, and the intersection points.
         """
         radius = 150
         intersection_1 = self.shapely_line_polygon_intersection(
@@ -197,14 +218,38 @@ class Mesher:
         z: Union[float32, float64],
     ) -> int:
         """
+        Add a point to the Gmsh model.
         https://gitlab.onelab.info/gmsh/gmsh/-/issues/456
         https://bbanerjee.github.io/ParSim/fem/meshing/gmsh/quadrlateral-meshing-with-gmsh/
+
+        This function adds a point with the given coordinates to the Gmsh model and
+        returns the point tag.
+
+        Args:
+            x (Union[float32, float64]): The x-coordinate of the point.
+            y (Union[float32, float64]): The y-coordinate of the point.
+            z (Union[float32, float64]): The z-coordinate of the point.
+
+        Returns:
+            int: The tag of the added point.
         """
         gmsh.option.setNumber("General.Terminal", 1)
         point_tag = self.factory.addPoint(x, y, z, tag=-1)
         return point_tag
 
     def insert_points(self, array: ndarray) -> ndarray:
+        """
+        Insert points into the Gmsh model.
+
+        This function inserts the points from the given array into the Gmsh model and
+        returns an array of point tags.
+
+        Args:
+            array (ndarray): The array of points to be inserted.
+
+        Returns:
+            ndarray: The array of point tags.
+        """
         array_pts_tags = []
         for i, _ in enumerate(array):
             array_tag = self.gmsh_add_points(array[i][0], array[i][1], array[i][2])
@@ -213,6 +258,19 @@ class Mesher:
         return array_pts_tags
 
     def insert_lines(self, array: ndarray) -> List[int]:
+        """
+        Insert lines into the Gmsh model.
+
+        This function inserts lines connecting consecutive points in the given array
+        into the Gmsh model and returns a list of line tags.
+
+        Args:
+            array (ndarray): The array of points to be connected by lines.
+
+        Returns:
+            List[int]: The list of line tags.
+        """
+
         array_lines_tags = []
         for i in range(len(array) - 1):
             array_tag = self.factory.addLine(array[i], array[i + 1], tag=-1)
@@ -226,6 +284,22 @@ class Mesher:
         CENTER_ARC: float,
         signs: List[Tuple[int, int]],
     ) -> List[int]:
+        """
+        Create center splines in the Gmsh model.
+
+        This function creates center splines based on the given point tags, center arc,
+        and signs, and returns a list of spline tags.
+
+        Args:
+            i (int): The index of the current center of interest.
+            point_tags_c (ndarray): The array of point tags for the center.
+            CENTER_ARC (float): The center arc value.
+            signs (List[Tuple[int, int]]): The list of sign tuples for the splines.
+
+        Returns:
+            List[int]: The list of spline tags.
+        """
+
         coi_r = self.coi_idx[i].reshape(-1, 3)
         coi_r_center = np.mean(coi_r, axis=0)
         vectors = coi_r - coi_r_center
@@ -250,6 +324,19 @@ class Mesher:
         return line_tags_s
 
     def insert_ellipse_arcs(self, array: np.ndarray, center_tag: int):
+        """
+        Insert ellipse arcs into the Gmsh model.
+
+        This function inserts ellipse arcs connecting consecutive points in the given
+        array into the Gmsh model and returns a list of ellipse arc tags.
+
+        Args:
+            array (ndarray): The array of points to be connected by ellipse arcs.
+            center_tag (int): The tag of the center point for the ellipse arcs.
+
+        Returns:
+            List[int]: The list of ellipse arc tags.
+        """
         array_ellipse_tags = []
         for i in range(len(array) - 1):
             try:
@@ -263,27 +350,18 @@ class Mesher:
             array_ellipse_tags.append(array_tag)
         return array_ellipse_tags
 
-    def sort_intersection_points_legacy(self, array):
-        """
-        Legacy function to sort the intersection points in cw direction
-        Kept for reference, but now using self.sort_intersection_points()
-        Sort the intersection points in cw direction
-        """
-        self.factory.synchronize()
-        array_sorted = []
-        for i, subarray in enumerate(array):
-            point = [self.model.getValue(0, point, []) for point in subarray]
-            point_np = np.array(point, dtype=float)
-            centroid = np.mean(point_np, axis=0)
-            dists = point_np - centroid
-            angles_subarray = np.arctan2(dists[:, 1], dists[:, 0])
-            idx = np.argsort(angles_subarray)
-            array_sorted.append(array[i][idx])
-        return np.array(array_sorted, dtype=int)
-
     def sort_intersection_points(self, array: ndarray) -> ndarray:
         """
-        Sort the intersection points in ccw direction
+        Sort the intersection points in counterclockwise direction.
+
+        This function sorts the intersection points in the given array in a
+        counterclockwise direction and returns the sorted array.
+
+        Args:
+            array (ndarray): The array of intersection points to be sorted.
+
+        Returns:
+            ndarray: The sorted array of intersection points.
         """
         self.factory.synchronize()
         points = []
@@ -297,6 +375,19 @@ class Mesher:
     def insert_intersection_line(
         self, point_tags: ndarray, idx_list: list
     ) -> Tuple[ndarray, ndarray]:
+        """
+        Insert intersection lines into the Gmsh model.
+
+        This function inserts lines connecting the intersection points in the given
+        point tags array and returns the line tags and the sorted intersection points.
+
+        Args:
+            point_tags (ndarray): The array of point tags.
+            idx_list (list): The list of indices for the intersection points.
+
+        Returns:
+            Tuple[ndarray, ndarray]: The array of line tags and the sorted intersection points.
+        """
         point_tags = np.array(point_tags).tolist()
         reshaped_point_tags = np.reshape(point_tags, (len(idx_list), -1))
         indexed_points = reshaped_point_tags[
@@ -315,6 +406,19 @@ class Mesher:
         return line_tags, sorted_indexed_points
 
     def sort_bspline_cw(self, coords, point_tags):
+        """
+        Sort B-spline points in clockwise order.
+
+        This function sorts the given B-spline points in a clockwise order based on
+        their angles from the centroid and returns the sorted point tags.
+
+        Args:
+            coords (ndarray): The coordinates of the B-spline points.
+            point_tags (ndarray): The tags of the B-spline points.
+
+        Returns:
+            ndarray: The sorted point tags.
+        """
         coords = np.asarray(coords)
         center = np.mean(coords, axis=0)
         angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
@@ -324,6 +428,18 @@ class Mesher:
         return point_tags_sorted
 
     def get_sort_coords(self, point_tags: List[ndarray]) -> ndarray:
+        """
+        Get and sort coordinates of points.
+
+        This function retrieves the coordinates of the given point tags, slices them
+        into sub-arrays, and sorts each sub-array in a counterclockwise order.
+
+        Args:
+            point_tags (List[ndarray]): The list of point tags.
+
+        Returns:
+            ndarray: The sorted array of point tags.
+        """
         self.factory.synchronize()
         start_point = [lst[0] for lst in point_tags]
         coords = [self.model.getValue(0, point, []) for point in start_point]
@@ -342,6 +458,18 @@ class Mesher:
         return point_tags_sliced_sorted
 
     def gmsh_insert_bspline(self, points: ndarray) -> int:
+        """
+        Insert a B-spline into the Gmsh model.
+
+        This function inserts a B-spline with the given points into the Gmsh model and
+        returns the B-spline tag.
+
+        Args:
+            points (ndarray): The points of the B-spline.
+
+        Returns:
+            int: The tag of the added B-spline.
+        """
         points = np.array(points).tolist()
         b_spline = self.factory.addBSpline(points, tag=-1)
         return b_spline
@@ -414,7 +542,21 @@ class Mesher:
     def add_bspline_filling(
         self, bsplines: ndarray, intersections: ndarray, slicing_coefficient: int
     ) -> ndarray:
-        # ? see if it works
+        """
+        Add B-spline fillings to the Gmsh model.
+
+        This function adds B-spline fillings between the given B-splines and
+        intersections in the Gmsh model and returns an array of B-spline filling tags.
+
+        Args:
+            bsplines (ndarray): The array of B-spline tags.
+            intersections (ndarray): The array of intersection tags.
+            slicing_coefficient (int): The slicing coefficient.
+
+        Returns:
+            ndarray: The array of B-spline filling tags.
+        """
+
         bsplines = bsplines.astype(int)
 
         # reshape and convert to list
@@ -460,7 +602,7 @@ class Mesher:
                     BSplineFilling_tags = np.append(BSplineFilling_tags, BSplineFilling)
         except Exception as e:
             # I'm truly not proud of this trick
-            self.logger.error(f"Error in BSplineFilling: {e}")
+            self.logger.warning(f"Error in BSplineFilling: {e}\nRolling the array")
             bspline_t = np.array(bsplines, dtype="int").reshape(
                 (slicing_coefficient, -1)
             )
@@ -493,6 +635,20 @@ class Mesher:
     def add_interslice_segments(
         self, point_tags_ext: ndarray, point_tags_int: ndarray
     ) -> ndarray:
+        """
+        Add interslice segments to the Gmsh model.
+
+        This function adds interslice segments connecting the external and internal
+        point tags in the Gmsh model and returns an array of segment tags.
+
+        Args:
+            point_tags_ext (ndarray): The array of external point tags.
+            point_tags_int (ndarray): The array of internal point tags.
+
+        Returns:
+            ndarray: The array of interslice segment tags.
+        """
+
         point_tags_ext = point_tags_ext.flatten().tolist()
         point_tags_int = point_tags_int.flatten().tolist()
 
@@ -508,6 +664,21 @@ class Mesher:
     def add_slice_surfaces(
         self, ext_tags: ndarray, int_tags: ndarray, interslice_seg_tags: ndarray
     ) -> ndarray:
+        """
+        Add slice surfaces to the Gmsh model.
+
+        This function adds slice surfaces between the external, internal, and interslice
+        segment tags in the Gmsh model and returns an array of surface tags.
+
+        Args:
+            ext_tags (ndarray): The array of external tags.
+            int_tags (ndarray): The array of internal tags.
+            interslice_seg_tags (ndarray): The array of interslice segment tags.
+
+        Returns:
+            ndarray: The array of slice surface tags.
+        """
+
         ext_r = ext_tags.reshape((self.slicing_coefficient, -1)).astype(int)
         int_r = int_tags.reshape((self.slicing_coefficient, -1)).astype(int)
         inter_r = interslice_seg_tags.reshape((self.slicing_coefficient, -1))
@@ -539,7 +710,7 @@ class Mesher:
                     )
                     ext_int_tags = np.append(ext_int_tags, ext_int_tags_s)
         except Exception as e:
-            self.logger.error(f"Error in add_slice_surfaces: {e}")
+            self.logger.warning(f"Error in add_slice_surfaces: {e}\nRolling the array")
             ext_r = np.array([np.roll(ext_r, -1) for ext_r in ext_r])
             ext_int_tags = []
             for i in range(len(inter_a) - 1):
@@ -569,6 +740,20 @@ class Mesher:
         intersection_line_tag_ext: ndarray,
         intersection_line_tag_int: ndarray,
     ) -> List[int]:
+        """
+        Add intersurface planes to the Gmsh model.
+
+        This function adds intersurface planes between the given line tags and
+        intersection line tags in the Gmsh model and returns a list of surface tags.
+
+        Args:
+            intersurface_line_tags (ndarray): The array of intersurface line tags.
+            intersection_line_tag_ext (ndarray): The array of external intersection line tags.
+            intersection_line_tag_int (ndarray): The array of internal intersection line tags.
+
+        Returns:
+            List[int]: The list of intersurface plane tags.
+        """
         # 4 lines per surface
         intersurface_line_tags_r = np.array(intersurface_line_tags, dtype=int).reshape(
             (-1, 4)
@@ -609,6 +794,21 @@ class Mesher:
     def gmsh_geometry_formulation(
         self, array: np.ndarray, idx_list: np.ndarray
     ) -> Tuple[ndarray, ndarray, ndarray, ndarray]:
+        """
+        Formulate the geometry in the Gmsh model.
+
+        This function formulates the geometry in the Gmsh model by inserting points,
+        intersection lines, B-splines, and B-spline fillings, and returns the tags of
+        the indexed points, B-splines, intersection lines, and B-spline fillings.
+
+        Args:
+            array (ndarray): The array of points.
+            idx_list (ndarray): The list of indices for the intersection points.
+
+        Returns:
+            Tuple[ndarray, ndarray, ndarray, ndarray]: The tags of the indexed points, B-splines, intersection lines, and B-spline fillings.
+        """
+
         array_pts_tags = self.insert_points(array)
 
         intersection_line_tag, indexed_points_coi = self.insert_intersection_line(
@@ -639,6 +839,23 @@ class Mesher:
         volume_tags: Union[List[int], ndarray],
         phase: str = "cort",
     ):
+        """
+        Apply transfinite meshing to the specified geometric entities.
+
+        This function sets transfinite meshing properties for curves, surfaces, and volumes
+        based on the provided tags and the specified phase.
+
+        Args:
+            longitudinal_line_tags (Union[List[int], ndarray]): Tags of longitudinal lines.
+            transverse_line_tags (List[int]): Tags of transverse lines.
+            radial_line_tags (Union[List[int], ndarray]): Tags of radial lines.
+            surface_tags (Union[List[int], ndarray]): Tags of surfaces.
+            volume_tags (Union[List[int], ndarray]): Tags of volumes.
+            phase (str, optional): The phase of the meshing process ("cort" or "trab"). Default is "cort".
+
+        Returns:
+            None
+        """
         self.factory.synchronize()
 
         longitudinal_line_tags = list(map(int, longitudinal_line_tags))
@@ -678,6 +895,21 @@ class Mesher:
         slices_tags: ndarray,
         intersurface_surface_tags: List[int],
     ) -> List[int]:
+        """
+        Add volumes to the mesh based on the provided surface tags.
+
+        This function creates volumes by defining surface loops from the provided
+        cortical and intersurface surface tags.
+
+        Args:
+            cortical_ext_surfs (ndarray): Tags of external cortical surfaces.
+            cortical_int_surfs (ndarray): Tags of internal cortical surfaces.
+            slices_tags (ndarray): Tags of slice surfaces.
+            intersurface_surface_tags (List[int]): Tags of intersurface surfaces.
+
+        Returns:
+            List[int]: Tags of the created volumes.
+        """
         cortical_ext_surfs = np.array(cortical_ext_surfs, dtype=int).reshape((-1, 4))
         cortical_int_surfs = np.array(cortical_int_surfs, dtype=int).reshape((-1, 4))
         slices_tags_r = np.array(slices_tags, dtype=int).reshape((-1, 4))
@@ -716,6 +948,19 @@ class Mesher:
         return volume_tag
 
     def sort_by_indexes(self, lst, indexes, reverse=False):
+        """
+        Sort a list based on the provided indexes.
+
+        This function sorts the elements of a list according to the specified indexes.
+
+        Args:
+            lst (List): The list to be sorted.
+            indexes (List[int]): The indexes to sort the list by.
+            reverse (bool, optional): Whether to sort in reverse order. Default is False.
+
+        Returns:
+            List: The sorted list.
+        """
         return [
             val
             for (_, val) in sorted(
@@ -791,6 +1036,20 @@ class Mesher:
         trab_line_tags_v: List[int],
         intersection_line_tags_int: ndarray,
     ) -> List[int]:
+        """
+        Create trabecular planes of inertia.
+
+        This function generates trabecular planes of inertia by defining curve loops
+        and filling surfaces based on the provided line tags.
+
+        Args:
+            trab_cort_line_tags (List[int]): Tags of cortical trabecular lines.
+            trab_line_tags_v (List[int]): Tags of vertical trabecular lines.
+            intersection_line_tags_int (ndarray): Tags of intersection lines.
+
+        Returns:
+            List[int]: Tags of the created trabecular planes of inertia.
+        """
         trab_cort_line_tags_np = np.array(trab_cort_line_tags).reshape(
             (self.slicing_coefficient, -1)
         )
@@ -830,6 +1089,20 @@ class Mesher:
         trab_line_tags_h: List[int],
         cort_int_bspline_tags: ndarray,
     ) -> List[int]:
+        """
+        Create trabecular slices.
+
+        This function generates trabecular slices by defining curve loops and plane surfaces
+        based on the provided line and B-spline tags.
+
+        Args:
+            trab_cort_line_tags (List[int]): Tags of cortical trabecular lines.
+            trab_line_tags_h (List[int]): Tags of horizontal trabecular lines.
+            cort_int_bspline_tags (ndarray): Tags of internal cortical B-splines.
+
+        Returns:
+            List[int]: Tags of the created trabecular slices.
+        """
         trab_line_tags_h_np = np.array(trab_line_tags_h, dtype=int).reshape((-1, 4))
 
         trab_cort_line_tags_np_s = np.array(trab_cort_line_tags, dtype=int).reshape(
@@ -876,7 +1149,19 @@ class Mesher:
         trab_surfs_v: List[int],
     ) -> List[int]:
         """
-        # TODO: write docstring
+        Generate the trabecular-cortical volume mesh.
+
+        This function creates the trabecular-cortical volume mesh by defining surface loops
+        and volumes based on the provided surface and plane tags.
+
+        Args:
+            trab_slice_surf_tags (List[int]): Tags of trabecular slice surfaces.
+            trab_plane_inertia_tags (List[int]): Tags of trabecular plane inertia surfaces.
+            cortical_int_surfs (ndarray): Tags of internal cortical surfaces.
+            trab_surfs_v (List[int]): Tags of vertical trabecular surfaces.
+
+        Returns:
+            List[int]: Tags of the created trabecular-cortical volumes.
         """
         trab_slice_surf_tags_np = np.array(trab_slice_surf_tags, dtype=int).reshape(
             (-1, 4)  # * mind the 4 (4 surfaces per trabecular slice)
@@ -931,32 +1216,19 @@ class Mesher:
 
         return cort_trab_vol_tags
 
-    def sort_cw_legacy(self, coords):
-        """check if this functions is still needed"""
-        coords = np.asarray(coords)
-        center = np.mean(coords, axis=0)
-        angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
-        sorted_indices = np.argsort(angles)
-        sorted_indices = list(sorted_indices)
-        # guarantee that the first point is always in the first quadrant
-        if angles[sorted_indices[0]] > 0:
-            self.logger.warning("First point is not in 1st quadrant, modifying.")
-            self.logger.warning(f"Coords: {coords[sorted_indices[0]]}")
-            self.logger.warning(f"Angle = {angles[sorted_indices[0]]}")
-            sorted_indices = sorted_indices[1:] + [sorted_indices[0]]
-        return sorted_indices
-
-    def sort_ccw_test(self, coords):
-        coords = np.asarray(coords)
-        center = np.mean(coords, axis=0)
-        angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
-        closest_to_3 = np.argmin(np.abs(angles))
-        angles_idx = np.arange(len(angles))
-        sorted_indices_t = np.argsort(angles, kind="stable")
-        sorted_indices = np.roll(angles_idx[sorted_indices_t], -closest_to_3)
-        return sorted_indices
-
     def sort_ccw(self, coords: np.ndarray) -> np.ndarray:
+        """
+        Sort coordinates in counterclockwise order.
+
+        This function sorts the given coordinates in counterclockwise order based on their
+        angles relative to the centroid.
+
+        Args:
+            coords (ndarray): The coordinates to be sorted.
+
+        Returns:
+            ndarray: The sorted indices of the coordinates.
+        """
         x_coords, y_coords, _ = zip(*coords)
         centroid = (sum(x_coords) / len(coords), sum(y_coords) / len(coords))
 
@@ -978,6 +1250,20 @@ class Mesher:
         return sorted_indices
 
     def mesh_generate(self, dim: int, element_order: int, vol_tags: list):
+        """
+        Generate the mesh for the specified dimension and element order.
+
+        This function sets various meshing options and generates the mesh for the specified
+        dimension and element order.
+
+        Args:
+            dim (int): The dimension of the mesh (1, 2, or 3).
+            element_order (int): The order of the elements in the mesh.
+            vol_tags (list): Tags of the volumes to be meshed.
+
+        Returns:
+            None
+        """
         self.option.setNumber("Mesh.RecombineAll", 1)
         self.option.setNumber("Mesh.RecombinationAlgorithm", 1)
         self.option.setNumber("Mesh.Recombine3DLevel", 1)
@@ -1000,6 +1286,18 @@ class Mesher:
         self.model.mesh.generate(dim)
 
     def analyse_mesh_quality(self, hiding_thresh: float) -> None:
+        """
+        Analyze the quality of the generated mesh.
+
+        This function runs the "AnalyseMeshQuality" plugin to evaluate the quality of the
+        generated mesh based on the specified hiding threshold.
+
+        Args:
+            hiding_thresh (float): The threshold for hiding elements based on quality.
+
+        Returns:
+            None
+        """
         self.plugin.setNumber("AnalyseMeshQuality", "JacobianDeterminant", 1)
         self.plugin.setNumber("AnalyseMeshQuality", "CreateView", 1)
         self.plugin.setNumber("AnalyseMeshQuality", "DimensionOfElements", -1)
@@ -1008,6 +1306,15 @@ class Mesher:
         return None
 
     def gmsh_get_nodes(self) -> Dict[uint64, ndarray]:
+        """
+        Get the nodes of the mesh.
+
+        This function retrieves the nodes of the mesh for each physical group and returns
+        them as a dictionary.
+
+        Returns:
+            Dict[uint64, ndarray]: A dictionary with node tags as keys and coordinates as values.
+        """
         nTagsCoord_dict = {}
         for physical_group in self.model.getPhysicalGroups():
             nTags_s, nCoord_s = self.model.mesh.getNodesForPhysicalGroup(
@@ -1021,6 +1328,15 @@ class Mesher:
         return nTagsCoord_dict
 
     def gmsh_get_elms(self) -> Dict[uint64, ndarray]:
+        """
+        Get the elements of the mesh.
+
+        This function retrieves the elements of the mesh for each volume and returns them
+        as a dictionary.
+
+        Returns:
+            Dict[uint64, ndarray]: A dictionary with element tags as keys and node tags as values.
+        """
         elms_dict = {}
         nodeTags = None
         for vol in self.model.getEntities(3):
@@ -1040,13 +1356,17 @@ class Mesher:
     def gmsh_get_bnds(
         self, nodes: dict
     ) -> Tuple[Dict[uint64, ndarray], Dict[uint64, ndarray]]:
-        """creates two dictionaries defining the boundary nodes of the mesh based on their z coordinate
+        """
+        Get the boundary nodes of the mesh.
+
+        This function identifies the boundary nodes of the mesh based on their z-coordinate
+        and returns them as two dictionaries for the bottom and top boundaries.
 
         Args:
-            nodes (dict): node set of the mesh
+            nodes (dict): The node set of the mesh.
 
         Returns:
-            bnds_bot, bnds_top (dict): node sets of the bottom and top boundary of the mesh
+            Tuple[Dict[uint64, ndarray], Dict[uint64, ndarray]]: Dictionaries of bottom and top boundary nodes.
         """
         z_min = float("inf")
         z_max = float("-inf")
@@ -1069,6 +1389,18 @@ class Mesher:
         return bnds_bot, bnds_top
 
     def gmsh_get_reference_point_coord(self, nodes: dict) -> ndarray:
+        """
+        Get the coordinates of the reference point.
+
+        This function calculates the coordinates of the reference point based on the center
+        of mass of the nodes and the maximum z-coordinate.
+
+        Args:
+            nodes (dict): The node set of the mesh.
+
+        Returns:
+            ndarray: The coordinates of the reference point.
+        """
         OFFSET_MM = 0  # RP offset in mm from top surface
         # get the center of mass of the nodes dictionary values
         center_of_mass = np.mean(list(nodes.values()), axis=0)
@@ -1101,6 +1433,19 @@ class Mesher:
     def split_dict_by_array_len(
         self, input_dict: Dict[int, ndarray], len1: int
     ) -> Tuple[Dict[int, ndarray], Dict[int, ndarray]]:
+        """
+        Split a dictionary into two based on the length of the arrays.
+
+        This function splits the input dictionary into two dictionaries based on the specified
+        length of the arrays.
+
+        Args:
+            input_dict (Dict[int, ndarray]): The input dictionary to be split.
+            len1 (int): The length of the arrays for the first dictionary.
+
+        Returns:
+            Tuple[Dict[int, ndarray], Dict[int, ndarray]]: The two resulting dictionaries.
+        """
         dict1 = {}
         dict2 = {}
         count1 = 0
@@ -1114,8 +1459,18 @@ class Mesher:
 
     def nodes2coords(self, nodes, elements):
         """
+        Associate node coordinates to each element.
         https://github.com/dmelgarm/gmsh/blob/master/gmsh_tools.py#L254
-        Associate node coordinates to each element
+
+        This function associates the coordinates of the nodes to each element based on the
+        provided node and element arrays.
+
+        Args:
+            nodes (ndarray): The array of node coordinates.
+            elements (ndarray): The array of element definitions.
+
+        Returns:
+            ndarray: The array of element coordinates.
         """
 
         ncoords = np.zeros((len(elements), 10))
@@ -1137,9 +1492,16 @@ class Mesher:
 
     def get_barycenters(self, tag_s: list[int]) -> ndarray:
         """
-        Gets barycenters of each volumetric element of type 5 (8-node hexahedron) or 12 (27-node second order hexahedron)
+        Get barycenters of each volumetric element.
+
+        This function retrieves the barycenters of each volumetric element of type 5 (8-node hexahedron)
+        or type 12 (27-node second order hexahedron) for the specified tags.
+
+        Args:
+            tag_s (list[int]): List of tags for the volumetric elements.
+
         Returns:
-            barycenters (np.array): array of barycenters in (x, y, z) format (shape: (n_elms, 3))
+            ndarray: Array of barycenters in (x, y, z) format with shape (n_elms, 3).
         """
 
         # * add compartment discrimination for cort/trab physical groups
@@ -1196,7 +1558,6 @@ class Mesher:
     def get_radius_longest_edge(self, tag_s: ndarray) -> float64:
         """
         Compute the radius of the longest edge for each element in the given tag_s.
-
 
         Args:
             tag_s: list([int]) List of element tags to compute the radius for.
@@ -1263,6 +1624,17 @@ class TrabecularVolume(Mesher):
         )
 
     def principal_axes_length(self, array: ndarray) -> Tuple[float64, float64]:
+        """
+        Calculate the lengths of the axes of inertia.
+
+        This function calculates the lengths of the principal axes for the given array of points.
+
+        Args:
+            array (ndarray): Array of points.
+
+        Returns:
+            Tuple[float64, float64]: Lengths of the principal axes.
+        """
         l_i = np.linalg.norm(array[0] - array[1])
         l_j = np.linalg.norm(array[0] - array[2])
         return l_i, l_j
@@ -1270,6 +1642,21 @@ class TrabecularVolume(Mesher):
     def get_offset_points(
         self, array: ndarray, _center: List[float64], l_i: float64, l_j: float64
     ) -> ndarray:
+        """
+        Calculate offset points from the center.
+
+        This function calculates the offset points from the center based on the principal axes lengths
+        and the length factor.
+
+        Args:
+            array (ndarray): Array of points.
+            _center (List[float64]): Center point.
+            l_i (float64): Length of the first principal axis.
+            l_j (float64): Length of the second principal axis.
+
+        Returns:
+            ndarray: Array with the offset points.
+        """
         # calculate offset point from _center and float(LENGTH_FACTOR) * half of the principal axes length
         offset_i = [self.LENGTH_FACTOR * l_i / 2, 0, 0]
         offset_j = [0, self.LENGTH_FACTOR * l_j / 2, 0]
@@ -1282,6 +1669,15 @@ class TrabecularVolume(Mesher):
         return array
 
     def get_trabecular_position(self) -> ndarray:
+        """
+        Get the trabecular positions.
+
+        This function calculates the trabecular positions by splitting the input array into subarrays,
+        calculating the principal axes lengths, and determining the offset points.
+
+        Returns:
+            ndarray: Array of trabecular positions.
+        """
         coi_idx_r = np.reshape(self.coi_idx, (-1, 3))
         # create subarrays of the coi_idx array for each slice (coi_idx[:, 2])
         coi_idx_every_4_points = np.split(
@@ -1301,21 +1697,29 @@ class TrabecularVolume(Mesher):
             trabecular_points[i] = self.get_offset_points(
                 coi_idx_every_4_points[i], _center, l_i, l_j
             )
-
-            # sort points in cw direction
-            # trabecular_points[i] = trabecular_points[i][[0, 2, 1, 3]]  # ? is this necessary?
         return np.array(trabecular_points, dtype=np.float32).reshape((-1, 3))
 
     def sort_trab_coords(self, point_tags: List[int]) -> List[ndarray]:
+        """
+        Sort trabecular coordinates in counterclockwise order.
+
+        This function sorts the trabecular coordinates in counterclockwise order based on the provided
+        point tags.
+
+        Args:
+            point_tags (List[int]): List of point tags.
+
+        Returns:
+            List[ndarray]: List of sorted point tags.
+        """
         self.factory.synchronize()
         start_point = [lst for lst in point_tags]
         coords = [self.model.getValue(0, point, []) for point in start_point]
-        point_tags = np.split(
-            np.array(point_tags), self.slicing_coefficient
-        )  # split every 4 points
-        coords_split = np.split(
-            np.array(coords), self.slicing_coefficient
-        )  # split every x, y, z coordinate
+
+        # split every 4 points
+        point_tags = np.split(np.array(point_tags), self.slicing_coefficient)
+        # split every x, y, z coordinate
+        coords_split = np.split(np.array(coords), self.slicing_coefficient)
 
         # sort the sub-arrays in counterclockwise order
         point_tags_sorted0 = self.sort_ccw(coords_split[0])
@@ -1328,6 +1732,24 @@ class TrabecularVolume(Mesher):
     def get_trabecular_vol(
         self, coi_idx: ndarray
     ) -> Tuple[ndarray, List[int], List[int], List[int], List[int], List[int]]:
+        """
+        Get the trabecular volume.
+
+        This function calculates the trabecular volume by determining the trabecular positions,
+        sorting the coordinates, creating lines and surfaces, and finally generating the volume.
+
+        Args:
+            coi_idx (ndarray): Array of center of interest indices.
+
+        Returns:
+            Tuple[ndarray, List[int], List[int], List[int], List[int], List[int]]:
+                - Array of point tags.
+                - List of vertical line tags.
+                - List of horizontal line tags.
+                - List of vertical surface tags.
+                - List of horizontal surface tags.
+                - List of volume tags.
+        """
         self.coi_idx = coi_idx
         # ? add point tag to center to create self.ellipse_arcs?
 
@@ -1447,6 +1869,17 @@ class TrabecularVolume(Mesher):
         )
 
     def get_vertices_coords(self, vertices_tags):
+        """
+        Get the coordinates of vertices.
+
+        This function retrieves the coordinates of the specified vertices.
+
+        Args:
+            vertices_tags (List[int]): List of vertex tags.
+
+        Returns:
+            ndarray: Array of vertex coordinates.
+        """
         self.factory.synchronize()
         vertices_coords = []
         for vertex in vertices_tags:
@@ -1454,4 +1887,16 @@ class TrabecularVolume(Mesher):
         return np.array(vertices_coords, dtype=np.float32)
 
     def set_length_factor(self, length_factor: float):
+        """
+        Set the length factor.
+
+        This function sets the length factor used to calculate
+        the size of the central trabecular region.
+
+        Args:
+            length_factor (float): The length factor to be set.
+
+        Returns:
+            None
+        """
         self.LENGTH_FACTOR = length_factor

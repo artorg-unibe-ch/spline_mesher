@@ -59,18 +59,4 @@ def hfe_input(path_np_s: str):
 
     # add padding to sitk image
     sitk_padded = pad_image(sitk_image, iso_pad_size=10)
-    # rotate image by 90°
-    # set rotation
-    # rotation = sitk.Euler3DTransform()
-    # rotation.SetCenter(sitk_padded.TransformContinuousIndexToPhysicalPoint([0, 0, 0]))
-    # rotation.SetRotation(0, np.pi / 2, 0)
-    # # apply rotation
-    # sitk_padded = sitk.Resample(
-    #     sitk_padded,
-    #     sitk_padded,
-    #     rotation,
-    #     sitk.sitkLinear,
-    #     0,
-    #     sitk_padded.GetPixelID(),
-    # )
     return sitk_padded

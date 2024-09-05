@@ -46,7 +46,7 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 500,  # smoothing factor of the spline
+        "s": 50,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
         "interp_points": 1000,  # number of points to interpolate the spline
         "dp_simplification_outer": 5,  # Ramer-Douglas-Peucker simplification factor for the periosteal contour
@@ -55,14 +55,14 @@ def main():
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
         "mesh_order": 1,  # set element order (1: linear, 2: quadratic, >2: higher order, not tested)
-        "n_elms_longitudinal": 3,  # number of elements in the longitudinal direction
+        "n_elms_longitudinal": 60,  # number of elements in the longitudinal direction
         "n_elms_transverse_trab": 15,  # number of elements in the transverse direction for the trabecular compartment
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
-        "n_elms_radial": 20,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
+        "n_elms_radial": 80,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting in the inner trabecular compartment
         "show_plots": False,  # show plots during construction
-        "show_gmsh": False,  # show gmsh GUI
-        "write_mesh": True,  # write mesh to file
+        "show_gmsh": True,  # show gmsh GUI
+        "write_mesh": False,  # write mesh to file
         "trab_refinement": False,  # True: refine trabecular mesh at the center (#! Should be set to False if ellipsoid fitting is True)
         "mesh_analysis": True,  # True: perform mesh analysis (plot JAC det in GMSH GUI)
     }

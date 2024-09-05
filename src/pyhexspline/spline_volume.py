@@ -6,6 +6,7 @@ import cv2
 import gmsh
 import imutils
 import matplotlib
+
 # matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -113,7 +114,13 @@ class OCC_volume:
 
     def plot_mhd_slice(self, img):
         """
-        Helper function to plot a slice of the MHD file
+        Plot a slice of the SimpleITK.image.
+
+        This helper function plots a specified slice of the SimpleITK.image file using Matplotlib.
+        It also provides an interactive slider to navigate through different slices.
+
+        Args:
+            img (SimpleITK.Image): The image to be plotted.
 
         Returns:
             None
@@ -162,6 +169,21 @@ class OCC_volume:
         return None
 
     def plot_slice(self, image, SLICE, title, ASPECT):
+        """
+        Plot a specific slice of the given image.
+
+        This function plots a specified slice of the input image using Matplotlib.
+        It also provides an interactive slider to navigate through different slices.
+
+        Args:
+            image (SimpleITK.Image): The input image to be plotted.
+            SLICE (int): The index of the slice to be plotted.
+            title (str): The title of the plot.
+            ASPECT (float): The aspect ratio for the plot.
+
+        Returns:
+            None
+        """
         img_view = sitk.GetArrayViewFromImage(image)
 
         fig, ax = plt.subplots(figsize=(ASPECT, ASPECT))
@@ -192,7 +214,19 @@ class OCC_volume:
         return None
 
     def exec_thresholding(self, image: Image, THRESHOLD_PARAM: List[float]) -> Image:
-        # Binary threshold
+        """
+        Apply binary thresholding to the given image.
+
+        This function applies binary thresholding to the input image based on the
+        specified threshold parameters.
+
+        Args:
+            image (SimpleITK.Image): The input image to be thresholded.
+            THRESHOLD_PARAM (List[float]): List of threshold parameters [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH].
+
+        Returns:
+            SimpleITK.Image: The thresholded image.
+        """
         btif = sitk.BinaryThresholdImageFilter()
         btif.SetInsideValue(int(THRESHOLD_PARAM[0]))
         btif.SetOutsideValue(int(THRESHOLD_PARAM[1]))
@@ -262,7 +296,19 @@ class OCC_volume:
         return contour
 
     def get_binary_contour(self, image: Image) -> Image:
-        # https://itk.org/pipermail/community/2017-August/013464.html
+        """
+        Generate binary contours from the given image.
+        https://itk.org/pipermail/community/2017-August/013464.html
+
+        This function generates binary contours for each slice of the input image
+        and joins them into a single 3D image.
+
+        Args:
+            image (SimpleITK.Image): The input image.
+
+        Returns:
+            SimpleITK.Image: The image with binary contours.
+        """
         img_thr_join = sitk.JoinSeries(
             [
                 sitk.BinaryContour(image[z, :, :], fullyConnected=True)
@@ -274,6 +320,19 @@ class OCC_volume:
         return img_thr_join
 
     def get_draw_contour(self, image: Image, loc: str = str("outer")) -> ndarray:
+        """
+        Extract and draw contours from the given image.
+
+        This function extracts and draws contours from the input image for each slice.
+        The contours are then flipped and returned as a numpy array.
+
+        Args:
+            image (SimpleITK.Image): The input image.
+            loc (str, optional): The location of the contour to be drawn. Default is "outer".
+
+        Returns:
+            ndarray: The extracted and drawn contours.
+        """
         img_np = np.transpose(sitk.GetArrayFromImage(image), [2, 1, 0])
         contour_np = [
             self.draw_contours(img_np[z, :, :], loc, approximation=True)
@@ -306,37 +365,36 @@ class OCC_volume:
         )
         return image_thr
 
-    def binary_threshold(self, image: Image) -> Tuple[ndarray, ndarray]:
+    def pad_and_plot(self, image: Image) -> Tuple[ndarray, ndarray]:
         """
-        THRESHOLD_PARAM = [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH]
+        Pad the given image and optionally plot a slice of it.
+
+        This function pads the input image with a specified padding size and
+        optionally plots a specified slice of the padded image.
+
+        Args:
+            image (SimpleITK.Image): The input image to be padded.
+
+        Returns:
+            ndarray: The padded image as a NumPy array.
         """
-        THRESHOLD_PARAM = self.THRESHOLD_PARAM
         ASPECT = self.ASPECT
         SLICE = self.SLICE
 
-        # if self.sitk_image is None:
-        #     image = sitk.ReadImage(img_path)
-        # else:
-        #     image = self.sitk_image
-        #     image = sitk.PermuteAxes(image, [2, 0, 1])
-        #     image.SetSpacing(self.sitk_image.GetSpacing())
-
-        # image_thr = self.exec_thresholding(image, THRESHOLD_PARAM)
-
-        print(f"Image size before padding: {image.GetSize()}")
+        self.logger.debug(f"Image size before padding: {image.GetSize()}")
 
         image_pad = self.pad_image(image, iso_pad_size=10)
 
-        print(f"Image size after padding: {image_pad.GetSize()}")
+        self.logger.debug(f"Image size after padding: {image_pad.GetSize()}")
 
-        if self.show_plots is True:
+        if self.show_plots:
             self.plot_slice(
                 image_pad, SLICE, f"Padded Image on slice n. {SLICE}", ASPECT
             )
         else:
             self.logger.info(f"Padded Image\t\t\tshow_plots:\t{self.show_plots}")
 
-        print(f"Image size after padding: {image_pad.GetSize()}")
+        self.logger.debug(f"Image size after padding: {image_pad.GetSize()}")
         return image_pad
 
     """
@@ -440,7 +498,20 @@ class OCC_volume:
     """
 
     def sort_xy(self, x: ndarray, y: ndarray) -> Tuple[ndarray, ndarray]:
-        # https://stackoverflow.com/questions/58377015/counterclockwise-sorting-of-x-y-data
+        """
+        Sort x and y coordinates in a counterclockwise order.
+        https://stackoverflow.com/questions/58377015/counterclockwise-sorting-of-x-y-data
+
+        This function sorts the given x and y coordinates in a counterclockwise order
+        based on their angles from the centroid.
+
+        Args:
+            x (ndarray): The x-coordinates.
+            y (ndarray): The y-coordinates.
+
+        Returns:
+            Tuple[ndarray, ndarray]: The sorted x and y coordinates.
+        """
 
         x0 = np.mean(x)
         y0 = np.mean(y)
@@ -456,6 +527,20 @@ class OCC_volume:
         return x_sorted, y_sorted
 
     def plotly_add_traces(self, fig, original, spline_interp):
+        """
+        Add traces to a Plotly figure for visualization.
+
+        This function adds traces to a Plotly figure for visualizing the original
+        and interpolated spline contours.
+
+        Args:
+            fig (plotly.graph_objs.Figure): The Plotly figure to add traces to.
+            original (ndarray): The original contour points.
+            spline_interp (ndarray): The interpolated spline contour points.
+
+        Returns:
+            plotly.graph_objs.Figure: The updated Plotly figure with added traces.
+        """
         fig.add_traces(
             [
                 go.Scatter(
@@ -479,6 +564,18 @@ class OCC_volume:
         return fig
 
     def plotly_makefig(self, fig):
+        """
+        Finalize and display the Plotly figure with sliders.
+
+        This function finalizes the Plotly figure by adding sliders for navigating
+        through slices and displays the figure.
+
+        Args:
+            fig (plotly.graph_objs.Figure): The Plotly figure to be finalized and displayed.
+
+        Returns:
+            plotly.graph_objs.Figure: The finalized Plotly figure.
+        """
         fig.data[self.SLICING_COEFFICIENT].visible = True
 
         # Create and add slider
@@ -583,31 +680,19 @@ class OCC_volume:
                 self.logger.warning("Something went wrong while flipping the array")
         return x_o, y_o
 
-    def sort_mahalanobis_legacy(self, data, start):
-        dist_m = ss.distance.squareform(ss.distance.pdist(data.T, "mahalanobis"))
-        total_points = data.shape[1]
-        points_index = set(range(total_points))
-        sorted_index = []
-        target = start
-
-        points_index.discard(target)
-        while len(points_index) > 0:
-            candidate = list(points_index)
-            nneigbour = candidate[dist_m[target, candidate].argmin()]
-            points_index.discard(nneigbour)
-            points_index.discard(target)
-            sorted_index.append(target)
-            target = nneigbour
-        sorted_index.append(target)
-
-        x_mahalanobis = data[0][sorted_index]
-        y_mahalanobis = data[1][sorted_index]
-        return x_mahalanobis, y_mahalanobis
-
-    def remove_self_intersections(self, sorted_data):
-        pass
-
     def sort_mahalanobis(self, data: ndarray) -> Tuple[ndarray, ndarray]:
+        """
+        Sort points based on pairwise distances to form a continuous contour.
+
+        This function sorts the given data points based on pairwise distances to
+        form a continuous contour, ensuring no self-intersections.
+
+        Args:
+            data (ndarray): The data points to be sorted.
+
+        Returns:
+            Tuple[ndarray, ndarray]: The sorted x and y coordinates.
+        """
         # Compute pairwise distances between all points in the contour
         dist_matrix = ss.distance.cdist(data.T, data.T)
 
@@ -741,9 +826,20 @@ class OCC_volume:
         return ext_contour_s, int_contour_s
 
     def output_sanity_check(self, initial_contour: np.ndarray, contour_s: np.ndarray):
-        # check that after csc.CorticalSanityCheck elements of arrays external and
-        # internal contours have the same structure and shape as before csc.CorticalSanityCheck
-        # sanity check of input data ext_contour_s and int_contour_s
+        """
+        Perform a sanity check on the output contours.
+
+        This function checks that the external and internal contours have the same
+        structure and shape as before the sanity check. It ensures that the contours
+        do not have duplicate points and have the correct shape.
+
+        Args:
+            initial_contour (ndarray): The initial contour points.
+            contour_s (ndarray): The contour points after the sanity check.
+
+        Returns:
+            ndarray: The corrected contour points.
+        """
         if np.allclose(initial_contour[0], initial_contour[1], rtol=1e-05, atol=1e-08):
             self.logger.warning("External contour has a duplicate first point")
             if not np.allclose(contour_s[0], contour_s[1], rtol=1e-05, atol=1e-08):
@@ -772,24 +868,21 @@ class OCC_volume:
         return contour_s
 
     def _pnts_on_line_(self, a, spacing=1, is_percent=False):  # densify by distance
-        """Add points, at a fixed spacing, to an array representing a line.
+        """
+        Add points at a fixed spacing to a line.
         https://stackoverflow.com/questions/64995977/generating-equidistance-points-along-the-boundary-of-a-polygon-but-cw-ccw
 
-        **See**  `densify_by_distance` for documentation.
+        This function adds points at a fixed spacing to an array representing a line.
+        The spacing can be specified as a fixed distance or as a percentage of the
+        total length.
 
-        Parameters
-        ----------
-        a : array
-            A sequence of `points`, x,y pairs, representing the bounds of a polygon
-            or polyline object.
-        spacing : number
-            Spacing between the points to be added to the line.
-        is_percent : boolean
-            Express the densification as a percent of the total length.
+        Args:
+            a (ndarray): A sequence of points representing the line.
+            spacing (float): The spacing between the points to be added.
+            is_percent (bool, optional): Whether to express the spacing as a percentage of the total length. Default is False.
 
-        Notes
-        -----
-        Called by `pnt_on_poly`.
+        Returns:
+            ndarray: The line with added points.
         """
         N = len(a) - 1  # segments
         dxdy = a[1:, :] - a[:-1, :]  # coordinate differences
@@ -809,7 +902,17 @@ class OCC_volume:
         return np.concatenate((*pnts, a0), axis=0)
 
     def volume_splines(self) -> Tuple[ndarray, ndarray]:
-        contour_ext_fig, contour_int_fig = self.binary_threshold(img_path=self.img_path)
+        """
+        Generate splines for cortical and trabecular regions.
+
+        This function processes the input image to generate volume splines for the
+        cortical and trabecular regions. It includes steps for padding the image,
+        extracting contours, and optionally plotting the results.
+
+        Returns:
+            Tuple[ndarray, ndarray]: Arrays of cortical external and internal contours.
+        """
+        contour_ext_fig, contour_int_fig = self.pad_and_plot(img_path=self.img_path)
 
         self.slice_index = np.linspace(
             1, len(contour_ext_fig[0, 0, :]) - 1, self.SLICING_COEFFICIENT, dtype=int
@@ -900,6 +1003,24 @@ class OCC_volume:
         return np.abs(diff)
 
     def spline_neumann(self, x, y, k=3, s=0, w=None):
+        """
+        Perform cubic spline interpolation with Neumann boundary conditions.
+
+        This function performs cubic spline interpolation on the given data points
+        (x, y) with Neumann boundary conditions, ensuring zero slope at the first
+        point. It uses the `scipy.optimize.minimize` function to optimize the spline
+        coefficients under the specified constraints.
+
+        Args:
+            x (ndarray): The x-coordinates of the data points.
+            y (ndarray): The y-coordinates of the data points.
+            k (int, optional): The degree of the spline. Default is 3.
+            s (float, optional): Smoothing factor. Default is 0.
+            w (ndarray, optional): Weights for spline fitting. Default is None.
+
+        Returns:
+            UnivariateSpline: The resulting spline with Neumann boundary conditions.
+        """
         t, c0, k = self.guess(x, y, k, s, w=w)
         x0 = x[0]  # point at which zero slope is required
         con = {
@@ -913,6 +1034,17 @@ class OCC_volume:
     def interpolate_vertical_lines_3d(self, line_sets):
         """
         https://stackoverflow.com/questions/32046582/spline-with-constraints-at-border
+        Interpolate vertical lines in 3D using cubic splines.
+
+        This function performs cubic spline interpolation on the given vertical line sets
+        with Neumann boundary conditions. It generates new Z values for interpolation and
+        returns the interpolated points.
+
+        Args:
+            line_sets (List[List[ndarray]]): List of vertical line sets.
+
+        Returns:
+            ndarray: Array of interpolated points.
         """
         interpolated_lines = []
         for line in line_sets:
@@ -963,6 +1095,20 @@ class OCC_volume:
         return all_points_array
 
     def classify_and_store_contours(self, mask, slice_idx):
+        """
+        Classify and store contours from a given slice of the mask.
+
+        This function finds contours in the specified slice of the mask and classifies
+        the first contour as the outer contour and the second contour (if present) as
+        the inner contour.
+
+        Args:
+            mask (ndarray): The 3D mask array from which contours are to be extracted.
+            slice_idx (int): The index of the slice to be processed.
+
+        Returns:
+            Tuple[ndarray, ndarray]: The outer and inner contours.
+        """
         contours = find_contours(mask[:, :, slice_idx])  # , level=0.5)
         if contours:
             outer_contours = contours[0]  # First contour as outer
@@ -971,6 +1117,19 @@ class OCC_volume:
         return outer_contours, inner_contours
 
     def evaluate_bspline(self, contour):
+        """
+        Evaluate a B-spline for the given contour.
+
+        This function fits a B-spline to the given contour points and evaluates the
+        spline to generate new interpolated points. The spline is closed by appending
+        the first point to the end of the new points.
+
+        Args:
+            contour (ndarray): The contour points to be fitted with a B-spline.
+
+        Returns:
+            Tuple[ndarray, ndarray]: The x and y coordinates of the interpolated B-spline points.
+        """
         tckp, _ = splprep(
             [contour[:, 0], contour[:, 1]],
             s=self.S,
@@ -986,6 +1145,19 @@ class OCC_volume:
         return xnew, ynew
 
     def calculate_outer_offset(self, contour):
+        """
+        Calculate the outer offset of a given contour.
+
+        This function calculates the outer offset of the given contour by buffering
+        the contour with a negative offset. It handles cases where multiple geometries
+        are created during buffering and retains the largest one.
+
+        Args:
+            contour (ndarray): The input contour.
+
+        Returns:
+            ndarray: The offset contour.
+        """
         MIN_THICKNESS = self.MIN_THICKNESS
         contour = np.array(contour)[:, :2]
         # Assuming the contour is (x, y, z) and we only need (x, y)
@@ -1012,6 +1184,19 @@ class OCC_volume:
         return offset_polygon
 
     def check_inner_offset(self, outer_polygon, inn_contour):
+        """
+        Check and adjust the inner contour based on the outer polygon.
+
+        This function checks if the points of the inner contour are within the outer
+        polygon. If not, it adjusts the points to the closest points on the outer polygon.
+
+        Args:
+            outer_polygon (ndarray): The outer polygon contour.
+            inn_contour (ndarray): The inner contour points.
+
+        Returns:
+            ndarray: The adjusted inner contour points.
+        """
         outer_polygon = shpg.Polygon(outer_polygon)
         outer_contour = np.array(outer_polygon.exterior.coords)
         inn_contour = (np.array(inn_contour).reshape(-1, 3)[:, :2]).reshape(-1, 2)
@@ -1028,6 +1213,20 @@ class OCC_volume:
         return inn_contour
 
     def process_slice(self, mask, slice_idx):
+        """
+        Process a single slice to classify and store contours.
+
+        This function processes a single slice of the input mask to classify and store
+        the outer and inner contours. It applies Douglas-Peucker-Ramer simplification and
+        B-spline interpolation to the contours.
+
+        Args:
+            mask (ndarray): The input mask for the slice.
+            slice_idx (int): The index of the slice being processed.
+
+        Returns:
+            Tuple[ndarray, ndarray]: Arrays of outer and inner B-spline contours.
+        """
         DP_SIMPLIFICATION_OUTER = self.dp_simplification_outer
         DP_SIMPLIFICATION_INNER = self.dp_simplification_inner
         out_cont, inn = self.classify_and_store_contours(mask, slice_idx)
@@ -1058,6 +1257,19 @@ class OCC_volume:
         return out_bspline, inn_bspline
 
     def get_line_sets(self, contour):
+        """
+        Generate vertical line sets from contour slices.
+
+        This function generates vertical line sets from the given contour slices.
+        It aligns the slices based on the first point and collects corresponding points
+        from each slice to form vertical lines.
+
+        Args:
+            contour (List[ndarray]): List of contour slices.
+
+        Returns:
+            List[List[ndarray]]: List of vertical line sets.
+        """
         num_points = contour[0].shape[0]
         line_sets = []
 
@@ -1132,6 +1344,19 @@ class OCC_volume:
         return None
 
     def volume_splines_optimized(self, imsitk_pad) -> Tuple[ndarray, ndarray]:
+        """
+        Generate optimized volume splines for cortical and trabecular regions.
+
+        This function processes the input padded image to generate optimized splines
+        for the cortical and trabecular regions. It includes steps for processing slices,
+        interpolating vertical lines, and performing sanity checks.
+
+        Args:
+            imsitk_pad (SimpleITK.Image): The padded input image.
+
+        Returns:
+            Tuple[ndarray, ndarray]: Arrays of cortical external and internal contours.
+        """
         imnp = sitk.GetArrayFromImage(imsitk_pad)
         self.spacing = imsitk_pad.GetSpacing()
         imnp = np.transpose(imnp, [2, 1, 0])
@@ -1144,7 +1369,7 @@ class OCC_volume:
 
         processed_slices = []
         for slice_idx in total_slices:
-            print(f"Processing slice {slice_idx}")
+            self.logger.debug(f"Processing slice {slice_idx}")
             result = self.process_slice(imnp, slice_idx)
             processed_slices.append(result)
 
@@ -1195,7 +1420,7 @@ class OCC_volume:
                 slices_int[z_value] = []
             slices_int[z_value].append(point)
 
-        # TODO: I really don't like this back and forth conversion, but tentative fix for now
+        # I really don't like this back and forth conversion, but tentative fix for now
 
         all_coords_int = []
         for key in slices_int:
@@ -1207,7 +1432,7 @@ class OCC_volume:
         for key in slices_ext:
             for coord_array in slices_ext[key]:
                 all_coords_ext.append(coord_array)
-        cortical_ext_array = np.vstack(all_coords_ext)  #! change of name !
+        cortical_ext_array = np.vstack(all_coords_ext)  #! careful, change of name !
 
         inn_sanity = []
         for z_value, slice_ext_points in slices_ext.items():

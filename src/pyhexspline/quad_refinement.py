@@ -9,6 +9,7 @@ https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710
 https://gitlab.onelab.info/gmsh/gmsh/-/issues/2439
 
 """
+
 import logging
 import time
 from itertools import chain
@@ -46,9 +47,31 @@ class QuadRefinement:
         self.elms_thickness = ELMS_THICKNESS
 
     def center_of_mass(self, vertices_coords):
+        """
+        Calculate the center of mass of the given vertices.
+
+        This function computes the center of mass for the provided vertices coordinates.
+
+        Args:
+            vertices_coords (ndarray): Array of vertices coordinates.
+
+        Returns:
+            ndarray: The center of mass coordinates.
+        """
         return np.mean(vertices_coords, axis=0)
 
     def get_vertices_coords(self, vertices_tags):
+        """
+        Get the coordinates of vertices.
+
+        This function retrieves the coordinates of the specified vertices.
+
+        Args:
+            vertices_tags (List[int]): List of vertex tags.
+
+        Returns:
+            ndarray: Array of vertex coordinates.
+        """
         self.factory.synchronize()
         vertices_coords = []
         for vertex in vertices_tags:
@@ -56,6 +79,20 @@ class QuadRefinement:
         return np.array(vertices_coords, dtype=np.float32)
 
     def create_square_grid(self, big_square_size, squares_per_side, origin):
+        """
+        Create a grid of squares.
+
+        This function generates a grid of squares based on the specified size and number of squares per side.
+
+        Args:
+            big_square_size (float): The size of the big square.
+            squares_per_side (int): The number of squares per side.
+            origin (List[float]): The origin coordinates.
+
+        Returns:
+            List[ndarray]: List of vertices coordinates for the grid.
+        """
+
         # Calculate the size of each small square
         small_square_size = big_square_size / squares_per_side
 
@@ -80,6 +117,19 @@ class QuadRefinement:
         return vertices
 
     def create_subvertices(self, center_of_mass, hierarchy, square_size_0):
+        """
+        Create subvertices for the grid.
+
+        This function generates subvertices for the grid based on the specified hierarchy and square size.
+
+        Args:
+            center_of_mass (ndarray): The center of mass coordinates.
+            hierarchy (int): The hierarchy level.
+            square_size_0 (float): The initial square size.
+
+        Returns:
+            List[ndarray]: List of subvertices coordinates.
+        """
         squares_per_side_1 = 3
         if hierarchy < 1:
             raise ValueError("Hierarchy must be >= 1")
@@ -91,6 +141,17 @@ class QuadRefinement:
         return vertices
 
     def plot_vertices(self, vertices):
+        """
+        Plot the vertices.
+
+        This function plots the provided vertices and annotates their indices.
+
+        Args:
+            vertices (List[ndarray]): List of vertices coordinates.
+
+        Returns:
+            None
+        """
         plt.plot(figsize=(5, 5))
         plt.plot(
             [v[0] for v in vertices],
@@ -104,6 +165,17 @@ class QuadRefinement:
         plt.show()
 
     def gmsh_add_points(self, vertices):
+        """
+        Add points to the Gmsh model.
+
+        This function adds the provided vertices as points to the Gmsh model.
+
+        Args:
+            vertices (List[ndarray]): List of vertices coordinates.
+
+        Returns:
+            List[int]: List of point tags.
+        """
         point_tags = []
         for v in vertices:
             v_tag = self.factory.addPoint(v[0], v[1], v[2], tag=-1)
@@ -111,6 +183,17 @@ class QuadRefinement:
         return point_tags
 
     def gmsh_add_surfaces(self, line_tags):
+        """
+        Add surfaces to the Gmsh model.
+
+        This function adds surfaces to the Gmsh model based on the provided line tags.
+
+        Args:
+            line_tags (List[int]): List of line tags.
+
+        Returns:
+            List[int]: List of surface tags.
+        """
         cloops = []
         for subline_tags in line_tags[30:-30]:
             self.logger.debug(subline_tags)
@@ -124,6 +207,17 @@ class QuadRefinement:
         return surf_tags
 
     def get_vertices_minmax(self, point_coords):
+        """
+        Get the minimum and maximum vertices.
+
+        This function retrieves the minimum and maximum vertices from the provided point coordinates.
+
+        Args:
+            point_coords (ndarray): Array of point coordinates.
+
+        Returns:
+            ndarray: Array of the four outermost vertices.
+        """
         max_x = max(point_coords, key=lambda x: x[0])[0]
         min_x = min(point_coords, key=lambda x: x[0])[0]
         max_y = max(point_coords, key=lambda x: x[1])[1]
@@ -141,6 +235,18 @@ class QuadRefinement:
         return verts
 
     def get_affine_transformation_matrix(self, verts_1, point_coords):
+        """
+        Get the affine transformation matrix.
+
+        This function calculates the affine transformation matrix to map the provided vertices to the point coordinates.
+
+        Args:
+            verts_1 (ndarray): Array of vertices coordinates.
+            point_coords (ndarray): Array of point coordinates.
+
+        Returns:
+            ndarray: The affine transformation matrix.
+        """
         # find 4 outermost vertices of point_coords
         verts_2 = self.get_vertices_minmax(point_coords)
 
@@ -158,6 +264,18 @@ class QuadRefinement:
         return M
 
     def set_transformation_matrix(self, M, point_coords):
+        """
+        Apply the affine transformation matrix.
+
+        This function applies the affine transformation matrix to the provided point coordinates.
+
+        Args:
+            M (ndarray): The affine transformation matrix.
+            point_coords (ndarray): Array of point coordinates.
+
+        Returns:
+            ndarray: Array of transformed coordinates.
+        """
         coords = np.array(point_coords[:, :2], dtype=np.float32).reshape(-1, 1, 2)
         coords_transformed = cv2.transform(coords, M)
         new_coords = coords_transformed.reshape(-1, 2)
@@ -176,6 +294,17 @@ class QuadRefinement:
         return new_coords_3d
 
     def vertices_grid_cleanup(self, vertices):
+        """
+        Clean up the vertices grid.
+
+        This function removes duplicate vertices and sorts the remaining vertices.
+
+        Args:
+            vertices (List[ndarray]): List of vertices coordinates.
+
+        Returns:
+            ndarray: Array of cleaned and sorted vertices.
+        """
         vertices_unique = np.unique(
             vertices.round(decimals=4),
             axis=0,
@@ -186,6 +315,17 @@ class QuadRefinement:
         return vertices_sorted
 
     def gmsh_add_line(self, point_skins):
+        """
+        Add lines to the Gmsh model.
+
+        This function adds lines to the Gmsh model based on the provided point skins.
+
+        Args:
+            point_skins (List[ndarray]): List of point skins.
+
+        Returns:
+            List[Tuple[int, int, int, int]]: List of line tags.
+        """
         line_tags = []
         _iter = int(1)  # slicing iterator
         for i, skin in enumerate(point_skins[::_iter]):
@@ -202,12 +342,34 @@ class QuadRefinement:
         return line_tags
 
     def gmsh_add_plane_surface(self, line_tags):
-        # create surface from the center square
+        """
+        Add a plane surface to the Gmsh model.
+
+        This function creates a plane surface from the provided line tags and adds it to the Gmsh model.
+
+        Args:
+            line_tags (List[int]): List of line tags.
+
+        Returns:
+            int: The tag of the created plane surface.
+        """
         center_cloop = self.factory.addCurveLoop(line_tags, tag=-1)
         center_surf = self.factory.addPlaneSurface([center_cloop], tag=-1)
         return center_surf
 
     def gmsh_add_custom_lines(self, point_tags):
+        """
+        Add lines to the Gmsh model of the internal refined structure.
+
+        This function adds custom lines to the Gmsh model based on the provided point tags. It includes
+        center squares, diagonal lines, border squares, center trapezoids, diagonal trapezoids, and outer squares.
+
+        Args:
+            point_tags (List[int]): List of point tags.
+
+        Returns:
+            Tuple[List[int], List[int]]: Tuple containing the line tags and outer square line tags.
+        """
         # insert 5 tags at the beginning of the list (4 of the vertices and 1 for starting the count at 1 and not 0)
         pt = [None] * 5 + point_tags
         # add center square
@@ -527,6 +689,17 @@ class QuadRefinement:
         return line_tags, outer_square
 
     def gmsh_skin_points(self, point_tags):
+        """
+        Generate a grid of point skins.
+
+        This function generates a grid of point skins from the provided point tags.
+
+        Args:
+            point_tags (List[int]): List of point tags.
+
+        Returns:
+            ndarray: Array of point skins.
+        """
         sqrt_shape = int(np.sqrt(len(point_tags)))
         windows = view_as_windows(
             np.array(point_tags, dtype=int).reshape((sqrt_shape, sqrt_shape)),
@@ -536,7 +709,18 @@ class QuadRefinement:
         return windows
 
     def gmsh_add_surfs(self, l_tags):
-        """l_tags: list of line tags"""
+        """
+        Add surfaces to the Gmsh model.
+
+        This function adds surfaces to the Gmsh model based on the provided line tags. It includes
+        center surfaces, border squares, center trapezoids, and additional surfaces.
+
+        Args:
+            l_tags (List[int]): List of line tags.
+
+        Returns:
+            List[int]: List of surface tags.
+        """
 
         surf_tags = []
         center_surf = self.gmsh_add_plane_surface(l_tags[0])
@@ -610,6 +794,19 @@ class QuadRefinement:
         return surf_tags
 
     def gmsh_make_transfinite(self, line_tags, surf_tags, n_trans):
+        """
+        Set transfinite meshing for lines and surfaces.
+
+        This function sets transfinite meshing for the provided lines and surfaces.
+
+        Args:
+            line_tags (List[int]): List of line tags.
+            surf_tags (List[int]): List of surface tags.
+            n_trans (int): Number of transfinite divisions.
+
+        Returns:
+            None
+        """
         self.factory.synchronize()
         for _, subset in enumerate(line_tags):
             subset = list(map(int, subset))
@@ -621,6 +818,17 @@ class QuadRefinement:
         return None
 
     def gmsh_get_unique_surfaces(self, curve_loop):
+        """
+        Get unique surfaces from curve loops.
+
+        This function retrieves unique surfaces from the provided curve loops.
+
+        Args:
+            curve_loop (List[int]): List of curve loop tags.
+
+        Returns:
+            ndarray: Array of unique surface tags.
+        """
         all_surfaces = []
         for curve in curve_loop:
             adjacent_surfaces, _ = self.model.getAdjacencies(1, curve)
@@ -632,6 +840,24 @@ class QuadRefinement:
         return unique_surfaces
 
     def gmsh_add_outer_connectivity(self, line_tags, initial_point_tags, point_tags):
+        """
+        Add outer connectivity to the Gmsh model.
+
+        This function adds outer connectivity lines and surfaces to the Gmsh model based on the provided
+        line tags and point tags.
+
+        Args:
+            line_tags (List[int]): List of line tags.
+            initial_point_tags (List[int]): List of initial point tags.
+            point_tags (List[int]): List of point tags.
+
+        Returns:
+            Tuple[List[int], List[int], List[int], List[Tuple[int, int, int, int]]]:
+                - Updated line tags.
+                - List of external surface tags.
+                - List of curve loop line tags.
+                - List of corner points for transfinite surfaces.
+        """
         # insert 5 tags at the beginning of the list (4 of the vertices and 1 for starting the count at 1 and not 0)
         pt = [None] * 5 + point_tags
 
@@ -768,6 +994,17 @@ class QuadRefinement:
         return line_tags_new, ext_surf_tags, curve_loops_line_tags, corners
 
     def create_connecting_surfaces(self, curve_loops_line_tags):
+        """
+        Create connecting surfaces between curve loops.
+
+        This function creates connecting surfaces between the provided curve loops.
+
+        Args:
+            curve_loops_line_tags (List[int]): List of curve loop line tags.
+
+        Returns:
+            List[ndarray]: List of surface loops.
+        """
         self.factory.synchronize()
         surface_loops = []
         surface_loops_t = []
@@ -787,6 +1024,18 @@ class QuadRefinement:
         return surface_loops
 
     def close_outer_loop(self, line_tags, outer_square_lines):
+        """
+        Close the outer loop with surfaces.
+
+        This function closes the outer loop by creating surfaces from the provided line tags and outer square lines.
+
+        Args:
+            line_tags (List[int]): List of line tags.
+            outer_square_lines (List[int]): List of outer square line tags.
+
+        Returns:
+            List[int]: List of surface tags.
+        """
         # read all the lines
         self.factory.synchronize()
         line_tags_f = [item for sublist in line_tags for item in sublist]
@@ -877,6 +1126,18 @@ class QuadRefinement:
         return surf
 
     def quad_refinement(self, initial_point_tags):
+        """
+        Perform quadrilateral refinement on the given initial point tags.
+
+        This function refines the quadrilateral mesh based on the initial point tags. It creates subvertices,
+        sorts them, applies an affine transformation, and adds points, lines, and surfaces to the Gmsh model.
+
+        Args:
+            initial_point_tags (List[int]): List of initial point tags.
+
+        Returns:
+            Tuple[List[int], List[int], List[int]]: Tuple containing the point tags, line tags, and surface tags.
+        """
         SQUARE_SIZE_0_MM = self.SQUARE_SIZE_0_MM
         MAX_SUBDIVISIONS = self.MAX_SUBDIVISIONS
 
@@ -925,6 +1186,17 @@ class QuadRefinement:
         )
 
     def get_adjacent_points(self, surf_tag: str) -> list:
+        """
+        Get adjacent points for a given surface tag.
+
+        This function retrieves the adjacent points for the specified surface tag.
+
+        Args:
+            surf_tag (str): The surface tag.
+
+        Returns:
+            List[int]: List of adjacent point tags.
+        """
         _, adjacecies_down = gmsh.model.getAdjacencies(self.DIM, surf_tag)
         adj_points = []
         for line in adjacecies_down:
@@ -933,13 +1205,46 @@ class QuadRefinement:
         return adj_points
 
     def flatten(self, arr):
+        """
+        Flatten a nested list.
+
+        This function flattens a nested list into a single list.
+
+        Args:
+            arr (List[List[Any]]): The nested list.
+
+        Returns:
+            List[Any]: The flattened list.
+        """
         return [item for sublist in arr for item in sublist]
 
     def common(self, arr):
+        """
+        Find common elements in an array.
+
+        This function finds the common elements in the provided array.
+
+        Args:
+            arr (ndarray): The input array.
+
+        Returns:
+            ndarray: Array of common elements.
+        """
         u, c = np.unique(arr, return_counts=True)
         return u[c > 1]
 
     def get_common_lines(self, arr):
+        """
+        Get common lines from an array of points.
+
+        This function retrieves the common lines from the provided array of points.
+
+        Args:
+            arr (List[int]): List of point tags.
+
+        Returns:
+            ndarray: Array of common line tags.
+        """
         lines = []
         for _, point in enumerate(arr):
             adj_up, _ = gmsh.model.getAdjacencies(0, point)
@@ -950,6 +1255,17 @@ class QuadRefinement:
         return lines_common
 
     def create_intersurface_connection(self, point_tags):
+        """
+        Create intersurface connections.
+
+        This function creates intersurface connections based on the provided point tags.
+
+        Args:
+            point_tags (List[List[int]]): List of point tags for each surface.
+
+        Returns:
+            List[List[int]]: List of line tags for intersurface connections.
+        """
         line_tags_intersurf = []
         for i in range(1, len(point_tags)):
             start_stop = []
@@ -985,6 +1301,23 @@ class QuadRefinement:
         return line_tags_intersurf
 
     def create_line_dict(self, lines_lower_surf, lines_upper_surf, lines_intersurf):
+        """
+        Create dictionaries of lines and their corresponding points.
+
+        This function creates dictionaries for the lower surface lines, upper surface lines, and intersurface lines,
+        mapping each line to its corresponding points.
+
+        Args:
+            lines_lower_surf (List[List[int]]): List of line tags for the lower surface.
+            lines_upper_surf (List[List[int]]): List of line tags for the upper surface.
+            lines_intersurf (List[int]): List of line tags for the intersurface.
+
+        Returns:
+            Tuple[Dict[int, List[int]], Dict[int, List[int]], Dict[int, List[int]]]:
+                - Dictionary of lower surface lines and their points.
+                - Dictionary of upper surface lines and their points.
+                - Dictionary of intersurface lines and their points.
+        """
         # Step 1: Create a dictionary of all lines and their corresponding points
         lines_lower_dict = {}
         lines_upper_dict = {}
@@ -1003,6 +1336,24 @@ class QuadRefinement:
         return lines_lower_dict, lines_upper_dict, lines_intersurf_dict
 
     def create_surf_dict(self, surf_lower, surf_upper, surf_inter):
+        """
+        Create dictionaries of surfaces and their corresponding lines.
+
+        This function creates dictionaries for the lower surfaces, upper surfaces, and intersurfaces,
+        mapping each surface to its corresponding lines.
+
+        Args:
+            surf_lower (List[int]): List of surface tags for the lower surface.
+            surf_upper (List[int]): List of surface tags for the upper surface.
+            surf_inter (List[int]): List of surface tags for the intersurface.
+
+        Returns:
+            Tuple[Dict[int, List[int]], Dict[int, List[int]], Dict[int, List[int]]]:
+                - Dictionary of lower surfaces and their lines.
+                - Dictionary of upper surfaces and their lines.
+                - Dictionary of intersurfaces and their lines.
+        """
+
         surf_lower_dict = {}
         surf_upper_dict = {}
         surf_inter_dict = {}
@@ -1020,6 +1371,20 @@ class QuadRefinement:
     def check_closed_surface_loop(
         self, lines_lower_dict: dict, lines_upper_dict: dict, lines_intersurf_dict: dict
     ) -> dict:
+        """
+        Check for closed surface loops.
+
+        This function checks for closed surface loops by matching lines from the lower surface, upper surface,
+        and intersurface dictionaries.
+
+        Args:
+            lines_lower_dict (Dict[int, List[int]]): Dictionary of lower surface lines and their points.
+            lines_upper_dict (Dict[int, List[int]]): Dictionary of upper surface lines and their points.
+            lines_intersurf_dict (Dict[int, List[int]]): Dictionary of intersurface lines and their points.
+
+        Returns:
+            Dict[int, List[int]]: Dictionary of closed surface loops.
+        """
         surf_loop_dict = {}
         index = 1
         for key1, value1 in lines_lower_dict.items():
@@ -1049,23 +1414,77 @@ class QuadRefinement:
         return surf_loop_dict
 
     def add_curve_loop(self, curve_loop_tags):
+        """
+        Add a curve loop to the Gmsh model.
+
+        This function adds a curve loop to the Gmsh model based on the provided curve loop tags.
+
+        Args:
+            curve_loop_tags (List[int]): List of curve loop tags.
+
+        Returns:
+            int: The tag of the created curve loop.
+        """
         return self.factory.addCurveLoop(curve_loop_tags, tag=-1)
 
     def gmsh_add_surface(self, curve_loop):
+        """
+        Add a surface to the Gmsh model.
+
+        This function adds a surface to the Gmsh model based on the provided curve loop.
+
+        Args:
+            curve_loop (int): The curve loop tag.
+
+        Returns:
+            int: The tag of the created surface.
+        """
         return self.factory.addSurfaceFilling(curve_loop, tag=-1)
 
     def add_surface_loop(self, surface_loop_tags):
+        """
+        Add a surface loop to the Gmsh model.
+
+        This function adds a surface loop to the Gmsh model based on the provided surface loop tags.
+
+        Args:
+            surface_loop_tags (List[int]): List of surface loop tags.
+
+        Returns:
+            int: The tag of the created surface loop.
+        """
         return self.factory.addSurfaceLoop(surface_loop_tags, sewing=False, tag=-1)
 
     def gmsh_add_volume(self, surface_loop):
+        """
+        Add a volume to the Gmsh model.
+
+        This function adds a volume to the Gmsh model based on the provided surface loop.
+
+        Args:
+            surface_loop (int): The surface loop tag.
+
+        Returns:
+            int: The tag of the created volume.
+        """
         return self.factory.addVolume(surface_loop, tag=-1)
 
     def exec_quad_refinement(self, outer_point_tags):
         """
-        :param outer_point_tags: list of list of point tags, each list of point tags represents a corner of the trabecular structure
-        :return:
+        Execute quadrilateral refinement on the given outer point tags.
+
+        This function performs quadrilateral refinement on the provided outer point tags, creating points, lines,
+        surfaces, and volumes in the Gmsh model.
+
+        Args:
+            outer_point_tags (List[List[int]]): List of lists of point tags, each representing a corner of the structure.
+
+        Returns:
+            Tuple[List[List[int]], List[List[int]], List[List[int]]]:
+                - List of line tags for intersurface connections.
+                - List of surface tags.
+                - List of volume tags.
         """
-        # ? check that the points are in the right order (clockwise)
         point_tags = []
         line_tags = []
         surf_tags = []
@@ -1185,69 +1604,20 @@ class QuadRefinement:
             for vol in intersurf_vols:
                 gmsh.model.mesh.setTransfiniteVolume(vol)
 
-        # gmsh.write(
-        #     "99_testing_prototyping/trab-refinement-tests/transfinite-volume-tests-040.geo_unrolled"
-        # )
         return line_tags_intersurf, surfs, volume_tags
 
 
 def create_initial_points(coords):
+    """
+    Add point in the Gmsh model.
+
+    This function adds a point to the Gmsh model based on the provided coordinates.
+
+    Args:
+        coords (Tuple[float, float, float]): The coordinates of the point.
+
+    Returns:
+        int: The tag of the created point.
+    """
+
     return gmsh.model.occ.addPoint(*coords, tag=-1)
-
-
-if "__main__" == __name__:
-    logger = logging.getLogger(LOGGING_NAME)
-    gmsh.initialize()
-    a = 20
-    c1 = 0.05
-    c2 = 0.05
-    # ? make sure of the point order (has to be clockwise)
-
-    outer_point_tags = []
-    outer_point_coords = []
-    for i in range(0, 10, 9):
-        d1 = 1 - i * c1
-        d2 = 1 - i * c2
-        point_coords_01 = [d1 * a, d1 * a, i]
-        point_coords_02 = [d2 * a, -d2 * a, i]
-        point_coords_03 = [-d1 * a, -d1 * a, i]
-        point_coords_04 = [-d2 * a, d2 * a, i]
-
-        initial_point_coords = [
-            point_coords_01,
-            point_coords_02,
-            point_coords_03,
-            point_coords_04,
-        ]
-
-        initial_point_tag = []
-        for coord in initial_point_coords:
-            pt_tag = create_initial_points(coord)
-            initial_point_tag.append(pt_tag)
-        outer_point_tags.append(initial_point_tag)
-        outer_point_coords.append(initial_point_coords)
-        ###############################
-
-    trab_refinement = QuadRefinement(
-        nb_layers=1,
-        DIM=2,
-        SQUARE_SIZE_0_MM=10,
-        MAX_SUBDIVISIONS=3,
-        ELMS_THICKNESS=2,
-    )
-
-    (
-        quadref_line_tags_intersurf,
-        quadref_surfs,
-        quadref_vols,
-    ) = trab_refinement.exec_quad_refinement(outer_point_tags)
-
-    # * 10. Create 3D mesh
-    trab_refinement.factory.synchronize()
-    gmsh.option.setNumber("Mesh.RecombineAll", 1)
-    gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 1)
-    gmsh.option.setNumber("Mesh.Recombine3DLevel", 2)
-    gmsh.option.setNumber("Mesh.ElementOrder", 1)
-    gmsh.model.mesh.generate(3)
-    gmsh.fltk.run()
-    gmsh.finalize()

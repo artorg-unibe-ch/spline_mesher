@@ -78,7 +78,7 @@ class TestOCCVolume(unittest.TestCase):
     def test_binary_threshold(self):
         np_array = np.random.randint(0, 256, (10, 10, 10))
         sitk_image = sitk.GetImageFromArray(np_array)
-        result = self.volume.binary_threshold(sitk_image)
+        result = self.volume.pad_and_plot(sitk_image)
         result = (sitk.GetArrayFromImage(result[0]), sitk.GetArrayFromImage(result[1]))
         self.assertIsInstance(result, Tuple)
         self.assertIsInstance(result[0], np.ndarray)

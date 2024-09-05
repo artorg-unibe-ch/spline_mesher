@@ -60,6 +60,33 @@ class HexMesh:
         Dict[uint64, ndarray],
         ndarray,
     ]:
+        """
+        Perform the meshing process for cortical and trabecular volumes.
+
+        This function is the entry point for the meshing process, which includes
+        reading image data, generating splines, performing sanity checks, and
+        creating the mesh using Gmsh. It also handles the configuration of various
+        meshing parameters and settings.
+
+        Returns:
+            Tuple: A tuple containing the following elements:
+                - nodes (Dict[uint64, ndarray]): Dictionary of node tags.
+                - elms (Dict[uint64, ndarray]): Dictionary of element tags.
+                - nb_nodes (int): Number of nodes in the model.
+                - centroids_cort_dict (Dict[int, ndarray]): Dictionary of cortical element centroids.
+                - centroids_trab_dict (Dict[int, ndarray]): Dictionary of trabecular element centroids.
+                - elm_vol_cort (ndarray): Array of cortical element volumes.
+                - elm_vol_trab (ndarray): Array of trabecular element volumes.
+                - radius_roi_cort (float64): Radius of the largest cortical ROI in mm.
+                - radius_roi_trab (float64): Radius of the largest trabecular ROI in mm.
+                - bnds_bot (Dict[uint64, ndarray]): Dictionary of bottom boundary nodes.
+                - bnds_top (Dict[uint64, ndarray]): Dictionary of top boundary nodes.
+                - reference_point_coord (ndarray): Coordinates of the reference point in mm.
+
+        Raises:
+            AssertionError: If the number of volumes and centroids does not match.
+            RuntimeError: If negative element volumes are detected, which implies that the simulation would fail.
+        """
         logger = logging.getLogger(LOGGING_NAME)
         logger.info("Starting meshing script...")
         start = time.time()
@@ -119,18 +146,19 @@ class HexMesh:
         PHASES = int(self.settings_dict["phases"])
 
         # spline_mesher settings
-        N_LONGITUDINAL = int(self.settings_dict["n_elms_longitudinal"])
+        N_LONGITUDINAL = int(
+            self.settings_dict["n_elms_longitudinal"] // SLICING_COEFFICIENT
+        )
         N_TRANSVERSE_CORT = int(self.settings_dict["n_elms_transverse_cort"])
         N_TRANSVERSE_TRAB = int(self.settings_dict["n_elms_transverse_trab"])
-        N_RADIAL = int(self.settings_dict["n_elms_radial"])
+        N_RADIAL = int(self.settings_dict["n_elms_radial"] // 4)
         ELM_ORDER = int(self.settings_dict["mesh_order"])
         QUAD_REFINEMENT = bool(self.settings_dict["trab_refinement"])
         MESH_ANALYSIS = bool(self.settings_dict["mesh_analysis"])
         ELLIPSOID_FITTING = bool(self.settings_dict["ellipsoid_fitting"])
 
-        DEBUG_ORIENTATION = (
-            0  # 0: no debug, 1: debug # ! obscured from settings by design
-        )
+        # ! obscured from settings by design
+        DEBUG_ORIENTATION = 0  # 0: no debug, 1: debug
 
         cortical_v = OCC_volume(
             sitk_image,
@@ -164,15 +192,8 @@ class HexMesh:
             cortical_v.plot_mhd_slice(img)
         else:
             logger.info(f"MHD slice\t\t\tshow_plots:\t{cortical_v.show_plots}")
-        image_pad = cortical_v.binary_threshold(img)
+        image_pad = cortical_v.pad_and_plot(img)
         cortical_ext, cortical_int = cortical_v.volume_splines_optimized(image_pad)
-
-        # cortical_ext = np.load(
-        #     "/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/cortical_ext_interp_v2.npy"
-        # )
-        # cortical_int = np.load(
-        #     "/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/cortical_int_interp_v2.npy"
-        # )
 
         # Cortical surface sanity check
         cortex = csc.CorticalSanityCheck(
@@ -306,7 +327,6 @@ class HexMesh:
             intersurface_surface_tags,
         )
 
-        # TODO: check if could be implemented when created (relationship with above functions)
         intersurface_line_tags = np.array(intersurface_line_tags, dtype=int).tolist()
 
         # Trabecular meshing
@@ -430,12 +450,11 @@ class HexMesh:
             3, trab_vol_tags, name="Trabecular_Compartment"
         )
 
-        # if (
-        #     trab_refinement is not None and quadref_vols is not None
-        # ):  # same as saying if QUAD_REFINEMENT
-        #     quadref_physical_group = trab_refinement.model.addPhysicalGroup(
-        #         3, quadref_vols[0]
-        #     )
+        if trab_refinement is not None and quadref_vols is not None:
+            # same as saying if QUAD_REFINEMENT is True
+            quadref_physical_group = trab_refinement.model.addPhysicalGroup(
+                3, quadref_vols[0]
+            )
         print(
             f"Cortical physical group: {cort_physical_group}\nTrabecular physical group: {trab_physical_group}"
         )
@@ -467,7 +486,7 @@ class HexMesh:
 
         if MESH_ANALYSIS:
             JAC_FULL = 999.9  # 999.9 if you want to see all the elements
-            JAC_NEG = -0.01
+            JAC_NEG = -0.01  # -0.01 if you want to see only negative Jacobians
             mesher.analyse_mesh_quality(hiding_thresh=JAC_FULL)
 
         nodes = mesher.gmsh_get_nodes()
@@ -544,53 +563,6 @@ class HexMesh:
         elapsed = round(end - start, ndigits=1)
         logger.info(f"Elapsed time:  {elapsed} (s)")
         logger.info("Meshing script finished.")
-
-        # with open(f"{mesh_file_path}_nodes.pickle", "wb") as handle:
-        #     nodes_pkl = pickle.dump(nodes, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # with open(f"{mesh_file_path}_elms.pickle", "wb") as handle:
-        #     elms_pkl = pickle.dump(elms, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # with open(f"{mesh_file_path}_centroids_trab.pickle", "wb") as handle:
-        #     centroids_pkl = pickle.dump(
-        #         centroids_trab, handle, protocol=pickle.HIGHEST_PROTOCOL
-        #     )
-
-        # with open(f"{mesh_file_path}_centroids_cort.pickle", "wb") as handle:
-        #     centroids_pkl = pickle.dump(
-        #         centroids_cort, handle, protocol=pickle.HIGHEST_PROTOCOL
-        #     )
-
-        # with open(f"{mesh_file_path}_bnds_bot.pickle", "wb") as handle:
-        #     bnds_bot_pkl = pickle.dump(
-        #         bnds_bot, handle, protocol=pickle.HIGHEST_PROTOCOL
-        #     )
-
-        # with open(f"{mesh_file_path}_bnds_top.pickle", "wb") as handle:
-        #     bnds_top_pkl = pickle.dump(
-        #         bnds_top, handle, protocol=pickle.HIGHEST_PROTOCOL
-        #     )
-
-        # botpath = f"{mesh_file_path}_spline_botnodes.pickle"
-        # with open(botpath, "wb") as f:
-        #     pickle.dump(bnds_bot, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # toppath = f"{mesh_file_path}_spline_topnodes.pickle"
-        # with open(toppath, "wb") as f:
-        #     pickle.dump(bnds_top, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # cort_dict = f"{mesh_file_path}_spline_centroids_cort_dict.pickle"
-        # with open(cort_dict, "wb") as f:
-        #     pickle.dump(centroids_cort_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # trab_dict = f"{mesh_file_path}_spline_centroids_trab_dict.pickle"
-        # with open(trab_dict, "wb") as f:
-        #     pickle.dump(centroids_trab_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # cort_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_cort.npy"
-        # np.save(cort_elm_vol_path, elm_vol_cort)
-        # trab_elm_vol_path = f"{mesh_file_path}_spline_elm_vol_trab.npy"
-        # np.save(trab_elm_vol_path, elm_vol_trab)
 
         return (
             nodes,
