@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spline_volume module &mdash; PyHexSpline 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="spline_mesher module" href="spline_mesher.html" />
+    <link rel="prev" title="gmsh_mesh_builder module" href="gmsh_mesh_builder.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyHexSpline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="hr_pqct_meshing.html">HR-pQCT Structured Hexahedral Meshing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cortical_sanity.html">cortical_sanity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gmsh_mesh_builder.html">gmsh_mesh_builder module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">spline_volume module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#spline_volume.OCC_volume"><code class="docutils literal notranslate"><span class="pre">OCC_volume</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.calculate_outer_offset"><code class="docutils literal notranslate"><span class="pre">OCC_volume.calculate_outer_offset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.check_inner_offset"><code class="docutils literal notranslate"><span class="pre">OCC_volume.check_inner_offset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.check_orient"><code class="docutils literal notranslate"><span class="pre">OCC_volume.check_orient()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.classify_and_store_contours"><code class="docutils literal notranslate"><span class="pre">OCC_volume.classify_and_store_contours()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.draw_contours"><code class="docutils literal notranslate"><span class="pre">OCC_volume.draw_contours()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.err"><code class="docutils literal notranslate"><span class="pre">OCC_volume.err()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.evaluate_bspline"><code class="docutils literal notranslate"><span class="pre">OCC_volume.evaluate_bspline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.exec_thresholding"><code class="docutils literal notranslate"><span class="pre">OCC_volume.exec_thresholding()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.get_binary_contour"><code class="docutils literal notranslate"><span class="pre">OCC_volume.get_binary_contour()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.get_draw_contour"><code class="docutils literal notranslate"><span class="pre">OCC_volume.get_draw_contour()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.get_line_sets"><code class="docutils literal notranslate"><span class="pre">OCC_volume.get_line_sets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.guess"><code class="docutils literal notranslate"><span class="pre">OCC_volume.guess()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.input_sanity_check"><code class="docutils literal notranslate"><span class="pre">OCC_volume.input_sanity_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.interpolate_vertical_lines_3d"><code class="docutils literal notranslate"><span class="pre">OCC_volume.interpolate_vertical_lines_3d()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.output_sanity_check"><code class="docutils literal notranslate"><span class="pre">OCC_volume.output_sanity_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.pad_and_plot"><code class="docutils literal notranslate"><span class="pre">OCC_volume.pad_and_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.pad_image"><code class="docutils literal notranslate"><span class="pre">OCC_volume.pad_image()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.plot_mhd_slice"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plot_mhd_slice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.plot_slice"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plot_slice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.plot_slices_with_slider"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plot_slices_with_slider()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.plotly_add_traces"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plotly_add_traces()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.plotly_makefig"><code class="docutils literal notranslate"><span class="pre">OCC_volume.plotly_makefig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.process_slice"><code class="docutils literal notranslate"><span class="pre">OCC_volume.process_slice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.sort_mahalanobis"><code class="docutils literal notranslate"><span class="pre">OCC_volume.sort_mahalanobis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.sort_surface"><code class="docutils literal notranslate"><span class="pre">OCC_volume.sort_surface()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.sort_xy"><code class="docutils literal notranslate"><span class="pre">OCC_volume.sort_xy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.spline_neumann"><code class="docutils literal notranslate"><span class="pre">OCC_volume.spline_neumann()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.volume_splines"><code class="docutils literal notranslate"><span class="pre">OCC_volume.volume_splines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#spline_volume.OCC_volume.volume_splines_optimized"><code class="docutils literal notranslate"><span class="pre">OCC_volume.volume_splines_optimized()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spline_mesher.html">spline_mesher module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quad_refinement.html">quad_refinement module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyHexSpline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="hr_pqct_meshing.html">HR-pQCT Structured Hexahedral Meshing</a></li>
+      <li class="breadcrumb-item active">spline_volume module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/spline_volume.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-spline_volume">
+<span id="spline-volume-module"></span><h1>spline_volume module<a class="headerlink" href="#module-spline_volume" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spline_volume.</span></span><span class="sig-name descname"><span class="pre">OCC_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sitk_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ASPECT</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SLICE</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UNDERSAMPLING</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SLICING_COEFFICIENT</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">INSIDE_VAL</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OUTSIDE_VAL</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LOWER_THRESH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UPPER_THRESH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">INTERP_POINTS</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DP_SIMPLIFICATION_OUTER</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DP_SIMPLIFICATION_INNER</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_orientation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_plots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness_tol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phases</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.calculate_outer_offset">
+<span class="sig-name descname"><span class="pre">calculate_outer_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.calculate_outer_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.calculate_outer_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the outer offset of a given contour.</p>
+<p>This function calculates the outer offset of the given contour by buffering
+the contour with a negative offset. It handles cases where multiple geometries
+are created during buffering and retains the largest one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contour</strong> (<em>ndarray</em>) – The input contour.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The offset contour.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.check_inner_offset">
+<span class="sig-name descname"><span class="pre">check_inner_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outer_polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inn_contour</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.check_inner_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.check_inner_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Check and adjust the inner contour based on the outer polygon.</p>
+<p>This function checks if the points of the inner contour are within the outer
+polygon. If not, it adjusts the points to the closest points on the outer polygon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>outer_polygon</strong> (<em>ndarray</em>) – The outer polygon contour.</p></li>
+<li><p><strong>inn_contour</strong> (<em>ndarray</em>) – The inner contour points.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The adjusted inner contour points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.check_orient">
+<span class="sig-name descname"><span class="pre">check_orient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.check_orient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.check_orient" title="Link to this definition">¶</a></dt>
+<dd><p>Author: Simone Poncioni, MSB
+Date: 18.08.2022
+Functionality: Orient all array in the same direction (cw or ccw)
+(Sometimes planes would reorient in opposite direction, making them unsuitable for interplane connectivity)</p>
+<p>Args:
+x = 1D-arr (x coords of points)
+y = 1D-arr (y coords of points)
+directions: 1 = cw, 2 = ccw</p>
+<p>Returns:
+x_o = reoriented x 1D-arr
+y_o = reoriented y 1D-arr</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.classify_and_store_contours">
+<span class="sig-name descname"><span class="pre">classify_and_store_contours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.classify_and_store_contours"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.classify_and_store_contours" title="Link to this definition">¶</a></dt>
+<dd><p>Classify and store contours from a given slice of the mask.</p>
+<p>This function finds contours in the specified slice of the mask and classifies
+the first contour as the outer contour and the second contour (if present) as
+the inner contour.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask</strong> (<em>ndarray</em>) – The 3D mask array from which contours are to be extracted.</p></li>
+<li><p><strong>slice_idx</strong> (<em>int</em>) – The index of the slice to be processed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The outer and inner contours.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[ndarray, ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.draw_contours">
+<span class="sig-name descname"><span class="pre">draw_contours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'outer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approximation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.draw_contours"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.draw_contours" title="Link to this definition">¶</a></dt>
+<dd><p>Find the contours of an image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>numpy.ndarray</em>) – The input image as a 2D numpy array.</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – The location of the contour. Can be “outer” or “inner”. Defaults to “outer”.</p></li>
+<li><p><strong>approximation</strong> (<em>bool</em>) – If True, contour is approximated using the Ramer-Douglas-Peucker (RDP) algorithm. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The contour image as a 2D numpy array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the location of the contour is not valid.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Credits to:</dt><dd><p><a class="reference external" href="https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour">https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour</a></p>
+</dd>
+<dt>Docs:</dt><dd><p><a class="reference external" href="https://docs.opencv.org/2.4/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html">https://docs.opencv.org/2.4/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html</a>
+<a class="reference external" href="https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/">https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/</a>
+<a class="reference external" href="https://doi.org/10.1016/0167-8655(82)90016-2">https://doi.org/10.1016/0167-8655(82)90016-2</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.err">
+<span class="sig-name descname"><span class="pre">err</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.err"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.err" title="Link to this definition">¶</a></dt>
+<dd><p>The error function to minimize</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.evaluate_bspline">
+<span class="sig-name descname"><span class="pre">evaluate_bspline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.evaluate_bspline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.evaluate_bspline" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate a B-spline for the given contour.</p>
+<p>This function fits a B-spline to the given contour points and evaluates the
+spline to generate new interpolated points. The spline is closed by appending
+the first point to the end of the new points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contour</strong> (<em>ndarray</em>) – The contour points to be fitted with a B-spline.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The x and y coordinates of the interpolated B-spline points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[ndarray, ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.exec_thresholding">
+<span class="sig-name descname"><span class="pre">exec_thresholding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THRESHOLD_PARAM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.exec_thresholding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.exec_thresholding" title="Link to this definition">¶</a></dt>
+<dd><p>Apply binary thresholding to the given image.</p>
+<p>This function applies binary thresholding to the input image based on the
+specified threshold parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The input image to be thresholded.</p></li>
+<li><p><strong>THRESHOLD_PARAM</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – List of threshold parameters [INSIDE_VAL, OUTSIDE_VAL, LOWER_THRESH, UPPER_THRESH].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The thresholded image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.get_binary_contour">
+<span class="sig-name descname"><span class="pre">get_binary_contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.get_binary_contour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.get_binary_contour" title="Link to this definition">¶</a></dt>
+<dd><p>Generate binary contours from the given image.
+<a class="reference external" href="https://itk.org/pipermail/community/2017-August/013464.html">https://itk.org/pipermail/community/2017-August/013464.html</a></p>
+<p>This function generates binary contours for each slice of the input image
+and joins them into a single 3D image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The input image.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The image with binary contours.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.get_draw_contour">
+<span class="sig-name descname"><span class="pre">get_draw_contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'outer'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.get_draw_contour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.get_draw_contour" title="Link to this definition">¶</a></dt>
+<dd><p>Extract and draw contours from the given image.</p>
+<p>This function extracts and draws contours from the input image for each slice.
+The contours are then flipped and returned as a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The input image.</p></li>
+<li><p><strong>loc</strong> (<em>str</em><em>, </em><em>optional</em>) – The location of the contour to be drawn. Default is “outer”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The extracted and drawn contours.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.get_line_sets">
+<span class="sig-name descname"><span class="pre">get_line_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.get_line_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.get_line_sets" title="Link to this definition">¶</a></dt>
+<dd><p>Generate vertical line sets from contour slices.</p>
+<p>This function generates vertical line sets from the given contour slices.
+It aligns the slices based on the first point and collects corresponding points
+from each slice to form vertical lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contour</strong> (<em>List</em><em>[</em><em>ndarray</em><em>]</em>) – List of contour slices.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of vertical line sets.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[List[ndarray]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.guess">
+<span class="sig-name descname"><span class="pre">guess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.guess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.guess" title="Link to this definition">¶</a></dt>
+<dd><p>Do an ordinary spline fit to provide knots</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.input_sanity_check">
+<span class="sig-name descname"><span class="pre">input_sanity_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext_contour_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int_contour_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.input_sanity_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.input_sanity_check" title="Link to this definition">¶</a></dt>
+<dd><p>Sanity check for the input data before cortical sanity check</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ext_contour_s</strong> (<em>np.ndarray</em>) – array of external contour points</p></li>
+<li><p><strong>int_contour_s</strong> (<em>np.ndarray</em>) – array of internal contour points</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>array of external contour points
+with defined shape and structure (no duplicates, closed contour)</p>
+<p>int_contour_s (np.ndarray): array of internal contour points
+with defined shape and structure (no duplicates, closed contour)</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ext_contour_s (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.interpolate_vertical_lines_3d">
+<span class="sig-name descname"><span class="pre">interpolate_vertical_lines_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_sets</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.interpolate_vertical_lines_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.interpolate_vertical_lines_3d" title="Link to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://stackoverflow.com/questions/32046582/spline-with-constraints-at-border">https://stackoverflow.com/questions/32046582/spline-with-constraints-at-border</a>
+Interpolate vertical lines in 3D using cubic splines.</p>
+<p>This function performs cubic spline interpolation on the given vertical line sets
+with Neumann boundary conditions. It generates new Z values for interpolation and
+returns the interpolated points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>line_sets</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>ndarray</em><em>]</em><em>]</em>) – List of vertical line sets.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of interpolated points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.output_sanity_check">
+<span class="sig-name descname"><span class="pre">output_sanity_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_contour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contour_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.output_sanity_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.output_sanity_check" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a sanity check on the output contours.</p>
+<p>This function checks that the external and internal contours have the same
+structure and shape as before the sanity check. It ensures that the contours
+do not have duplicate points and have the correct shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>initial_contour</strong> (<em>ndarray</em>) – The initial contour points.</p></li>
+<li><p><strong>contour_s</strong> (<em>ndarray</em>) – The contour points after the sanity check.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The corrected contour points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.pad_and_plot">
+<span class="sig-name descname"><span class="pre">pad_and_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.pad_and_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.pad_and_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Pad the given image and optionally plot a slice of it.</p>
+<p>This function pads the input image with a specified padding size and
+optionally plots a specified slice of the padded image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The input image to be padded.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The padded image as a NumPy array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.pad_image">
+<span class="sig-name descname"><span class="pre">pad_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iso_pad_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.pad_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.pad_image" title="Link to this definition">¶</a></dt>
+<dd><p>Pads the input image with a constant value (background value) to increase its size.
+Padding is used to prevent having contours on the edges of the image,
+which would cause the spline fitting to fail.
+Padding is performed on the transverse plane only
+(image orientation is assumed to be z, y, x)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The input image to be padded.</p></li>
+<li><p><strong>iso_pad_size</strong> (<em>int</em>) – The size of the padding to be added to each dimension.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The padded image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.plot_mhd_slice">
+<span class="sig-name descname"><span class="pre">plot_mhd_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.plot_mhd_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.plot_mhd_slice" title="Link to this definition">¶</a></dt>
+<dd><p>Plot a slice of the SimpleITK.image.</p>
+<p>This helper function plots a specified slice of the SimpleITK.image file using Matplotlib.
+It also provides an interactive slider to navigate through different slices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>SimpleITK.Image</em>) – The image to be plotted.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.plot_slice">
+<span class="sig-name descname"><span class="pre">plot_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SLICE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ASPECT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.plot_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.plot_slice" title="Link to this definition">¶</a></dt>
+<dd><p>Plot a specific slice of the given image.</p>
+<p>This function plots a specified slice of the input image using Matplotlib.
+It also provides an interactive slider to navigate through different slices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The input image to be plotted.</p></li>
+<li><p><strong>SLICE</strong> (<em>int</em>) – The index of the slice to be plotted.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – The title of the plot.</p></li>
+<li><p><strong>ASPECT</strong> (<em>float</em>) – The aspect ratio for the plot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.plot_slices_with_slider">
+<span class="sig-name descname"><span class="pre">plot_slices_with_slider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imnp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.plot_slices_with_slider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.plot_slices_with_slider" title="Link to this definition">¶</a></dt>
+<dd><p>Function to plot slices with a slider to navigate through slices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>imnp</strong> (<em>numpy.ndarray</em>) – 3D numpy array representing the image.</p></li>
+<li><p><strong>total_slices</strong> (<em>int</em>) – Total number of slices.</p></li>
+<li><p><strong>results</strong> (<em>list</em>) – List of tuples containing outer and inner contour plots for each slice.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.plotly_add_traces">
+<span class="sig-name descname"><span class="pre">plotly_add_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_interp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.plotly_add_traces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.plotly_add_traces" title="Link to this definition">¶</a></dt>
+<dd><p>Add traces to a Plotly figure for visualization.</p>
+<p>This function adds traces to a Plotly figure for visualizing the original
+and interpolated spline contours.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fig</strong> (<em>plotly.graph_objs.Figure</em>) – The Plotly figure to add traces to.</p></li>
+<li><p><strong>original</strong> (<em>ndarray</em>) – The original contour points.</p></li>
+<li><p><strong>spline_interp</strong> (<em>ndarray</em>) – The interpolated spline contour points.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated Plotly figure with added traces.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>plotly.graph_objs.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.plotly_makefig">
+<span class="sig-name descname"><span class="pre">plotly_makefig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.plotly_makefig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.plotly_makefig" title="Link to this definition">¶</a></dt>
+<dd><p>Finalize and display the Plotly figure with sliders.</p>
+<p>This function finalizes the Plotly figure by adding sliders for navigating
+through slices and displays the figure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fig</strong> (<em>plotly.graph_objs.Figure</em>) – The Plotly figure to be finalized and displayed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The finalized Plotly figure.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>plotly.graph_objs.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.process_slice">
+<span class="sig-name descname"><span class="pre">process_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.process_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.process_slice" title="Link to this definition">¶</a></dt>
+<dd><p>Process a single slice to classify and store contours.</p>
+<p>This function processes a single slice of the input mask to classify and store
+the outer and inner contours. It applies Douglas-Peucker-Ramer simplification and
+B-spline interpolation to the contours.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask</strong> (<em>ndarray</em>) – The input mask for the slice.</p></li>
+<li><p><strong>slice_idx</strong> (<em>int</em>) – The index of the slice being processed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Arrays of outer and inner B-spline contours.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[ndarray, ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.sort_mahalanobis">
+<span class="sig-name descname"><span class="pre">sort_mahalanobis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.sort_mahalanobis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.sort_mahalanobis" title="Link to this definition">¶</a></dt>
+<dd><p>Sort points based on pairwise distances to form a continuous contour.</p>
+<p>This function sorts the given data points based on pairwise distances to
+form a continuous contour, ensuring no self-intersections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>ndarray</em>) – The data points to be sorted.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sorted x and y coordinates.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[ndarray, ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.sort_surface">
+<span class="sig-name descname"><span class="pre">sort_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.sort_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.sort_surface" title="Link to this definition">¶</a></dt>
+<dd><p>Sort surface points in a clockwise direction and with Mahalanobis distance to add robustness</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>slices</strong> (<em>int</em>) – slice number</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>xy array of sorted points
+self.x_mahanalobis (numpy.ndarray): x array of sorted points with mahalanobis distance
+self.y_mahanalobis (numpy.ndarray): y array of sorted points with mahalanobis distance
+self.xnew (numpy.ndarray): x array of sorted points interpolated with bspline and in the same direction
+self.ynew (numpy.ndarray): y array of sorted points interpolated with bspline and in the same direction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>self.xy_sorted_closed (numpy.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.sort_xy">
+<span class="sig-name descname"><span class="pre">sort_xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.sort_xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.sort_xy" title="Link to this definition">¶</a></dt>
+<dd><p>Sort x and y coordinates in a counterclockwise order.
+<a class="reference external" href="https://stackoverflow.com/questions/58377015/counterclockwise-sorting-of-x-y-data">https://stackoverflow.com/questions/58377015/counterclockwise-sorting-of-x-y-data</a></p>
+<p>This function sorts the given x and y coordinates in a counterclockwise order
+based on their angles from the centroid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>ndarray</em>) – The x-coordinates.</p></li>
+<li><p><strong>y</strong> (<em>ndarray</em>) – The y-coordinates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sorted x and y coordinates.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[ndarray, ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.spline_neumann">
+<span class="sig-name descname"><span class="pre">spline_neumann</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.spline_neumann"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.spline_neumann" title="Link to this definition">¶</a></dt>
+<dd><p>Perform cubic spline interpolation with Neumann boundary conditions.</p>
+<p>This function performs cubic spline interpolation on the given data points
+(x, y) with Neumann boundary conditions, ensuring zero slope at the first
+point. It uses the <cite>scipy.optimize.minimize</cite> function to optimize the spline
+coefficients under the specified constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>ndarray</em>) – The x-coordinates of the data points.</p></li>
+<li><p><strong>y</strong> (<em>ndarray</em>) – The y-coordinates of the data points.</p></li>
+<li><p><strong>k</strong> (<em>int</em><em>, </em><em>optional</em>) – The degree of the spline. Default is 3.</p></li>
+<li><p><strong>s</strong> (<em>float</em><em>, </em><em>optional</em>) – Smoothing factor. Default is 0.</p></li>
+<li><p><strong>w</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Weights for spline fitting. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resulting spline with Neumann boundary conditions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UnivariateSpline</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.volume_splines">
+<span class="sig-name descname"><span class="pre">volume_splines</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.volume_splines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.volume_splines" title="Link to this definition">¶</a></dt>
+<dd><p>Generate splines for cortical and trabecular regions.</p>
+<p>This function processes the input image to generate volume splines for the
+cortical and trabecular regions. It includes steps for padding the image,
+extracting contours, and optionally plotting the results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Arrays of cortical external and internal contours.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple[ndarray, ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spline_volume.OCC_volume.volume_splines_optimized">
+<span class="sig-name descname"><span class="pre">volume_splines_optimized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imsitk_pad</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/spline_volume.html#OCC_volume.volume_splines_optimized"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spline_volume.OCC_volume.volume_splines_optimized" title="Link to this definition">¶</a></dt>
+<dd><p>Generate optimized volume splines for cortical and trabecular regions.</p>
+<p>This function processes the input padded image to generate optimized splines
+for the cortical and trabecular regions. It includes steps for processing slices,
+interpolating vertical lines, and performing sanity checks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>imsitk_pad</strong> (<em>SimpleITK.Image</em>) – The padded input image.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Arrays of cortical external and internal contours.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[ndarray, ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gmsh_mesh_builder.html" class="btn btn-neutral float-left" title="gmsh_mesh_builder module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="spline_mesher.html" class="btn btn-neutral float-right" title="spline_mesher module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Simone Poncioni.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

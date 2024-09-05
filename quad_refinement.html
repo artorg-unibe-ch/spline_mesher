@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>quad_refinement module &mdash; PyHexSpline 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="spline_mesher module" href="spline_mesher.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyHexSpline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="hr_pqct_meshing.html">HR-pQCT Structured Hexahedral Meshing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cortical_sanity.html">cortical_sanity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gmsh_mesh_builder.html">gmsh_mesh_builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spline_volume.html">spline_volume module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spline_mesher.html">spline_mesher module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">quad_refinement module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quad_refinement.QuadRefinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.add_curve_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.add_curve_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.add_surface_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.add_surface_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.center_of_mass"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.center_of_mass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.check_closed_surface_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.check_closed_surface_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.close_outer_loop"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.close_outer_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.common"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.common()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_connecting_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_connecting_surfaces()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_intersurface_connection"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_intersurface_connection()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_line_dict"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_line_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_square_grid"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_square_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_subvertices"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_subvertices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.create_surf_dict"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.create_surf_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.exec_quad_refinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.exec_quad_refinement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.flatten"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.flatten()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_adjacent_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_adjacent_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_affine_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_affine_transformation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_common_lines"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_common_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_vertices_coords"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_vertices_coords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.get_vertices_minmax"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.get_vertices_minmax()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_custom_lines"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_custom_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_line"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_outer_connectivity"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_outer_connectivity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_plane_surface"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_plane_surface()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_surface"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surface()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surfaces()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_surfs"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_surfs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_add_volume"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_add_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_get_unique_surfaces"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_get_unique_surfaces()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_make_transfinite"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_make_transfinite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.gmsh_skin_points"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.gmsh_skin_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.plot_vertices"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.plot_vertices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.quad_refinement"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.quad_refinement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.set_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.set_transformation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quad_refinement.QuadRefinement.vertices_grid_cleanup"><code class="docutils literal notranslate"><span class="pre">QuadRefinement.vertices_grid_cleanup()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#quad_refinement.create_initial_points"><code class="docutils literal notranslate"><span class="pre">create_initial_points()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyHexSpline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="hr_pqct_meshing.html">HR-pQCT Structured Hexahedral Meshing</a></li>
+      <li class="breadcrumb-item active">quad_refinement module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/quad_refinement.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-quad_refinement">
+<span id="quad-refinement-module"></span><h1>quad_refinement module<a class="headerlink" href="#module-quad_refinement" title="Link to this heading">¶</a></h1>
+<p>Quad refinement scheme for the inner trabecular region
+Author: Simone Poncioni, MSB
+Date: 04.2023</p>
+<p><a class="reference external" href="https://stackoverflow.com/questions/31527755/extract-blocks-or-patches-from-numpy-array">https://stackoverflow.com/questions/31527755/extract-blocks-or-patches-from-numpy-array</a>
+<a class="reference external" href="https://blender.stackexchange.com/questions/230534/fastest-way-to-skin-a-grid">https://blender.stackexchange.com/questions/230534/fastest-way-to-skin-a-grid</a>
+<a class="reference external" href="https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710">https://gitlab.onelab.info/gmsh/gmsh/-/issues/1710</a>
+<a class="reference external" href="https://gitlab.onelab.info/gmsh/gmsh/-/issues/2439">https://gitlab.onelab.info/gmsh/gmsh/-/issues/2439</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">quad_refinement.</span></span><span class="sig-name descname"><span class="pre">QuadRefinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DIM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SQUARE_SIZE_0_MM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MAX_SUBDIVISIONS</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELMS_THICKNESS</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.add_curve_loop">
+<span class="sig-name descname"><span class="pre">add_curve_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.add_curve_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.add_curve_loop" title="Link to this definition">¶</a></dt>
+<dd><p>Add a curve loop to the Gmsh model.</p>
+<p>This function adds a curve loop to the Gmsh model based on the provided curve loop tags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>curve_loop_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of curve loop tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The tag of the created curve loop.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.add_surface_loop">
+<span class="sig-name descname"><span class="pre">add_surface_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface_loop_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.add_surface_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.add_surface_loop" title="Link to this definition">¶</a></dt>
+<dd><p>Add a surface loop to the Gmsh model.</p>
+<p>This function adds a surface loop to the Gmsh model based on the provided surface loop tags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>surface_loop_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of surface loop tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The tag of the created surface loop.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.center_of_mass">
+<span class="sig-name descname"><span class="pre">center_of_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.center_of_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.center_of_mass" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the center of mass of the given vertices.</p>
+<p>This function computes the center of mass for the provided vertices coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vertices_coords</strong> (<em>ndarray</em>) – Array of vertices coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The center of mass coordinates.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.check_closed_surface_loop">
+<span class="sig-name descname"><span class="pre">check_closed_surface_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines_lower_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_upper_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_intersurf_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.check_closed_surface_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.check_closed_surface_loop" title="Link to this definition">¶</a></dt>
+<dd><p>Check for closed surface loops.</p>
+<p>This function checks for closed surface loops by matching lines from the lower surface, upper surface,
+and intersurface dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lines_lower_dict</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Dictionary of lower surface lines and their points.</p></li>
+<li><p><strong>lines_upper_dict</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Dictionary of upper surface lines and their points.</p></li>
+<li><p><strong>lines_intersurf_dict</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Dictionary of intersurface lines and their points.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of closed surface loops.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[int, List[int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.close_outer_loop">
+<span class="sig-name descname"><span class="pre">close_outer_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outer_square_lines</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.close_outer_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.close_outer_loop" title="Link to this definition">¶</a></dt>
+<dd><p>Close the outer loop with surfaces.</p>
+<p>This function closes the outer loop by creating surfaces from the provided line tags and outer square lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of line tags.</p></li>
+<li><p><strong>outer_square_lines</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of outer square line tags.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of surface tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.common">
+<span class="sig-name descname"><span class="pre">common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.common"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.common" title="Link to this definition">¶</a></dt>
+<dd><p>Find common elements in an array.</p>
+<p>This function finds the common elements in the provided array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>ndarray</em>) – The input array.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of common elements.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_connecting_surfaces">
+<span class="sig-name descname"><span class="pre">create_connecting_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loops_line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_connecting_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_connecting_surfaces" title="Link to this definition">¶</a></dt>
+<dd><p>Create connecting surfaces between curve loops.</p>
+<p>This function creates connecting surfaces between the provided curve loops.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>curve_loops_line_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of curve loop line tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of surface loops.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_intersurface_connection">
+<span class="sig-name descname"><span class="pre">create_intersurface_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_intersurface_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_intersurface_connection" title="Link to this definition">¶</a></dt>
+<dd><p>Create intersurface connections.</p>
+<p>This function creates intersurface connections based on the provided point tags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>point_tags</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – List of point tags for each surface.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of line tags for intersurface connections.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[List[int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_line_dict">
+<span class="sig-name descname"><span class="pre">create_line_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines_lower_surf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_upper_surf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_intersurf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_line_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_line_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Create dictionaries of lines and their corresponding points.</p>
+<p>This function creates dictionaries for the lower surface lines, upper surface lines, and intersurface lines,
+mapping each line to its corresponding points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lines_lower_surf</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – List of line tags for the lower surface.</p></li>
+<li><p><strong>lines_upper_surf</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – List of line tags for the upper surface.</p></li>
+<li><p><strong>lines_intersurf</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of line tags for the intersurface.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Dictionary of lower surface lines and their points.</p></li>
+<li><p>Dictionary of upper surface lines and their points.</p></li>
+<li><p>Dictionary of intersurface lines and their points.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Dict[int, List[int]], Dict[int, List[int]], Dict[int, List[int]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_square_grid">
+<span class="sig-name descname"><span class="pre">create_square_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">big_square_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squares_per_side</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_square_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_square_grid" title="Link to this definition">¶</a></dt>
+<dd><p>Create a grid of squares.</p>
+<p>This function generates a grid of squares based on the specified size and number of squares per side.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>big_square_size</strong> (<em>float</em>) – The size of the big square.</p></li>
+<li><p><strong>squares_per_side</strong> (<em>int</em>) – The number of squares per side.</p></li>
+<li><p><strong>origin</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – The origin coordinates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of vertices coordinates for the grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_subvertices">
+<span class="sig-name descname"><span class="pre">create_subvertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center_of_mass</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hierarchy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">square_size_0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_subvertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_subvertices" title="Link to this definition">¶</a></dt>
+<dd><p>Create subvertices for the grid.</p>
+<p>This function generates subvertices for the grid based on the specified hierarchy and square size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>center_of_mass</strong> (<em>ndarray</em>) – The center of mass coordinates.</p></li>
+<li><p><strong>hierarchy</strong> (<em>int</em>) – The hierarchy level.</p></li>
+<li><p><strong>square_size_0</strong> (<em>float</em>) – The initial square size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of subvertices coordinates.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.create_surf_dict">
+<span class="sig-name descname"><span class="pre">create_surf_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surf_lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_inter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.create_surf_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.create_surf_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Create dictionaries of surfaces and their corresponding lines.</p>
+<p>This function creates dictionaries for the lower surfaces, upper surfaces, and intersurfaces,
+mapping each surface to its corresponding lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>surf_lower</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of surface tags for the lower surface.</p></li>
+<li><p><strong>surf_upper</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of surface tags for the upper surface.</p></li>
+<li><p><strong>surf_inter</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of surface tags for the intersurface.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Dictionary of lower surfaces and their lines.</p></li>
+<li><p>Dictionary of upper surfaces and their lines.</p></li>
+<li><p>Dictionary of intersurfaces and their lines.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Dict[int, List[int]], Dict[int, List[int]], Dict[int, List[int]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.exec_quad_refinement">
+<span class="sig-name descname"><span class="pre">exec_quad_refinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outer_point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.exec_quad_refinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.exec_quad_refinement" title="Link to this definition">¶</a></dt>
+<dd><p>Execute quadrilateral refinement on the given outer point tags.</p>
+<p>This function performs quadrilateral refinement on the provided outer point tags, creating points, lines,
+surfaces, and volumes in the Gmsh model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>outer_point_tags</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – List of lists of point tags, each representing a corner of the structure.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>List of line tags for intersurface connections.</p></li>
+<li><p>List of surface tags.</p></li>
+<li><p>List of volume tags.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[List[List[int]], List[List[int]], List[List[int]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.flatten">
+<span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.flatten" title="Link to this definition">¶</a></dt>
+<dd><p>Flatten a nested list.</p>
+<p>This function flattens a nested list into a single list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>Any</em><em>]</em><em>]</em>) – The nested list.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The flattened list.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_adjacent_points">
+<span class="sig-name descname"><span class="pre">get_adjacent_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surf_tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_adjacent_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_adjacent_points" title="Link to this definition">¶</a></dt>
+<dd><p>Get adjacent points for a given surface tag.</p>
+<p>This function retrieves the adjacent points for the specified surface tag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>surf_tag</strong> (<em>str</em>) – The surface tag.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of adjacent point tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_affine_transformation_matrix">
+<span class="sig-name descname"><span class="pre">get_affine_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verts_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_affine_transformation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_affine_transformation_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Get the affine transformation matrix.</p>
+<p>This function calculates the affine transformation matrix to map the provided vertices to the point coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>verts_1</strong> (<em>ndarray</em>) – Array of vertices coordinates.</p></li>
+<li><p><strong>point_coords</strong> (<em>ndarray</em>) – Array of point coordinates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The affine transformation matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_common_lines">
+<span class="sig-name descname"><span class="pre">get_common_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_common_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_common_lines" title="Link to this definition">¶</a></dt>
+<dd><p>Get common lines from an array of points.</p>
+<p>This function retrieves the common lines from the provided array of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of point tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of common line tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_vertices_coords">
+<span class="sig-name descname"><span class="pre">get_vertices_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_vertices_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_vertices_coords" title="Link to this definition">¶</a></dt>
+<dd><p>Get the coordinates of vertices.</p>
+<p>This function retrieves the coordinates of the specified vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vertices_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of vertex tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of vertex coordinates.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.get_vertices_minmax">
+<span class="sig-name descname"><span class="pre">get_vertices_minmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.get_vertices_minmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.get_vertices_minmax" title="Link to this definition">¶</a></dt>
+<dd><p>Get the minimum and maximum vertices.</p>
+<p>This function retrieves the minimum and maximum vertices from the provided point coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>point_coords</strong> (<em>ndarray</em>) – Array of point coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of the four outermost vertices.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_custom_lines">
+<span class="sig-name descname"><span class="pre">gmsh_add_custom_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_custom_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_custom_lines" title="Link to this definition">¶</a></dt>
+<dd><p>Add lines to the Gmsh model of the internal refined structure.</p>
+<p>This function adds custom lines to the Gmsh model based on the provided point tags. It includes
+center squares, diagonal lines, border squares, center trapezoids, diagonal trapezoids, and outer squares.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>point_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of point tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing the line tags and outer square line tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[List[int], List[int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_line">
+<span class="sig-name descname"><span class="pre">gmsh_add_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_skins</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_line" title="Link to this definition">¶</a></dt>
+<dd><p>Add lines to the Gmsh model.</p>
+<p>This function adds lines to the Gmsh model based on the provided point skins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>point_skins</strong> (<em>List</em><em>[</em><em>ndarray</em><em>]</em>) – List of point skins.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of line tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Tuple[int, int, int, int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_outer_connectivity">
+<span class="sig-name descname"><span class="pre">gmsh_add_outer_connectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_point_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_outer_connectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_outer_connectivity" title="Link to this definition">¶</a></dt>
+<dd><p>Add outer connectivity to the Gmsh model.</p>
+<p>This function adds outer connectivity lines and surfaces to the Gmsh model based on the provided
+line tags and point tags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of line tags.</p></li>
+<li><p><strong>initial_point_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of initial point tags.</p></li>
+<li><p><strong>point_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of point tags.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Updated line tags.</p></li>
+<li><p>List of external surface tags.</p></li>
+<li><p>List of curve loop line tags.</p></li>
+<li><p>List of corner points for transfinite surfaces.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[List[int], List[int], List[int], List[Tuple[int, int, int, int]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_plane_surface">
+<span class="sig-name descname"><span class="pre">gmsh_add_plane_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_plane_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_plane_surface" title="Link to this definition">¶</a></dt>
+<dd><p>Add a plane surface to the Gmsh model.</p>
+<p>This function creates a plane surface from the provided line tags and adds it to the Gmsh model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>line_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of line tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The tag of the created plane surface.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_points">
+<span class="sig-name descname"><span class="pre">gmsh_add_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_points" title="Link to this definition">¶</a></dt>
+<dd><p>Add points to the Gmsh model.</p>
+<p>This function adds the provided vertices as points to the Gmsh model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vertices</strong> (<em>List</em><em>[</em><em>ndarray</em><em>]</em>) – List of vertices coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of point tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_surface">
+<span class="sig-name descname"><span class="pre">gmsh_add_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_surface" title="Link to this definition">¶</a></dt>
+<dd><p>Add a surface to the Gmsh model.</p>
+<p>This function adds a surface to the Gmsh model based on the provided curve loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>curve_loop</strong> (<em>int</em>) – The curve loop tag.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The tag of the created surface.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_surfaces">
+<span class="sig-name descname"><span class="pre">gmsh_add_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_surfaces" title="Link to this definition">¶</a></dt>
+<dd><p>Add surfaces to the Gmsh model.</p>
+<p>This function adds surfaces to the Gmsh model based on the provided line tags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>line_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of line tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of surface tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_surfs">
+<span class="sig-name descname"><span class="pre">gmsh_add_surfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_surfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_surfs" title="Link to this definition">¶</a></dt>
+<dd><p>Add surfaces to the Gmsh model.</p>
+<p>This function adds surfaces to the Gmsh model based on the provided line tags. It includes
+center surfaces, border squares, center trapezoids, and additional surfaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>l_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of line tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of surface tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_add_volume">
+<span class="sig-name descname"><span class="pre">gmsh_add_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_add_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_add_volume" title="Link to this definition">¶</a></dt>
+<dd><p>Add a volume to the Gmsh model.</p>
+<p>This function adds a volume to the Gmsh model based on the provided surface loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>surface_loop</strong> (<em>int</em>) – The surface loop tag.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The tag of the created volume.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_get_unique_surfaces">
+<span class="sig-name descname"><span class="pre">gmsh_get_unique_surfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_get_unique_surfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_get_unique_surfaces" title="Link to this definition">¶</a></dt>
+<dd><p>Get unique surfaces from curve loops.</p>
+<p>This function retrieves unique surfaces from the provided curve loops.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>curve_loop</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of curve loop tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of unique surface tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_make_transfinite">
+<span class="sig-name descname"><span class="pre">gmsh_make_transfinite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surf_tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trans</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_make_transfinite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_make_transfinite" title="Link to this definition">¶</a></dt>
+<dd><p>Set transfinite meshing for lines and surfaces.</p>
+<p>This function sets transfinite meshing for the provided lines and surfaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of line tags.</p></li>
+<li><p><strong>surf_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of surface tags.</p></li>
+<li><p><strong>n_trans</strong> (<em>int</em>) – Number of transfinite divisions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.gmsh_skin_points">
+<span class="sig-name descname"><span class="pre">gmsh_skin_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.gmsh_skin_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.gmsh_skin_points" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a grid of point skins.</p>
+<p>This function generates a grid of point skins from the provided point tags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>point_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of point tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of point skins.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.plot_vertices">
+<span class="sig-name descname"><span class="pre">plot_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.plot_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.plot_vertices" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the vertices.</p>
+<p>This function plots the provided vertices and annotates their indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vertices</strong> (<em>List</em><em>[</em><em>ndarray</em><em>]</em>) – List of vertices coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.quad_refinement">
+<span class="sig-name descname"><span class="pre">quad_refinement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_point_tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.quad_refinement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.quad_refinement" title="Link to this definition">¶</a></dt>
+<dd><p>Perform quadrilateral refinement on the given initial point tags.</p>
+<p>This function refines the quadrilateral mesh based on the initial point tags. It creates subvertices,
+sorts them, applies an affine transformation, and adds points, lines, and surfaces to the Gmsh model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>initial_point_tags</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of initial point tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing the point tags, line tags, and surface tags.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[List[int], List[int], List[int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.set_transformation_matrix">
+<span class="sig-name descname"><span class="pre">set_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.set_transformation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.set_transformation_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Apply the affine transformation matrix.</p>
+<p>This function applies the affine transformation matrix to the provided point coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>M</strong> (<em>ndarray</em>) – The affine transformation matrix.</p></li>
+<li><p><strong>point_coords</strong> (<em>ndarray</em>) – Array of point coordinates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of transformed coordinates.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quad_refinement.QuadRefinement.vertices_grid_cleanup">
+<span class="sig-name descname"><span class="pre">vertices_grid_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#QuadRefinement.vertices_grid_cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.QuadRefinement.vertices_grid_cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Clean up the vertices grid.</p>
+<p>This function removes duplicate vertices and sorts the remaining vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vertices</strong> (<em>List</em><em>[</em><em>ndarray</em><em>]</em>) – List of vertices coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of cleaned and sorted vertices.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quad_refinement.create_initial_points">
+<span class="sig-prename descclassname"><span class="pre">quad_refinement.</span></span><span class="sig-name descname"><span class="pre">create_initial_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quad_refinement.html#create_initial_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quad_refinement.create_initial_points" title="Link to this definition">¶</a></dt>
+<dd><p>Add point in the Gmsh model.</p>
+<p>This function adds a point to the Gmsh model based on the provided coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coords</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em>) – The coordinates of the point.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The tag of the created point.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="spline_mesher.html" class="btn btn-neutral float-left" title="spline_mesher module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Simone Poncioni.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
