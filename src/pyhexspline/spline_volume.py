@@ -6,6 +6,7 @@ import cv2
 import gmsh
 import imutils
 import matplotlib
+import imageio
 
 # matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
@@ -170,10 +171,11 @@ class OCC_volume:
 
     def plot_slice(self, image, SLICE, title, ASPECT):
         """
-        Plot a specific slice of the given image.
+        Plot a specific slice of the given image and save a GIF of all slices.
 
         This function plots a specified slice of the input image using Matplotlib.
         It also provides an interactive slider to navigate through different slices.
+        Additionally, it saves a GIF of all slices.
 
         Args:
             image (SimpleITK.Image): The input image to be plotted.
@@ -211,6 +213,33 @@ class OCC_volume:
             matplotlib.use("TkAgg")
         plt.show()
         plt.close()
+
+        # Save GIF of all slices
+        images = []
+        _slices = 0
+        for i in range(img_view.shape[0]):
+            if i % 5 == 0:
+                fig, ax = plt.subplots(figsize=(10, 10))
+                plt.imshow(
+                    img_view[i, :, :], cmap="gray", interpolation="None", aspect="equal"
+                )
+                plt.axis("off")
+                fig.canvas.draw()
+                image = np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8")
+                image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+                images.append(image)
+                plt.close(fig)
+                _slices += 1
+            else:
+                continue
+
+        print("Saving GIF for presentation...")
+        FPS = 25
+        print(f"total slices: {_slices}")
+        print(f"FPS: {FPS}")
+        print(f"Time: {_slices / FPS}")
+        imageio.mimsave("slices.gif", images, fps=FPS)
+
         return None
 
     def exec_thresholding(self, image: Image, THRESHOLD_PARAM: List[float]) -> Image:
@@ -1298,7 +1327,7 @@ class OCC_volume:
 
     def plot_slices_with_slider(self, imnp, total_slices, results):
         """
-        Function to plot slices with a slider to navigate through slices.
+        Function to plot slices with a slider to navigate through slices and save a GIF of all slices.
 
         Args:
             imnp (numpy.ndarray): 3D numpy array representing the image.
@@ -1341,6 +1370,27 @@ class OCC_volume:
             matplotlib.use("TkAgg")
         plt.show()
         plt.close()
+
+        # Save GIF of all slices
+        images = []
+        for i in range(len(total_slices)):
+            fig, ax = plt.subplots()
+            ax.imshow(imnp[:, :, total_slices[i]], cmap="gray")
+            outer_plot, inner_plot = results[i]
+            ax.plot(outer_plot[:, 1], outer_plot[:, 0], "r")
+            ax.plot(inner_plot[:, 1], inner_plot[:, 0], "b")
+            ax.axis("off")
+            fig.canvas.draw()
+            image = np.frombuffer(fig.canvas.tostring_rgb(), dtype="uint8")
+            image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+            images.append(image)
+            plt.close(fig)
+
+        tot_duration = 3.44  # seconds
+        FPS = len(total_slices) // tot_duration
+        print(FPS)
+        imageio.mimsave("slices_splines.gif", images, fps=FPS)
+
         return None
 
     def volume_splines_optimized(self, imsitk_pad) -> Tuple[ndarray, ndarray]:
