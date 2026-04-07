@@ -10,7 +10,7 @@ on:
 
 env:
   PACKAGE_NAME: "pyhexspline"
-  OWNER: "simoneponcioni"
+  OWNER: "artorg-unibe-ch"
 
 jobs:
   details:
