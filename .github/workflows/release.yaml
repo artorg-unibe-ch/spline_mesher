@@ -77,17 +77,30 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install build dependencies
-        run: pip install setuptools wheel build cython
-
       - name: Set project version
         run: sed -i "s/version=\".*\"/version=\"${{ needs.details.outputs.new_version }}\"/" setup.py
 
-      - name: Build source and wheel distribution
-        run: python -m build
+      - name: Build source distribution
+        run: |
+          pip install setuptools build cython
+          python -m build --sdist
+
+      - name: Build wheels with cibuildwheel
+        uses: pypa/cibuildwheel@v2.16.0
+        env:
+          CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
+          CIBW_ARCHS_LINUX: "x86_64"
+          CIBW_BEFORE_BUILD: "pip install cython setuptools"
+          CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p dist
+          cp wheelhouse/*.whl dist/
+          cp dist/*.tar.gz dist/ 2>/dev/null || true
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist/
