@@ -46,19 +46,19 @@ def main():
         "outside_val": int(1),  # threshold value for the outside of the mask
         "lower_thresh": float(0),  # lower threshold for the mask
         "upper_thresh": float(0.9),  # upper threshold for the mask
-        "s": 50,  # smoothing factor of the spline
+        "s": 100,  # smoothing factor of the spline
         "k": 3,  # degree of the spline
-        "interp_points": 1000,  # number of points to interpolate the spline
+        "interp_points": 100,  # number of points to interpolate the spline
         "dp_simplification_outer": 5,  # Ramer-Douglas-Peucker simplification factor for the periosteal contour
         "dp_simplification_inner": 5,  # Ramer-Douglas-Peucker simplification factor for the endosteal contour
         "thickness_tol": 1,  # minimum cortical thickness tolerance: 3 * XCTII voxel size
         "phases": 2,  # 1: only external contour, 2: external and internal contour
         "center_square_length_factor": 0.4,  # size ratio of the refinement square: 0 < l_f < 1
         "mesh_order": 1,  # set element order (1: linear, 2: quadratic, >2: higher order, not tested)
-        "n_elms_longitudinal": 60,  # number of elements in the longitudinal direction
-        "n_elms_transverse_trab": 15,  # number of elements in the transverse direction for the trabecular compartment
+        "n_elms_longitudinal": 20,  # number of elements in the longitudinal direction
+        "n_elms_transverse_trab": 10,  # number of elements in the transverse direction for the trabecular compartment
         "n_elms_transverse_cort": 3,  # number of elements in the transverse direction for the cortical compartment
-        "n_elms_radial": 80,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
+        "n_elms_radial": 40,  # number of elements in the radial direction # ! Should be 10 if trab_refinement is True
         "ellipsoid_fitting": True,  # True: perform ellipsoid fitting in the inner trabecular compartment
         "show_plots": False,  # show plots during construction
         "show_gmsh": True,  # show gmsh GUI
@@ -75,7 +75,7 @@ def main():
     # print(sitk_image_s.GetSize())
 
     sitk_image_s = sitk.ReadImage(
-        "/home/simoneponcioni/Documents/01_PHD/03_Methods/Meshing/Meshing/01_AIM/C0003114/C0003114_CORTMASK.mhd"
+        "/Users/msb/Desktop/448_L_80_M/C0003096_CORTMASK.mhd"
     )
     # rotate image
     # sitk_image_s = sitk.PermuteAxes(sitk_image_s, [2, 1, 0])
@@ -85,7 +85,7 @@ def main():
     # sitk_image_s = sitk.PermuteAxes(sitk_image_s, [1, 0, 2])
 
     print(sitk_image_s.GetSize())
-    sitk_image_s = sitk_image_s[:, :, 20:-20]
+    sitk_image_s = sitk_image_s[20:-20, :, :]
 
     mesh = HexMesh(
         meshing_settings,
