@@ -100,7 +100,7 @@ jobs:
           cp dist/*.tar.gz dist/ 2>/dev/null || true
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
