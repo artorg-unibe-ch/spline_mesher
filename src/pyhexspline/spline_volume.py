@@ -4,7 +4,8 @@ from typing import List, Tuple
 
 # import cv2
 import gmsh
-import imutils
+
+# import imutils
 import matplotlib
 import imageio
 
