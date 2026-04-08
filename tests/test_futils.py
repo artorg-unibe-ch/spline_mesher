@@ -1,4 +1,5 @@
 """Tests for pyhexspline.futils.setup_utils and hfe_input_transformer modules."""
+
 import logging
 import sys
 import unittest
