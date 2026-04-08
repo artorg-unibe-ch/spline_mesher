@@ -14,7 +14,6 @@ import logging
 import time
 from itertools import chain
 
-import cv2
 import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
@@ -250,11 +249,24 @@ class QuadRefinement:
         # find 4 outermost vertices of point_coords
         verts_2 = self.get_vertices_minmax(point_coords)
 
-        # ensure c-continuity of verts_1 and verts_2 after slicing (as checked by cv::Mat::checkVector())
-        # https://stackoverflow.com/questions/54552289/assertion-error-from-opencv-checkvector-in-python
-        verts_1_affine = np.copy(verts_1[:3, :2], order="C")
-        verts_2_affine = np.copy(verts_2[:3, :2], order="C")
-        M = cv2.getAffineTransform(verts_2_affine, verts_1_affine)
+        # Build the affine map using 3 point correspondences:
+        # [x y 1] @ M.T = [x' y']
+        verts_1_affine = np.asarray(verts_1[:3, :2], dtype=np.float64)
+        verts_2_affine = np.asarray(verts_2[:3, :2], dtype=np.float64)
+        verts_2_augmented = np.hstack(
+            (verts_2_affine, np.ones((verts_2_affine.shape[0], 1), dtype=np.float64))
+        )
+
+        if np.linalg.matrix_rank(verts_2_augmented) < 3:
+            raise ValueError("Cannot compute affine transform from collinear points")
+
+        # Solve for M in least-squares form and transpose to a 2x3 matrix.
+        M_solution, _, _, _ = np.linalg.lstsq(
+            verts_2_augmented,
+            verts_1_affine,
+            rcond=None,
+        )
+        M = M_solution.T.astype(np.float32)
 
         if self.SHOW_PLOT:
             plt.figure(figsize=(5, 5))
@@ -276,9 +288,11 @@ class QuadRefinement:
         Returns:
             ndarray: Array of transformed coordinates.
         """
-        coords = np.array(point_coords[:, :2], dtype=np.float32).reshape(-1, 1, 2)
-        coords_transformed = cv2.transform(coords, M)
-        new_coords = coords_transformed.reshape(-1, 2)
+        coords = np.asarray(point_coords[:, :2], dtype=np.float32)
+        coords_augmented = np.hstack(
+            (coords, np.ones((coords.shape[0], 1), dtype=np.float32))
+        )
+        new_coords = (coords_augmented @ M.T).astype(np.float32)
         new_coords_3d = np.hstack((new_coords, point_coords[:, 2].reshape(-1, 1)))
 
         if self.SHOW_PLOT:
