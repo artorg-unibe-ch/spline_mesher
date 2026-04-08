@@ -2,7 +2,7 @@ import logging
 import sys
 from typing import List, Tuple
 
-import cv2
+# import cv2
 import gmsh
 import imutils
 import matplotlib
@@ -264,65 +264,65 @@ class OCC_volume:
         image_thr = btif.Execute(image)
         return image_thr
 
-    def draw_contours(
-        self, img: ndarray, loc: str = str("outer"), approximation: bool = True
-    ) -> ndarray:
-        """
-        Find the contours of an image.
+    # def draw_contours(
+    #     self, img: ndarray, loc: str = str("outer"), approximation: bool = True
+    # ) -> ndarray:
+    #     """
+    #     Find the contours of an image.
 
-        Args:
-            img (numpy.ndarray): The input image as a 2D numpy array.
-            loc (str): The location of the contour. Can be "outer" or "inner". Defaults to "outer".
-            approximation (bool): If True, contour is approximated using the Ramer-Douglas-Peucker (RDP) algorithm. Defaults to True.
+    #     Args:
+    #         img (numpy.ndarray): The input image as a 2D numpy array.
+    #         loc (str): The location of the contour. Can be "outer" or "inner". Defaults to "outer".
+    #         approximation (bool): If True, contour is approximated using the Ramer-Douglas-Peucker (RDP) algorithm. Defaults to True.
 
-        Returns:
-            numpy.ndarray: The contour image as a 2D numpy array.
+    #     Returns:
+    #         numpy.ndarray: The contour image as a 2D numpy array.
 
-        Raises:
-            ValueError: If the location of the contour is not valid.
+    #     Raises:
+    #         ValueError: If the location of the contour is not valid.
 
-        Credits to:
-            https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour
+    #     Credits to:
+    #         https://stackoverflow.com/questions/25733694/process-image-to-find-external-contour
 
-        Docs:
-            https://docs.opencv.org/2.4/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html
-            https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/
-            https://doi.org/10.1016/0167-8655(82)90016-2
-        """
-        eps = 0.001
-        # eps = 0.015
-        if loc == "outer":
-            _contours, hierarchy = cv2.findContours(
-                img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-            )
-            out = np.zeros(np.shape(img), dtype=np.uint8)
-            if approximation is True:
-                cnts = imutils.grab_contours((_contours, hierarchy))
-                c = max(cnts, key=cv2.contourArea)
-                peri = cv2.arcLength(c, True)
-                approx = cv2.approxPolyDP(c, eps * peri, True)
-                contour = cv2.drawContours(out, [approx], -1, 1, 1)
-            else:
-                # all contours, in white, with thickness 1
-                contour = cv2.drawContours(out, _contours, -1, 1, 1)
-        elif loc == "inner":
-            _contours, hierarchy = cv2.findContours(
-                img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-            )
-            inn = np.zeros(np.shape(img), dtype=np.uint8)
-            if approximation is True:
-                cnts = imutils.grab_contours((_contours, hierarchy))
-                c = min(cnts, key=cv2.contourArea)
-                peri = cv2.arcLength(c, True)
-                approx = cv2.approxPolyDP(c, eps * peri, True)
-                contour = cv2.drawContours(inn, [approx], -1, 1, 1)
-            else:
-                contour = cv2.drawContours(inn, _contours, 2, 1, 1)
-        else:
-            raise ValueError(
-                "The location of the contour is not valid. Please choose between 'outer' and 'inner'."
-            )
-        return contour
+    #     Docs:
+    #         https://docs.opencv.org/2.4/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html
+    #         https://learnopencv.com/convex-hull-using-opencv-in-python-and-c/
+    #         https://doi.org/10.1016/0167-8655(82)90016-2
+    #     """
+    #     eps = 0.001
+    #     # eps = 0.015
+    #     if loc == "outer":
+    #         _contours, hierarchy = cv2.findContours(
+    #             img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    #         )
+    #         out = np.zeros(np.shape(img), dtype=np.uint8)
+    #         if approximation is True:
+    #             cnts = imutils.grab_contours((_contours, hierarchy))
+    #             c = max(cnts, key=cv2.contourArea)
+    #             peri = cv2.arcLength(c, True)
+    #             approx = cv2.approxPolyDP(c, eps * peri, True)
+    #             contour = cv2.drawContours(out, [approx], -1, 1, 1)
+    #         else:
+    #             # all contours, in white, with thickness 1
+    #             contour = cv2.drawContours(out, _contours, -1, 1, 1)
+    #     elif loc == "inner":
+    #         _contours, hierarchy = cv2.findContours(
+    #             img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+    #         )
+    #         inn = np.zeros(np.shape(img), dtype=np.uint8)
+    #         if approximation is True:
+    #             cnts = imutils.grab_contours((_contours, hierarchy))
+    #             c = min(cnts, key=cv2.contourArea)
+    #             peri = cv2.arcLength(c, True)
+    #             approx = cv2.approxPolyDP(c, eps * peri, True)
+    #             contour = cv2.drawContours(inn, [approx], -1, 1, 1)
+    #         else:
+    #             contour = cv2.drawContours(inn, _contours, 2, 1, 1)
+    #     else:
+    #         raise ValueError(
+    #             "The location of the contour is not valid. Please choose between 'outer' and 'inner'."
+    #         )
+    #     return contour
 
     def get_binary_contour(self, image: Image) -> Image:
         """
@@ -348,27 +348,27 @@ class OCC_volume:
         img_thr_join.SetSpacing(image.GetSpacing())
         return img_thr_join
 
-    def get_draw_contour(self, image: Image, loc: str = str("outer")) -> ndarray:
-        """
-        Extract and draw contours from the given image.
+    # def get_draw_contour(self, image: Image, loc: str = str("outer")) -> ndarray:
+    #     """
+    #     Extract and draw contours from the given image.
 
-        This function extracts and draws contours from the input image for each slice.
-        The contours are then flipped and returned as a numpy array.
+    #     This function extracts and draws contours from the input image for each slice.
+    #     The contours are then flipped and returned as a numpy array.
 
-        Args:
-            image (SimpleITK.Image): The input image.
-            loc (str, optional): The location of the contour to be drawn. Default is "outer".
+    #     Args:
+    #         image (SimpleITK.Image): The input image.
+    #         loc (str, optional): The location of the contour to be drawn. Default is "outer".
 
-        Returns:
-            ndarray: The extracted and drawn contours.
-        """
-        img_np = np.transpose(sitk.GetArrayFromImage(image), [2, 1, 0])
-        contour_np = [
-            self.draw_contours(img_np[z, :, :], loc, approximation=True)
-            for z in np.arange(np.shape(img_np)[0])
-        ]
-        contour_np = np.flip(contour_np, axis=1)
-        return contour_np
+    #     Returns:
+    #         ndarray: The extracted and drawn contours.
+    #     """
+    #     img_np = np.transpose(sitk.GetArrayFromImage(image), [2, 1, 0])
+    #     contour_np = [
+    #         self.draw_contours(img_np[z, :, :], loc, approximation=True)
+    #         for z in np.arange(np.shape(img_np)[0])
+    #     ]
+    #     contour_np = np.flip(contour_np, axis=1)
+    #     return contour_np
 
     def pad_image(self, image: Image, iso_pad_size: int) -> Image:
         """
