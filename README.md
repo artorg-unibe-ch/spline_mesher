@@ -111,6 +111,14 @@ To get a local copy up and running follow these simple example steps.
 
 ## 🔧 Installation
 
+### Quick install
+
+  ```sh
+  pip install pyhexspline
+  ```
+
+### Manual install from source
+
 1. Clone the repo
 
    ```sh
@@ -144,7 +152,7 @@ To get a local copy up and running follow these simple example steps.
   - [x] Faster implementation of sorting algorithm
   - [x] Faster implementation of cortical sanity check
   - [x] Implement test robustness over different models
-- [ ] __v1.1.0__: add phase discrimination in order to mesh single phase models (e.g. vertebrae)
+- [ ] __v1.1.0__: add phase discrimination in order to mesh single phase models (e.g. vertebral bodies)
 
 See the [open issues](https://github.com/artorg-unibe-ch/spline_mesher/issues) for a full list of proposed features (and known issues).
 
@@ -169,7 +177,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the GPL-3.0 license. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
